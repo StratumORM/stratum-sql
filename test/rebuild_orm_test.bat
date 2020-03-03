@@ -6,22 +6,14 @@ cls
 ECHO Rebuilding the test ORM database from scratch.
 ECHO Command outputs are directed to rebuild_orm_test.log
 
-IF "%COMPUTERNAME%" == "LINKED48" (
-	SET INSTANCENAME=\SANDBOX
-	ECHO Interacting with home machine...
-) ELSE (
-	IF "%COMPUTERNAME%" == "ANDREW-LT-E6540" (
-		ECHO Interacting with TriMax machine...
-		SET INSTANCENAME=
-	) ELSE (
-		SET INSTANCENAME=\SQLEXPRESS
-		)
-)
+ECHO Ensure that sqlcmd.exe is in the PATH environment variable!
+
+SET INSTANCENAME=\SQLEXPRESS
 SET DATABASENAME=orm_test
 
 ECHO Interacting with %COMPUTERNAME% (at %INSTANCENAME%) using %DATABASENAME%
 
-SET SQL_COMMAND=sqlcmd -S %COMPUTERNAME%%INSTANCENAME% -r -d %DATABASENAME% -i .\sql
+SET SQL_COMMAND=sqlcmd -S %COMPUTERNAME%%INSTANCENAME% -r -d %DATABASENAME% -i ..\sql
 SET LOGFILE=rebuild_orm_test.log
 
 ECHO Starting batch for recreating orm_test > %LOGFILE%
@@ -31,7 +23,7 @@ IF not "%DATABASENAME%" == "orm_test" (goto :not_test_db)
 
 ECHO Dropping and creating orm_test
 REM Note that this command doesn't connect to the database: that's so we can drop it!
-sqlcmd -S %COMPUTERNAME%%INSTANCENAME% -r -i .\sql\create_database_orm_test.sql >> %LOGFILE%
+sqlcmd -S %COMPUTERNAME%%INSTANCENAME% -r -i ..\sql\create_database_orm_test.sql >> %LOGFILE%
 
 ECHO Building base tables and views...
 %SQL_COMMAND%\tables\base_tables.sql >> %LOGFILE%
