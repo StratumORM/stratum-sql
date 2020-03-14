@@ -47,6 +47,10 @@ ECHO Define meta sprocs (sprocs that build sql)...
 %SQL_COMMAND%\meta_sprocs\generate_view_listing.sql >> %LOGFILE%
 %SQL_COMMAND%\meta_sprocs\cascadeDelete_properties.sql >> %LOGFILE%
 
+%SQL_COMMAND%\functions\decodeUpdatedColumnsBitmask.sql >> %LOGFILE%
+%SQL_COMMAND%\meta_sprocs\template_view_crud_triggers.sql >> %LOGFILE%
+
+
 ECHO Define CRUD sprocs...
 %SQL_COMMAND%\crud\template_crud.sql >> %LOGFILE%
 %SQL_COMMAND%\crud\properties_crud.sql >> %LOGFILE%

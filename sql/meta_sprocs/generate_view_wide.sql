@@ -178,5 +178,7 @@ begin
 
 	exec sp_executesql @query
 
+	exec orm_meta_generate_template_view_triggers @templateID
+
 end
 go

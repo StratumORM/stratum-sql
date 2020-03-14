@@ -15,7 +15,7 @@ returns table
 AS
 return
 (
-	; with columnNames as
+	with columnNames as
 	(
 		select 	COLUMN_NAME
 			,	COLUMNPROPERTY(OBJECT_ID(@tableName), COLUMN_NAME, 'ColumnID') AS COLUMN_ID
@@ -24,6 +24,7 @@ return
 	)
 	select columnNames.COLUMN_NAME
 	from columnNames 
-	where power(2, columnNames.column_id) & @updatedColumns > 0
+	-- columns are from 1 to N, updated columns is a bitmask, so compensate for zero-indexing
+	where power(2, columnNames.column_id - 1) & @updatedColumns > 0
 )
 go
