@@ -17,33 +17,33 @@ truncate table orm_meta_inheritance
 
 print 'Marking THREE to inherit from TWO and ONE, in that order'
 -- let's say that THREE inherits from TWO and ONE, in that order
-declare @oneType int, @twoType int, @threeType int, @fourType int
-	set @oneType = (select top 1 typeID from orm_meta_types where name = 'ONE')
-	set @twoType = (select top 1 typeID from orm_meta_types where name = 'TWO')
-	set @threeType = (select top 1 typeID from orm_meta_types where name = 'THREE')
-	set @fourType = (select top 1 typeID from orm_meta_types where name = 'FOUR')
+declare @oneTemplate int, @twoTemplate int, @threeTemplate int, @fourTemplate int
+	set @oneTemplate = (select top 1 templateID from orm_meta_templates where name = 'ONE')
+	set @twoTemplate = (select top 1 templateID from orm_meta_templates where name = 'TWO')
+	set @threeTemplate = (select top 1 templateID from orm_meta_templates where name = 'THREE')
+	set @fourTemplate = (select top 1 templateID from orm_meta_templates where name = 'FOUR')
 
-insert into orm_meta_inheritance (parentTypeID, childTypeID, ordinal)
-values	(@twoType, @threeType, 1)
-	,	(@oneType, @threeType, 2)
-	,	(@threeType, @fourType, 1)
+insert into orm_meta_inheritance (parentTemplateID, childTemplateID, ordinal)
+values	(@twoTemplate, @threeTemplate, 1)
+	,	(@oneTemplate, @threeTemplate, 2)
+	,	(@threeTemplate, @fourTemplate, 1)
 
 update p
 set p.isExtended = 1
 from orm_meta_properties as p
-	inner join orm_meta_types as t
-		on p.typeID = t.typeID
-where t.typeID = @threeType
+	inner join orm_meta_templates as t
+		on p.templateID = t.templateID
+where t.templateID = @threeTemplate
 	and p.name = 'someString'
 go
 
 
 print 'Testing inheritance tree functions...(2,3,2,3)'
-select * from dbo.orm_meta_subTypes(5) as subs
-select * from dbo.orm_meta_superTypes(7) as supers
+select * from dbo.orm_meta_subTemplates(5) as subs
+select * from dbo.orm_meta_superTemplates(7) as supers
 
-select * from dbo.orm_meta_typeTree(5) as fullTree
-select * from dbo.orm_meta_typeTree(7) as fullTree
+select * from dbo.orm_meta_templateTree(5) as fullTree
+select * from dbo.orm_meta_templateTree(7) as fullTree
 /*
 select * from orm_ONE_listing
 select * from orm_ONE_wide
