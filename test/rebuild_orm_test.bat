@@ -49,6 +49,7 @@ ECHO Define meta sprocs (sprocs that build sql)...
 
 %SQL_COMMAND%\functions\decodeUpdatedColumnsBitmask.sql >> %LOGFILE%
 %SQL_COMMAND%\meta_sprocs\template_view_crud_triggers.sql >> %LOGFILE%
+%SQL_COMMAND%\meta_sprocs\all_values_listing_crud_triggers.sql >> %LOGFILE%
 
 
 ECHO Define CRUD sprocs...
