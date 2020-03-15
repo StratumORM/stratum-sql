@@ -63,12 +63,12 @@ begin
 								for xml path(''))
 
 
-	IF OBJECT_ID('[orm].' + @templateName + '', 'V') IS NOT NULL
+	IF OBJECT_ID('[dbo].[' + @templateName + ']', 'V') IS NOT NULL
 		set @query = 'alter'
 	else
 		set @query = 'create'
 
-	set @query = @query + ' view ' + @templateName + '
+	set @query = @query + ' view [' + @templateName + ']
 	as
 	select	o.name as InstanceName '
 
@@ -90,8 +90,8 @@ begin
 			(
 				max (value)
 				for Property in (@@@VALUES_COLUMNS@@@)
-			) as @@@META_VALUES_TABLE@@@_pivot
-			on o.instanceID = @@@META_VALUES_TABLE@@@_pivot.instanceID
+			) as @@@META_VALUES_TABLE_SANITIZED@@@_pivot
+			on o.instanceID = @@@META_VALUES_TABLE_SANITIZED@@@_pivot.instanceID
 		'
 	set @pivotSubQuery = ''
 
@@ -103,6 +103,7 @@ begin
 		,	' + @stringColumns
 
 		set @resolvedPivotTemplate = replace(@pivotQueryTemplate, '@@@META_VALUES_TABLE@@@', '[orm_meta].[values_string]')
+		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, '@@@META_VALUES_TABLE_SANITIZED@@@', '_orm_meta___values_string_')
 		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, '@@@VALUES_COLUMNS@@@', @stringColumns)
 		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, '@@@DATATYPE_ID@@@', convert(nvarchar(10), 1))
 
@@ -118,6 +119,7 @@ begin
 		,	' + @integerColumns
 
 		set @resolvedPivotTemplate = replace(@pivotQueryTemplate, '@@@META_VALUES_TABLE@@@', '[orm_meta].[values_integer]')
+		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, '@@@META_VALUES_TABLE_SANITIZED@@@', '_orm_meta___values_integer_')
 		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, '@@@VALUES_COLUMNS@@@', @integerColumns)
 		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, '@@@DATATYPE_ID@@@', convert(nvarchar(10), 2))
 
@@ -133,6 +135,7 @@ begin
 		,	' + @decimalColumns
 
 		set @resolvedPivotTemplate = replace(@pivotQueryTemplate, '@@@META_VALUES_TABLE@@@', '[orm_meta].[values_decimal]')
+		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, '@@@META_VALUES_TABLE_SANITIZED@@@', '_orm_meta___values_decimal_')
 		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, '@@@VALUES_COLUMNS@@@', @decimalColumns)
 		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, '@@@DATATYPE_ID@@@', convert(nvarchar(10), 3))
 
@@ -148,6 +151,7 @@ begin
 		,	' + @datetimeColumns
 
 		set @resolvedPivotTemplate = replace(@pivotQueryTemplate, '@@@META_VALUES_TABLE@@@', '[orm_meta].[values_datetime]')
+		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, '@@@META_VALUES_TABLE_SANITIZED@@@', '_orm_meta___values_datetime_')
 		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, '@@@VALUES_COLUMNS@@@', @datetimeColumns)
 		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, '@@@DATATYPE_ID@@@', convert(nvarchar(10), 4))
 
@@ -163,8 +167,9 @@ begin
 		,	' + @instanceColumns
 
 		set @resolvedPivotTemplate = replace(@pivotQueryTemplate, '@@@META_VALUES_TABLE@@@', '[orm_meta].[values_instance]')
+		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, '@@@META_VALUES_TABLE_SANITIZED@@@', '_orm_meta___values_instance_')
 		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, '@@@VALUES_COLUMNS@@@', @instanceColumns)
-		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, 'p.datatypeID = @@@DATATYPE_ID@@@', 'not p.datatypeID in (1,2,3,4)')
+		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, 'p.datatypeID = @@@DATATYPE_ID@@@', 'p.datatypeID > 4')
 
 		set @pivotSubQuery = @pivotSubQuery + @resolvedPivotTemplate
 	end
@@ -175,6 +180,8 @@ begin
 		inner join [orm_meta].[subTemplates](' + convert(nvarchar(100), @templateID) + ') as subTemplates
 			on o.templateID = subTemplates.templateID
 	' + @pivotSubQuery
+
+	-- print @query
 
 	exec sp_executesql @query
 

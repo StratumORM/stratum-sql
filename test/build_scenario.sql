@@ -64,6 +64,10 @@ declare @FirstObj_ID int
 exec [orm].[value_change] 'FirstType', 'FirstObj', 'String', 'First words.'
 exec [orm].[value_change_datetime] 'FirstType', 'FirstObj', 'DT', '2020-02-20 20:02'
 
+declare @templateID int, @instanceID int, @propertyID int
+	set @templateID	= (select top 1 templateID from [orm_meta].[templates] where name = 'FirstType')
+	set @instanceID	= (select top 1 instanceID from [orm_meta].[instances] where name = 'FirstObj' and templateID = @templateID)
+	set @propertyID	= (select top 1 propertyID from [orm_meta].[properties] where name = 'DT' and templateID = @templateID)
 
 insert into [orm_meta].[values_decimal] (instanceID, propertyID, value)
 	values (  @AnotherObj_ID
