@@ -16,7 +16,7 @@ begin
 	-- Make sure the templateName is legal (since this will go into dynamic sql)
 	select i.name
 	from inserted as i
-	where i.name <> [orm].meta_sanitize_string(i.name)
+	where i.name <> [orm_meta].[sanitize_string](i.name)
 	if @@ROWCOUNT <> 0 
 		begin
 			rollback transaction		
@@ -83,7 +83,7 @@ begin
 	-- Make sure the templateName is legal (since this will go into dynamic sql)
 	select i.name
 	from inserted as i
-	where i.name <> [orm].meta_sanitize_string(i.name)
+	where i.name <> [orm_meta].[sanitize_string](i.name)
 	if @@ROWCOUNT <> 0 
 		begin
 			rollback transaction		

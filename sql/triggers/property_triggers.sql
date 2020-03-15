@@ -58,7 +58,7 @@ begin
 	-- Verify the names are safe
 	if (exists(	select i.propertyID
 				from inserted as i
-				where i.name <> [orm].meta_sanitize_string(i.name) ))
+				where i.name <> [orm_meta].[sanitize_string](i.name) ))
 		begin
 			rollback transaction	
 			raiserror('Property name is not purely alphanumeric.', 16, 10)
@@ -220,7 +220,7 @@ begin
 	-- Verify the names are safe
 	if (exists(	select i.propertyID
 				from inserted as i
-				where i.name <> [orm].meta_sanitize_string(i.name) ))
+				where i.name <> [orm_meta].[sanitize_string](i.name) ))
 		begin
 			rollback transaction		
 			raiserror('Property name is not purely alphanumeric.', 16, 10)
