@@ -6,7 +6,7 @@ IF OBJECT_ID('[orm].[instance_properties]', 'V') IS NOT NULL
 	DROP VIEW [orm].[instance_properties]
 go
 
-create view orm_instance_properties
+create view [orm].[instance_properties]
 as
 
 	select	t.name as [Template]

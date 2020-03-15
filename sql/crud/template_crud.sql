@@ -7,7 +7,7 @@ IF OBJECT_ID('[orm].[template_add]', 'P') IS NOT NULL
 	DROP PROCEDURE [orm].[template_add]
 go
 
-create procedure orm_template_add
+create procedure [orm].[template_add]
 	@newTemplateName varchar(250)
 ,	@signature nvarchar(max) = NULL
 as
@@ -31,7 +31,7 @@ IF OBJECT_ID('[orm_meta].[template_remove]', 'P') IS NOT NULL
 go
 
 
-create procedure orm_template_remove
+create procedure [orm].[template_remove]
 	@templateName varchar(250)
 as
 begin

@@ -6,7 +6,7 @@ IF OBJECT_ID('[orm].[instance_add]', 'P') IS NOT NULL
 	DROP PROCEDURE [orm].[instance_add]
 go
 
-create procedure orm_instance_add
+create procedure [orm].[instance_add]
 	@templateName varchar(250)
 ,	@newInstanceName varchar(250)
 as
@@ -36,7 +36,7 @@ IF OBJECT_ID('[orm].[instance_remove]', 'P') IS NOT NULL
 	DROP PROCEDURE [orm].[instance_remove]
 go
 
-create procedure orm_instance_remove
+create procedure [orm].[instance_remove]
 	@templateName varchar(250)
 ,	@oldInstanceName varchar(250)
 as

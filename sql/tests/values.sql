@@ -24,7 +24,7 @@ begin
 	declare @multiplier bigint
 	
 	print 'add a new template: ' + @templateName
-	exec orm_template_add @templateName
+	exec [orm].[template_add] @templateName
 
 	set @num = (select objNum
 				from (	select name
@@ -37,7 +37,7 @@ begin
 
 	print 'instance an object: ' + @objectName
 	set @propName = 'Test object ' + convert(varchar(250), @num)
-	exec orm_create_object	@templateName, @objectName, @propName
+	exec [orm].[create_object]	@templateName, @objectName, @propName
 
 	print 'add some properties and values to ' + @templateName
 
@@ -48,20 +48,20 @@ begin
 	set @dt = dateadd(second, @dec*@multiplier*10, '1985-01-01')
 
 	set @propName = 'str_' + convert(varchar(250), @num)
-	exec orm_property_add	@templateName, @propName, 'nvarchar(max)'
-	exec orm_change_value	@templateName, @objectName, @propName, @str
+	exec [orm].[property_add]	@templateName, @propName, 'nvarchar(max)'
+	exec [orm].[change_value]	@templateName, @objectName, @propName, @str
 
 	set @propName = 'num_' + convert(varchar(250), @num)
-	exec orm_property_add	@templateName, @propName, 'bigInt'
-	exec orm_change_value	@templateName, @objectName, @propName, @int
+	exec [orm].[property_add]	@templateName, @propName, 'bigInt'
+	exec [orm].[change_value]	@templateName, @objectName, @propName, @int
 
 	set @propName = 'real_' + convert(varchar(250), @num)
-	exec orm_property_add	@templateName, @propName, 'decimal(19,8)'
-	exec orm_change_value	@templateName, @objectName, @propName, @dec
+	exec [orm].[property_add]	@templateName, @propName, 'decimal(19,8)'
+	exec [orm].[change_value]	@templateName, @objectName, @propName, @dec
 	
 	set @propName = 'dt_' + convert(varchar(250), @num)
-	exec orm_property_add	@templateName, @propName, 'datetime'
-	exec orm_change_value	@templateName, @objectName, @propName, @dt
+	exec [orm].[property_add]	@templateName, @propName, 'datetime'
+	exec [orm].[change_value]	@templateName, @objectName, @propName, @dt
 
 end 
 go

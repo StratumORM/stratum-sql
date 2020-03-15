@@ -43,7 +43,7 @@ end
 go
 
 
-create procedure orm_inherit_add
+create procedure [orm].[inherit_add]
 	@parentTemplateName varchar(250)
 ,	@childTemplateName varchar(250)
 ,	@ordinal int = null 	
@@ -83,7 +83,7 @@ end
 go
 
 
-create procedure orm_inherit_remove
+create procedure [orm].[inherit_remove]
 	@parentTemplateName varchar(250)
 ,	@childTemplateName varchar(250)
 as

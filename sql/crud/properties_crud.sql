@@ -6,7 +6,7 @@ IF OBJECT_ID('[orm].[property_add]', 'P') IS NOT NULL
 	DROP PROCEDURE [orm].[property_add]
 go
 
-create procedure orm_property_add
+create procedure [orm].[property_add]
 	@templateName varchar(250)
 ,	@newPropertyName varchar(250)
 ,	@dataType varchar(250)
@@ -35,7 +35,7 @@ IF OBJECT_ID('[orm].[property_remove]', 'P') IS NOT NULL
 	DROP PROCEDURE [orm].[property_remove]
 go
 
-create procedure orm_property_remove
+create procedure [orm].[property_remove]
 	@templateName varchar(250)
 ,	@propertyName varchar(250)
 as
@@ -67,7 +67,7 @@ IF OBJECT_ID('[orm].[property_rename]', 'P') IS NOT NULL
 	DROP PROCEDURE [orm].[property_rename]
 go
 
-create procedure orm_property_rename
+create procedure [orm].[property_rename]
 	@templateName varchar(250)
 ,	@oldPropertyName varchar(250)
 ,	@newPropertyName varchar(250)

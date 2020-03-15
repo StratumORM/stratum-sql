@@ -36,7 +36,7 @@ begin
 end
 go
 
-create procedure orm_value_change_string
+create procedure [orm].[value_change_string]
 	@templateName varchar(250)
 ,	@instanceName varchar(250)
 ,	@propertyName varchar(250)
@@ -88,7 +88,7 @@ begin
 end
 go
 
-create procedure orm_value_change_integer
+create procedure [orm].[value_change_integer]
 	@templateName varchar(250)
 ,	@instanceName varchar(250)
 ,	@propertyName varchar(250)
@@ -140,7 +140,7 @@ begin
 end
 go
 
-create procedure orm_value_change_decimal
+create procedure [orm].[value_change_decimal]
 	@templateName varchar(250)
 ,	@instanceName varchar(250)
 ,	@propertyName varchar(250)
@@ -192,7 +192,7 @@ begin
 end
 go
 
-create procedure orm_value_change_datetime
+create procedure [orm].[value_change_datetime]
 	@templateName varchar(250)
 ,	@instanceName varchar(250)
 ,	@propertyName varchar(250)
@@ -265,7 +265,7 @@ begin
 end
 go
 
-create procedure orm_value_change_instance
+create procedure [orm].[value_change_instance]
 	@templateName varchar(250)
 ,	@instanceName varchar(250)
 ,	@propertyName varchar(250)
@@ -288,7 +288,7 @@ if OBJECT_ID('[orm].[value_change]','P') is not null
 	drop procedure [orm].[value_change]
 go
 
-create procedure orm_value_change
+create procedure [orm].[value_change]
 	@templateName varchar(250)
 ,	@instanceName varchar(250)
 ,	@propertyName varchar(250)
@@ -367,7 +367,7 @@ IF OBJECT_ID('[orm].[value_read]', 'P') IS NOT NULL
 	DROP PROCEDURE [orm].[value_read]
 go
 
-create procedure orm_value_read
+create procedure [orm].[value_read]
 	@templateName varchar(250)
 ,	@instanceName varchar(250) = NULL
 as
@@ -397,7 +397,7 @@ IF OBJECT_ID('[orm].[value_read_listing]', 'P') IS NOT NULL
 	DROP PROCEDURE [orm].[value_read_listing]
 go
 
-create procedure orm_value_read_listing
+create procedure [orm].[value_read_listing]
 	@templateName varchar(250)
 ,	@instanceName varchar(250) = NULL
 as

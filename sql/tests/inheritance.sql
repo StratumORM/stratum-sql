@@ -4,13 +4,13 @@ print 'Testing inheritance...'
 
 print '... renaming str_# to someString to force collision'
 -- next we'll want to make sure there's property to collision so we have something to resolve
-exec orm_property_rename 'ONE','str_1','someString'
+exec [orm].[property_rename] 'ONE','str_1','someString'
 go
-exec orm_property_rename 'TWO','str_2','someString'
+exec [orm].[property_rename] 'TWO','str_2','someString'
 go
-exec orm_property_rename 'THREE','str_3','someString'
+exec [orm].[property_rename] 'THREE','str_3','someString'
 go
-exec orm_property_rename 'FOUR','str_4','someString'
+exec [orm].[property_rename] 'FOUR','str_4','someString'
 go
 
 truncate table [orm_meta].[inheritance]
@@ -45,8 +45,8 @@ select * from [orm_meta].[superTemplates](7) as supers
 select * from [orm_meta].[templateTree](5) as fullTree
 select * from [orm_meta].[templateTree](7) as fullTree
 /*
-select * from orm_ONE_listing
-select * from orm_ONE_wide
-select * from orm_ONE_values
+select * from [orm].[ONE_listing]
+select * from [orm].[ONE_wide]
+select * from [orm].[ONE_values]
 */
 
