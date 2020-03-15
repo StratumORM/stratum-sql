@@ -8,14 +8,14 @@ IF OBJECT_ID('[orm].[template_add]', 'P') IS NOT NULL
 go
 
 create procedure [orm].[template_add]
-	@newTemplateName varchar(250)
+	@new_template_name varchar(250)
 ,	@signature nvarchar(max) = NULL
 as
 begin
 	SET NOCOUNT ON;
 
 	insert [orm_meta].[templates] (name, signature)
-	values (@newTemplateName, @signature)
+	values (@new_template_name, @signature)
 
     return @@identity
 end
@@ -32,25 +32,25 @@ go
 
 
 create procedure [orm].[template_remove]
-	@templateName varchar(250)
+	@template_name varchar(250)
 as
 begin
 	SET NOCOUNT ON;
 
 	delete [orm_meta].[templates]
-	where name = @templateName
+	where name = @template_name
 
 end
 go
 
 
 create procedure [orm_meta].[template_remove]
-	@templateID int
+	@template_id int
 as
 begin
 
 	delete [orm_meta].[templates]
-	where templateID = @templateID
+	where template_id = @template_id
 
 end
 go

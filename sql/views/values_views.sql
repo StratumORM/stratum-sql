@@ -11,18 +11,18 @@ as
 		,	o.name as [instance]
 		,	p.name as [property]
 		,	v.value
-		--,	t.templateID
-		--,	o.instanceID
-		--,	p.propertyID
+		--,	t.template_id
+		--,	o.instance_id
+		--,	p.property_id
 	from [orm_meta].[values_string] as v
 		inner join [orm_meta].[instances] as o
-			on v.instanceID = o.instanceID
+			on v.instance_id = o.instance_id
 		inner join [orm_meta].[properties] as p
-			on v.propertyID = p.propertyID
+			on v.property_id = p.property_id
 		inner join [orm_meta].[templates] as t
-			on p.templateID = t.templateID
-	where p.datatypeID = 1
-	--order by t.templateID, o.name, p.name
+			on p.template_id = t.template_id
+	where p.datatype_id = 1
+	--order by t.template_id, o.name, p.name
 GO
 
 
@@ -36,18 +36,18 @@ as
 		,	o.name as [instance]
 		,	p.name as [property]
 		,	v.value
-		--,	t.templateID
-		--,	o.instanceID
-		--,	p.propertyID
+		--,	t.template_id
+		--,	o.instance_id
+		--,	p.property_id
 	from [orm_meta].[values_integer] as v
 		inner join [orm_meta].[instances] as o
-			on v.instanceID = o.instanceID
+			on v.instance_id = o.instance_id
 		inner join [orm_meta].[properties] as p
-			on v.propertyID = p.propertyID
+			on v.property_id = p.property_id
 		inner join [orm_meta].[templates] as t
-			on p.templateID = t.templateID
-	where p.datatypeID = 2
-	--order by t.templateID, o.name, p.name
+			on p.template_id = t.template_id
+	where p.datatype_id = 2
+	--order by t.template_id, o.name, p.name
 GO
 
 
@@ -61,18 +61,18 @@ as
 		,	o.name as [instance]
 		,	p.name as [property]
 		,	v.value
-		--,	t.templateID
-		--,	o.instanceID
-		--,	p.propertyID
+		--,	t.template_id
+		--,	o.instance_id
+		--,	p.property_id
 	from [orm_meta].[values_decimal] as v
 		inner join [orm_meta].[instances] as o
-			on v.instanceID = o.instanceID
+			on v.instance_id = o.instance_id
 		inner join [orm_meta].[properties] as p
-			on v.propertyID = p.propertyID
+			on v.property_id = p.property_id
 		inner join [orm_meta].[templates] as t
-			on p.templateID = t.templateID
-	where p.datatypeID = 3
-	--order by t.templateID, o.name, p.name
+			on p.template_id = t.template_id
+	where p.datatype_id = 3
+	--order by t.template_id, o.name, p.name
 GO
 
 
@@ -86,16 +86,16 @@ as
 		,	o.name as [instance]
 		,	p.name as [property]
 		,	v.value
-		--,	t.templateID
-		--,	o.instanceID
-		--,	p.propertyID
+		--,	t.template_id
+		--,	o.instance_id
+		--,	p.property_id
 	from [orm_meta].[values_datetime] as v
 		inner join [orm_meta].[instances] as o
-			on v.instanceID = o.instanceID
+			on v.instance_id = o.instance_id
 		inner join [orm_meta].[properties] as p
-			on v.propertyID = p.propertyID
+			on v.property_id = p.property_id
 		inner join [orm_meta].[templates] as t
-			on p.templateID = t.templateID
-	where p.datatypeID = 4
-	--order by t.templateID, o.name, p.name
+			on p.template_id = t.template_id
+	where p.datatype_id = 4
+	--order by t.template_id, o.name, p.name
 GO

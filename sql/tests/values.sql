@@ -16,30 +16,30 @@ if OBJECT_ID('[orm].[test_init_object]','P') is not null
 go
 
 create procedure test_init_object
-	@templateName varchar(250)
+	@template_name varchar(250)
 as
 begin
-	declare @num int, @objectName varchar(250), @propName varchar(250)
+	declare @num int, @object_name varchar(250), @prop_name varchar(250)
 	declare @int bigint, @str nvarchar(max), @dt datetime, @dec decimal(19,8)
 	declare @multiplier bigint
 	
-	print 'add a new template: ' + @templateName
-	exec [orm].[template_add] @templateName
+	print 'add a new template: ' + @template_name
+	exec [orm].[template_add] @template_name
 
-	set @num = (select objNum
+	set @num = (select obj_num
 				from (	select name
-						,	row_number() over (order by templateID) as objNum 
+						,	row_number() over (order by template_id) as obj_num 
 						from [orm_meta].[templates] 
-						where templateid > 4
+						where template_id > 4
 					) as objnums
-				where name = @templateName)
-	set @objectName = 'obj_' + @templateName
+				where name = @template_name)
+	set @object_name = 'obj_' + @template_name
 
-	print 'instance an object: ' + @objectName
-	set @propName = 'Test object ' + convert(varchar(250), @num)
-	exec [orm].[create_object]	@templateName, @objectName, @propName
+	print 'instance an object: ' + @object_name
+	set @prop_name = 'Test object ' + convert(varchar(250), @num)
+	exec [orm].[create_object]	@template_name, @object_name, @prop_name
 
-	print 'add some properties and values to ' + @templateName
+	print 'add some properties and values to ' + @template_name
 
 	set @multiplier = 10000
 	set @dec = @multiplier * rand()
@@ -47,21 +47,21 @@ begin
 	set @str = 'some string ' + convert(nvarchar(max), @dec)
 	set @dt = dateadd(second, @dec*@multiplier*10, '1985-01-01')
 
-	set @propName = 'str_' + convert(varchar(250), @num)
-	exec [orm].[property_add]	@templateName, @propName, 'nvarchar(max)'
-	exec [orm].[change_value]	@templateName, @objectName, @propName, @str
+	set @prop_name = 'str_' + convert(varchar(250), @num)
+	exec [orm].[property_add]	@template_name, @prop_name, 'nvarchar(max)'
+	exec [orm].[change_value]	@template_name, @object_name, @prop_name, @str
 
-	set @propName = 'num_' + convert(varchar(250), @num)
-	exec [orm].[property_add]	@templateName, @propName, 'bigInt'
-	exec [orm].[change_value]	@templateName, @objectName, @propName, @int
+	set @prop_name = 'num_' + convert(varchar(250), @num)
+	exec [orm].[property_add]	@template_name, @prop_name, 'bigInt'
+	exec [orm].[change_value]	@template_name, @object_name, @prop_name, @int
 
-	set @propName = 'real_' + convert(varchar(250), @num)
-	exec [orm].[property_add]	@templateName, @propName, 'decimal(19,8)'
-	exec [orm].[change_value]	@templateName, @objectName, @propName, @dec
+	set @prop_name = 'real_' + convert(varchar(250), @num)
+	exec [orm].[property_add]	@template_name, @prop_name, 'decimal(19,8)'
+	exec [orm].[change_value]	@template_name, @object_name, @prop_name, @dec
 	
-	set @propName = 'dt_' + convert(varchar(250), @num)
-	exec [orm].[property_add]	@templateName, @propName, 'datetime'
-	exec [orm].[change_value]	@templateName, @objectName, @propName, @dt
+	set @prop_name = 'dt_' + convert(varchar(250), @num)
+	exec [orm].[property_add]	@template_name, @prop_name, 'datetime'
+	exec [orm].[change_value]	@template_name, @object_name, @prop_name, @dt
 
 end 
 go

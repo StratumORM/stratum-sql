@@ -7,43 +7,43 @@ IF OBJECT_ID('[orm_meta].[generate_template_view_listing]', 'P') IS NOT NULL
 go
 
 create procedure [orm_meta].[generate_template_view_listing]
-	@templateID int
+	@template_id int
 as
 begin
 	-- Generate the tall view that's five columns wide, one for
 	-- (template, instance, property, value, datatype)
 
-	declare @viewQuery nvarchar(max), @viewName nvarchar(max), @templateName varchar(250)
+	declare @view_query nvarchar(max), @view_name nvarchar(max), @template_name varchar(250)
 
-		set @templateName = (select top 1 name from [orm_meta].[templates] where templateID = @templateID)
-		set @viewName = 'orm_' + @templateName + '_listing'
+		set @template_name = (select top 1 name from [orm_meta].[templates] where template_id = @template_id)
+		set @view_name = 'orm_' + @template_name + '_listing'
 
-	select @viewQuery = VIEW_DEFINITION
+	select @view_query = VIEW_DEFINITION
 	from INFORMATION_SCHEMA.VIEWS
 	where TABLE_NAME = '[orm_meta].[all_values_listing]'
 
 	-- modify the name of the view to match the template
-	set @viewQuery = replace(@viewQuery, '[orm_meta].[all_values_listing]', @viewName)
+	set @view_query = replace(@view_query, '[orm_meta].[all_values_listing]', @view_name)
 
 	-- modify the join to filter for our subclassed instances
-	set @viewQuery = replace(@viewQuery, 'inner join [orm_meta].[properties] as p
-			on o.templateID = p.templateID', '
+	set @view_query = replace(@view_query, 'inner join [orm_meta].[properties] as p
+			on o.template_id = p.template_id', '
 		-- include instances from templates that inherit from this one
-		inner join [orm_meta].[subTemplates](' + convert(nvarchar(100), @templateID) + ') as subTemplates
-			on o.templateID = subTemplates.templateID
+		inner join [orm_meta].[sub_templates](' + convert(nvarchar(100), @template_id) + ') as sub_templates
+			on o.template_id = sub_templates.template_id
 		
 		-- ... but only allow names relevant to this one
-		inner join [orm_meta].[properties] as pNames
-			on pNames.templateID = ' + convert(nvarchar(100), @templateID) + '
+		inner join [orm_meta].[properties] as p_names
+			on p_names.template_id = ' + convert(nvarchar(100), @template_id) + '
 
 		-- ... and then filter that list to values that exist
 		inner join [orm_meta].[properties] as p
-			on	pNames.name = p.name
-			and o.templateID = p.templateID')
+			on	p_names.name = p.name
+			and o.template_id = p.template_id')
 	
-	set @viewQuery = replace(@viewQuery, 't.name as [Template],', '')
+	set @view_query = replace(@view_query, 't.name as [Template],', '')
 
-	exec sp_executesql @viewQuery
+	exec sp_executesql @view_query
 
 end
 go

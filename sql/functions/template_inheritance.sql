@@ -3,84 +3,84 @@ Generating template inheritance functions...'
 
 
 
-if object_id('[orm_meta].[subTemplates]', 'IF') is not null
-	drop function [orm_meta].[subTemplates]
+if object_id('[orm_meta].[sub_templates]', 'IF') is not null
+	drop function [orm_meta].[sub_templates]
 go
 
-create function [orm_meta].[subTemplates]
+create function [orm_meta].[sub_templates]
 (	
-	@templateID int
+	@template_id int
 )
 RETURNS TABLE 
 AS
 RETURN 
 (
-	with includedTemplates as
+	with included_templates as
 	(
-		select @templateID as templateID, 0 as echelon
+		select @template_id as template_id, 0 as echelon
 
 		union all
 
-		select i.childTemplateID, echelon - 1
-		from includedTemplates as it
+		select i.child_template_id, echelon - 1
+		from included_templates as it
 			inner join [orm_meta].[inheritance] as i
-				on it.templateID = i.parentTemplateID
+				on it.template_id = i.parent_template_id
 	)
-	select templateID, echelon
-	from includedTemplates
+	select template_id, echelon
+	from included_templates
 )
 GO
 
 
-if object_id('[orm_meta].[superTemplates]', 'IF') is not null
-	drop function [orm_meta].[superTemplates]
+if object_id('[orm_meta].[super_templates]', 'IF') is not null
+	drop function [orm_meta].[super_templates]
 go
 
-create function [orm_meta].[superTemplates]
+create function [orm_meta].[super_templates]
 (	
-	@templateID int
+	@template_id int
 )
 RETURNS TABLE 
 AS
 RETURN 
 (
-	with includedTemplates as
+	with included_templates as
 	(
-		select @templateID as templateID, 0 as echelon
+		select @template_id as template_id, 0 as echelon
 
 		union all
 
-		select i.parentTemplateID, echelon + 1
-		from includedTemplates as it
+		select i.parent_template_id, echelon + 1
+		from included_templates as it
 			inner join [orm_meta].[inheritance] as i
-				on it.templateID = i.childTemplateID
+				on it.template_id = i.child_template_id
 	)
-	select templateID, echelon
-	from includedTemplates
+	select template_id, echelon
+	from included_templates
 )
 GO
 
 
-if object_id('[orm_meta].[templateTree]', 'IF') is not null
-	drop function [orm_meta].[templateTree]
+if object_id('[orm_meta].[template_tree]', 'IF') is not null
+	drop function [orm_meta].[template_tree]
 go
 
-create function [orm_meta].[templateTree]
+create function [orm_meta].[template_tree]
 (	
-	@templateID int
+	@template_id int
 )
 RETURNS TABLE 
 AS
 RETURN 
 (
-	select templateID, echelon
-	from (	select templateID, echelon
-			from [orm_meta].[subTemplates](@templateID) as subs
+	select template_id, echelon
+	from (	select template_id, echelon
+			from [orm_meta].[sub_templates](@template_id) as subs
 			
 			union
 			
-			select templateID, echelon
-			from [orm_meta].[superTemplates](@templateID) as supers
+			select template_id, echelon
+			from [orm_meta].[super_templates](@template_id) as supers
 		) as structure			
 )
 GO

@@ -76,10 +76,10 @@ ECHO --- gen template view listing
 %SQL_COMMAND%\meta_sprocs\generate_view_listing.sql >> %LOGFILE%
 
 ECHO --- cascade delete for properties
-%SQL_COMMAND%\meta_sprocs\cascadeDelete_properties.sql >> %LOGFILE%
+%SQL_COMMAND%\meta_sprocs\cascade_delete_properties.sql >> %LOGFILE%
 
 ECHO --- column bitmask decoding
-%SQL_COMMAND%\functions\decodeUpdatedColumnsBitmask.sql >> %LOGFILE%
+%SQL_COMMAND%\functions\decode_updated_columns_bitmask.sql >> %LOGFILE%
 
 ECHO --- dynamic template view crud trigger
 %SQL_COMMAND%\meta_sprocs\template_view_crud_triggers.sql >> %LOGFILE%

@@ -13,38 +13,38 @@ as
 	select  o.name as Name
 		,	p.name as Property
 
-		,	vi.value as IntValue
-		,	vf.value as FloatValue
-		,	vs.value as StringValue
-		,	vd.value as DateValue
-		,	vo.value as InstanceValue
+		,	vi.value as [Integer]
+		,	vf.value as [Float]
+		,	vs.value as [String]
+		,	vd.value as [Date]
+		,	vo.value as [Instance]
 	
-		,	o.instanceID
-		,	p.propertyID
+		,	o.instance_id
+		,	p.property_id
 	
 	from	[orm_meta].[instances] as o
 		inner join [orm_meta].[properties] as p
-			on o.templateID = p.templateID
+			on o.template_id = p.template_id
 
 		left join [orm_meta].[values_integer]	as vi
-			on	o.instanceID   = vi.instanceID
-			and	p.propertyID = vi.propertyID
+			on	o.instance_id   = vi.instance_id
+			and	p.property_id = vi.property_id
 
 		left join [orm_meta].[values_decimal]	as vf
-			on	o.instanceID   = vf.instanceID
-			and	p.propertyID = vf.propertyID
+			on	o.instance_id   = vf.instance_id
+			and	p.property_id = vf.property_id
 
 		left join [orm_meta].[values_string]	as vs
-			on	o.instanceID   = vs.instanceID
-			and	p.propertyID = vs.propertyID
+			on	o.instance_id   = vs.instance_id
+			and	p.property_id = vs.property_id
 
 		left join [orm_meta].[values_datetime]	as vd
-			on	o.instanceID   = vd.instanceID
-			and	p.propertyID = vd.propertyID
+			on	o.instance_id   = vd.instance_id
+			and	p.property_id = vd.property_id
 
 		left join [orm_meta].[values_instance]	as vo
-			on	o.instanceID   = vo.instanceID
-			and	p.propertyID = vo.propertyID			
+			on	o.instance_id   = vo.instance_id
+			and	p.property_id = vo.property_id			
 go
 
 
@@ -65,35 +65,35 @@ as
 	
 	from	[orm_meta].[instances] as o
 		inner join [orm_meta].[templates] as t
-			on o.templateID = t.templateID
+			on o.template_id = t.template_id
 		inner join [orm_meta].[properties] as p
-			on o.templateID = p.templateID
+			on o.template_id = p.template_id
 		inner join [orm_meta].[templates] as d
-			on p.datatypeID = d.templateID
+			on p.datatype_id = d.template_id
 		inner join
-		(	select instanceID, propertyID, convert(nvarchar(max),value) as value
+		(	select instance_id, property_id, convert(nvarchar(max),value) as value
 			from [orm_meta].[values_integer]
 			
 			union
 
-			select instanceID, propertyID, convert(nvarchar(max),value) as value
+			select instance_id, property_id, convert(nvarchar(max),value) as value
 			from [orm_meta].[values_decimal]
 
 			union
 
-			select instanceID, propertyID, convert(nvarchar(max),value) as value
+			select instance_id, property_id, convert(nvarchar(max),value) as value
 			from [orm_meta].[values_string]
 
 			union
 						-- convert the datetime to ODBC canonical yyyy-mm-dd hh:mi:ss.mmm
-			select instanceID, propertyID, convert(nvarchar(max),value, 121) as value
+			select instance_id, property_id, convert(nvarchar(max),value, 121) as value
 			from [orm_meta].[values_datetime]
 
 			union
 
-			select instanceID, propertyID, convert(nvarchar(max),value) as value
+			select instance_id, property_id, convert(nvarchar(max),value) as value
 			from [orm_meta].[values_instance]
 		) as v
-			on	o.instanceID   = v.instanceID
-			and	p.propertyID = v.propertyID
+			on	o.instance_id   = v.instance_id
+			and	p.property_id = v.property_id
 GO

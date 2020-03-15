@@ -7,25 +7,25 @@ IF OBJECT_ID('[orm].[property_add]', 'P') IS NOT NULL
 go
 
 create procedure [orm].[property_add]
-	@templateName varchar(250)
-,	@newPropertyName varchar(250)
-,	@dataType varchar(250)
-,	@isExtended int = 0
+	@template_name varchar(250)
+,	@new_property_name varchar(250)
+,	@data_type varchar(250)
+,	@is_extended int = 0
 as
 begin
 	SET NOCOUNT ON;
 	
-	declare @templateID int, @datatypeID int
-		select @templateID = templateID
+	declare @template_id int, @datatype_id int
+		select @template_id = template_id
 		from [orm_meta].[templates]
-		where name = @templateName
+		where name = @template_name
 
-		select @datatypeID = templateID
+		select @datatype_id = template_id
 		from [orm_meta].[templates] 
-		where name = @dataType
+		where name = @data_type
 	
-	insert [orm_meta].[properties] (templateID, name, datatypeID, isExtended)
-	values (@templateID, @newPropertyName, @datatypeID, @isExtended)
+	insert [orm_meta].[properties] (template_id, name, datatype_id, is_extended)
+	values (@template_id, @new_property_name, @datatype_id, @is_extended)
 
 	return @@identity
 end
@@ -36,28 +36,28 @@ IF OBJECT_ID('[orm].[property_remove]', 'P') IS NOT NULL
 go
 
 create procedure [orm].[property_remove]
-	@templateName varchar(250)
-,	@propertyName varchar(250)
+	@template_name varchar(250)
+,	@property_name varchar(250)
 as
 begin
 	SET NOCOUNT ON;
 	
-	declare @templateID int, @datatypeID int, @propertyID int
+	declare @template_id int, @datatype_id int, @property_id int
 
-		select @templateID = templateID
+		select @template_id = template_id
 		from [orm_meta].[templates]
-		where name = @templateName
+		where name = @template_name
 
-		select	@datatypeID = p.datatypeID
-			,	@propertyID = p.propertyID
+		select	@datatype_id = p.datatype_id
+			,	@property_id = p.property_id
 		from [orm_meta].[properties] as p
-		where p.templateID = @templateID
-			and p.name = @propertyName
+		where p.template_id = @template_id
+			and p.name = @property_name
 
 	-- remove the property
 	delete [orm_meta].[properties]
-	where	templateID = @templateID
-		and name = @propertyName
+	where	template_id = @template_id
+		and name = @property_name
 		
 end
 go
@@ -68,19 +68,19 @@ IF OBJECT_ID('[orm].[property_rename]', 'P') IS NOT NULL
 go
 
 create procedure [orm].[property_rename]
-	@templateName varchar(250)
-,	@oldPropertyName varchar(250)
-,	@newPropertyName varchar(250)
+	@template_name varchar(250)
+,	@old_property_name varchar(250)
+,	@new_property_name varchar(250)
 as
 begin
 
 	update p
-	set name = @newPropertyName
+	set name = @new_property_name
 	from [orm_meta].[properties] as p
 		inner join [orm_meta].[templates] as t
-			on t.templateID = p.templateID
-	where	t.name = @templateName
-		and p.name = @oldPropertyName
+			on t.template_id = p.template_id
+	where	t.name = @template_name
+		and p.name = @old_property_name
 
 end 
 go

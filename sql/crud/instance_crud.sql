@@ -7,27 +7,27 @@ IF OBJECT_ID('[orm].[instance_add]', 'P') IS NOT NULL
 go
 
 create procedure [orm].[instance_add]
-	@templateName varchar(250)
-,	@newInstanceName varchar(250)
+	@template_name varchar(250)
+,	@new_instance_name varchar(250)
 as
 begin
 	SET NOCOUNT ON;
 
-	declare @templateID int, @instanceID int
-		select @templateID = templateID
+	declare @template_id int, @instance_id int
+		select @template_id = template_id
 		from [orm_meta].[templates]
-		where name = @templateName
+		where name = @template_name
 	
 	-- Make sure the instance doesn't already exist
-	select instanceID from [orm_meta].[instances] where name = @newInstanceName and templateID = @templateID
+	select instance_id from [orm_meta].[instances] where name = @new_instance_name and template_id = @template_id
 	if @@ROWCOUNT <> 0 raiserror('instance already exists.', 16, 1)
 	
-	insert [orm_meta].[instances] (templateID, name)
-	values (@templateID, @newInstanceName)	
+	insert [orm_meta].[instances] (template_id, name)
+	values (@template_id, @new_instance_name)	
 
-	set @instanceID = @@identity
+	set @instance_id = @@identity
 
-    return @instanceID
+    return @instance_id
 end
 go
 
@@ -37,21 +37,21 @@ IF OBJECT_ID('[orm].[instance_remove]', 'P') IS NOT NULL
 go
 
 create procedure [orm].[instance_remove]
-	@templateName varchar(250)
-,	@oldInstanceName varchar(250)
+	@template_name varchar(250)
+,	@old_instance_name varchar(250)
 as
 begin
 	SET NOCOUNT ON;
 
-	declare @templateID int, @instanceID int
-		select @templateID = templateID
+	declare @template_id int, @instance_id int
+		select @template_id = template_id
 		from [orm_meta].[templates]
-		where name = @templateName
+		where name = @template_name
 	
 	-- Make sure the instance doesn't already exist
 	delete [orm_meta].[instances]
-	where name = @oldInstanceName
-		and templateID = @templateID
+	where name = @old_instance_name
+		and template_id = @template_id
 
 end
 go

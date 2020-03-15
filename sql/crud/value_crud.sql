@@ -11,21 +11,21 @@ IF OBJECT_ID('[orm_meta].[value_change_string]', 'P') IS NOT NULL
 go
 
 create procedure [orm_meta].[value_change_string]
-	@instanceID int
-,	@propertyID int
+	@instance_id int
+,	@property_id int
 ,	@value nvarchar(max)
 as
 begin
 
 	merge into [orm_meta].[values_string] as d
-	using ( select	@instanceID as instanceID
-				,	@propertyID as propertyID) as s 
-		on	d.instanceID = s.instanceID
-		and	d.propertyID = s.propertyID
+	using ( select	@instance_id as instance_id
+				,	@property_id as property_id) as s 
+		on	d.instance_id = s.instance_id
+		and	d.property_id = s.property_id
 	
 	when not matched and @value is not null then
-		insert (instanceID, propertyID, value)
-		values (s.instanceID, s.propertyID, @value)
+		insert (instance_id, property_id, value)
+		values (s.instance_id, s.property_id, @value)
 	
 	when matched and @value is null then
 		delete 
@@ -37,19 +37,19 @@ end
 go
 
 create procedure [orm].[value_change_string]
-	@templateName varchar(250)
-,	@instanceName varchar(250)
-,	@propertyName varchar(250)
+	@template_name varchar(250)
+,	@instance_name varchar(250)
+,	@property_name varchar(250)
 ,	@value nvarchar(max)
 as
 begin
 	
-	declare @templateID int, @instanceID int, @propertyID int
-		set @templateID		= (select top 1 templateID from [orm_meta].[templates] where name = @templateName)
-		set @instanceID	= (select top 1 instanceID from [orm_meta].[instances] where name = @instanceName and templateID = @templateID)
-		set @propertyID	= (select top 1 propertyID from [orm_meta].[properties] where name = @propertyName and templateID = @templateID)
+	declare @template_id int, @instance_id int, @property_id int
+		set @template_id		= (select top 1 template_id from [orm_meta].[templates] where name = @template_name)
+		set @instance_id	= (select top 1 instance_id from [orm_meta].[instances] where name = @instance_name and template_id = @template_id)
+		set @property_id	= (select top 1 property_id from [orm_meta].[properties] where name = @property_name and template_id = @template_id)
 
-	exec [orm_meta].[value_change_string] @instanceID, @propertyID, @value
+	exec [orm_meta].[value_change_string] @instance_id, @property_id, @value
 end
 go
 
@@ -63,21 +63,21 @@ IF OBJECT_ID('[orm_meta].[value_change_integer]', 'P') IS NOT NULL
 go
 
 create procedure [orm_meta].[value_change_integer]
-	@instanceID int
-,	@propertyID int
+	@instance_id int
+,	@property_id int
 ,	@value bigint
 as
 begin
 
 	merge into [orm_meta].[values_integer] as d
-	using ( select	@instanceID as instanceID
-				,	@propertyID as propertyID) as s 
-		on	d.instanceID = s.instanceID
-		and	d.propertyID = s.propertyID
+	using ( select	@instance_id as instance_id
+				,	@property_id as property_id) as s 
+		on	d.instance_id = s.instance_id
+		and	d.property_id = s.property_id
 	
 	when not matched and not @value is null then
-		insert (instanceID, propertyID, value)
-		values (s.instanceID, s.propertyID, @value)
+		insert (instance_id, property_id, value)
+		values (s.instance_id, s.property_id, @value)
 	
 	when matched and @value is null then
 		delete 
@@ -89,19 +89,19 @@ end
 go
 
 create procedure [orm].[value_change_integer]
-	@templateName varchar(250)
-,	@instanceName varchar(250)
-,	@propertyName varchar(250)
+	@template_name varchar(250)
+,	@instance_name varchar(250)
+,	@property_name varchar(250)
 ,	@value bigint
 as
 begin
 	
-	declare @templateID int, @instanceID int, @propertyID int
-		set @templateID		= (select top 1 templateID from [orm_meta].[templates] where name = @templateName)
-		set @instanceID	= (select top 1 instanceID from [orm_meta].[instances] where name = @instanceName and templateID = @templateID)
-		set @propertyID	= (select top 1 propertyID from [orm_meta].[properties] where name = @propertyName and templateID = @templateID)
+	declare @template_id int, @instance_id int, @property_id int
+		set @template_id		= (select top 1 template_id from [orm_meta].[templates] where name = @template_name)
+		set @instance_id	= (select top 1 instance_id from [orm_meta].[instances] where name = @instance_name and template_id = @template_id)
+		set @property_id	= (select top 1 property_id from [orm_meta].[properties] where name = @property_name and template_id = @template_id)
 
-	exec [orm_meta].[value_change_integer] @instanceID, @propertyID, @value
+	exec [orm_meta].[value_change_integer] @instance_id, @property_id, @value
 end
 go
 
@@ -115,21 +115,21 @@ IF OBJECT_ID('[orm_meta].[value_change_decimal]', 'P') IS NOT NULL
 go
 
 create procedure [orm_meta].[value_change_decimal]
-	@instanceID int
-,	@propertyID int
+	@instance_id int
+,	@property_id int
 ,	@value decimal(19,8)
 as
 begin
 
 	merge into [orm_meta].[values_decimal] as d
-	using ( select	@instanceID as instanceID
-				,	@propertyID as propertyID) as s 
-		on	d.instanceID = s.instanceID
-		and	d.propertyID = s.propertyID
+	using ( select	@instance_id as instance_id
+				,	@property_id as property_id) as s 
+		on	d.instance_id = s.instance_id
+		and	d.property_id = s.property_id
 	
 	when not matched and not @value is null then
-		insert (instanceID, propertyID, value)
-		values (s.instanceID, s.propertyID, @value)
+		insert (instance_id, property_id, value)
+		values (s.instance_id, s.property_id, @value)
 	
 	when matched and @value is null then
 		delete 
@@ -141,19 +141,19 @@ end
 go
 
 create procedure [orm].[value_change_decimal]
-	@templateName varchar(250)
-,	@instanceName varchar(250)
-,	@propertyName varchar(250)
+	@template_name varchar(250)
+,	@instance_name varchar(250)
+,	@property_name varchar(250)
 ,	@value decimal(19,8)
 as
 begin
 	
-	declare @templateID int, @instanceID int, @propertyID int
-		set @templateID		= (select top 1 templateID from [orm_meta].[templates] where name = @templateName)
-		set @instanceID	= (select top 1 instanceID from [orm_meta].[instances] where name = @instanceName and templateID = @templateID)
-		set @propertyID	= (select top 1 propertyID from [orm_meta].[properties] where name = @propertyName and templateID = @templateID)
+	declare @template_id int, @instance_id int, @property_id int
+		set @template_id		= (select top 1 template_id from [orm_meta].[templates] where name = @template_name)
+		set @instance_id	= (select top 1 instance_id from [orm_meta].[instances] where name = @instance_name and template_id = @template_id)
+		set @property_id	= (select top 1 property_id from [orm_meta].[properties] where name = @property_name and template_id = @template_id)
 
-	exec [orm_meta].[value_change_decimal] @instanceID, @propertyID, @value
+	exec [orm_meta].[value_change_decimal] @instance_id, @property_id, @value
 end
 go
 
@@ -167,21 +167,21 @@ IF OBJECT_ID('[orm_meta].[value_change_datetime]', 'P') IS NOT NULL
 go
 
 create procedure [orm_meta].[value_change_datetime]
-	@instanceID int
-,	@propertyID int
+	@instance_id int
+,	@property_id int
 ,	@value datetime
 as
 begin
 
 	merge into [orm_meta].[values_datetime] as d
-	using ( select	@instanceID as instanceID
-				,	@propertyID as propertyID) as s 
-		on	d.instanceID = s.instanceID
-		and	d.propertyID = s.propertyID
+	using ( select	@instance_id as instance_id
+				,	@property_id as property_id) as s 
+		on	d.instance_id = s.instance_id
+		and	d.property_id = s.property_id
 	
 	when not matched and not @value is null then
-		insert (instanceID, propertyID, value)
-		values (s.instanceID, s.propertyID, @value)
+		insert (instance_id, property_id, value)
+		values (s.instance_id, s.property_id, @value)
 	
 	when matched and @value is null then
 		delete 
@@ -193,19 +193,19 @@ end
 go
 
 create procedure [orm].[value_change_datetime]
-	@templateName varchar(250)
-,	@instanceName varchar(250)
-,	@propertyName varchar(250)
+	@template_name varchar(250)
+,	@instance_name varchar(250)
+,	@property_name varchar(250)
 ,	@value datetime
 as
 begin
 	
-	declare @templateID int, @instanceID int, @propertyID int
-		set @templateID		= (select top 1 templateID from [orm_meta].[templates] where name = @templateName)
-		set @instanceID	= (select top 1 instanceID from [orm_meta].[instances] where name = @instanceName and templateID = @templateID)
-		set @propertyID	= (select top 1 propertyID from [orm_meta].[properties] where name = @propertyName and templateID = @templateID)
+	declare @template_id int, @instance_id int, @property_id int
+		set @template_id		= (select top 1 template_id from [orm_meta].[templates] where name = @template_name)
+		set @instance_id	= (select top 1 instance_id from [orm_meta].[instances] where name = @instance_name and template_id = @template_id)
+		set @property_id	= (select top 1 property_id from [orm_meta].[properties] where name = @property_name and template_id = @template_id)
 
-	exec [orm_meta].[value_change_datetime] @instanceID, @propertyID, @value
+	exec [orm_meta].[value_change_datetime] @instance_id, @property_id, @value
 end
 go
 
@@ -219,10 +219,10 @@ IF OBJECT_ID('[orm_meta].[value_change_instance]', 'P') IS NOT NULL
 go
 
 create procedure [orm_meta].[value_change_instance]
-	@instanceID int
-,	@propertyID int
+	@instance_id int
+,	@property_id int
 ,	@value varchar(250)
-,	@clearProperty bit = 0
+,	@clear_property bit = 0
 as
 begin
 
@@ -235,30 +235,30 @@ begin
 	--  	clear all values
 	if @value is null
 	begin
-		if @clearProperty = 1
+		if @clear_property = 1
 			delete [orm_meta].[values_instance]
-			where 	instanceID = @instanceID
-				and	propertyID = @propertyID
+			where 	instance_id = @instance_id
+				and	property_id = @property_id
 	end
 	else
 	begin
-		if @clearProperty = 1
+		if @clear_property = 1
 			delete [orm_meta].[values_instance]
-			where 	instanceID = @instanceID
-				and	propertyID = @propertyID
+			where 	instance_id = @instance_id
+				and	property_id = @property_id
 				and value = @value
 		else
 			merge into [orm_meta].[values_instance] as d
-			using ( select	@instanceID as instanceID
-						,	@propertyID as propertyID
+			using ( select	@instance_id as instance_id
+						,	@property_id as property_id
 						,	@value as value) as s 
-				on	d.instanceID = s.instanceID
-				and	d.propertyID = s.propertyID
+				on	d.instance_id = s.instance_id
+				and	d.property_id = s.property_id
 				and d.value = s.value
 
 			when not matched then
-				insert (instanceID, propertyID, value)
-				values (s.instanceID, s.propertyID, @value)
+				insert (instance_id, property_id, value)
+				values (s.instance_id, s.property_id, @value)
 			;
 	end
 
@@ -266,20 +266,20 @@ end
 go
 
 create procedure [orm].[value_change_instance]
-	@templateName varchar(250)
-,	@instanceName varchar(250)
-,	@propertyName varchar(250)
+	@template_name varchar(250)
+,	@instance_name varchar(250)
+,	@property_name varchar(250)
 ,	@value varchar(250)
-,	@clearProperty bit = 0
+,	@clear_property bit = 0
 as
 begin
 	
-	declare @templateID int, @instanceID int, @propertyID int
-		set @templateID		= (select top 1 templateID from [orm_meta].[templates] where name = @templateName)
-		set @instanceID	= (select top 1 instanceID from [orm_meta].[instances] where name = @instanceName and templateID = @templateID)
-		set @propertyID	= (select top 1 propertyID from [orm_meta].[properties] where name = @propertyName and templateID = @templateID)
+	declare @template_id int, @instance_id int, @property_id int
+		set @template_id		= (select top 1 template_id from [orm_meta].[templates] where name = @template_name)
+		set @instance_id	= (select top 1 instance_id from [orm_meta].[instances] where name = @instance_name and template_id = @template_id)
+		set @property_id	= (select top 1 property_id from [orm_meta].[properties] where name = @property_name and template_id = @template_id)
 
-	exec [orm_meta].[value_change_instance] @instanceID, @propertyID, @value, @clearProperty
+	exec [orm_meta].[value_change_instance] @instance_id, @property_id, @value, @clear_property
 end
 go
 
@@ -289,75 +289,75 @@ if OBJECT_ID('[orm].[value_change]','P') is not null
 go
 
 create procedure [orm].[value_change]
-	@templateName varchar(250)
-,	@instanceName varchar(250)
-,	@propertyName varchar(250)
+	@template_name varchar(250)
+,	@instance_name varchar(250)
+,	@property_name varchar(250)
 ,	@value nvarchar(max) = NULL
-,	@clearProperty bit = 0
+,	@clear_property bit = 0
 as
 begin
 begin try
 begin transaction -- We'll want to make this a transaction to prevent errors from breaking the update
 
-	declare @templateID int, @instanceID int, @propertyID int, @dataTypeID int
-		set @templateID		= (select top 1 templateID from [orm_meta].[templates] where name = @templateName)
-		set @instanceID	= (select top 1 instanceID from [orm_meta].[instances] where name = @instanceName and templateID = @templateID)
-		set @propertyID	= (select top 1 propertyID from [orm_meta].[properties] where name = @propertyName and templateID = @templateID)
-		set @dataTypeID	= (select top 1 datatypeID from [orm_meta].[properties] where propertyID = @propertyID and templateID = @templateID)
+	declare @template_id int, @instance_id int, @property_id int, @data_type_id int
+		set @template_id		= (select top 1 template_id from [orm_meta].[templates] where name = @template_name)
+		set @instance_id	= (select top 1 instance_id from [orm_meta].[instances] where name = @instance_name and template_id = @template_id)
+		set @property_id	= (select top 1 property_id from [orm_meta].[properties] where name = @property_name and template_id = @template_id)
+		set @data_type_id	= (select top 1 datatype_id from [orm_meta].[properties] where property_id = @property_id and template_id = @template_id)
 
 	-- As this switch structure is traversed, we'll only want to cast the value if it's NOT null
 	-- If it is NULL, that can count as the hint to delete that value.
 
-	if	not @dataTypeID in (1,2,3,4)	-- instance
+	if	not @data_type_id in (1,2,3,4)	-- instance
 	begin
 		-- Instances are a bit special, and while they're a string like @value, we want to cast it first.
 		-- That way, if the cast truncates, we can raise an error instead of blindly contaminating
 		-- We also can have multiple instance values for a given property (effecting a list),
-		--   hence the need for the @clearValue field.
-		declare @instanceValue varchar(250)
-			if not @value is null set @instanceValue = convert(varchar(250), @value)
-		if @instanceValue <> @value raiserror('Instance name truncated. Aborting setting value. Be sure to keep names under 250 characters.', 16,1)
+		--   hence the need for the @clear_value field.
+		declare @instance_value varchar(250)
+			if not @value is null set @instance_value = convert(varchar(250), @value)
+		if @instance_value <> @value raiserror('Instance name truncated. Aborting setting value. Be sure to keep names under 250 characters.', 16,1)
 
-		exec [orm_meta].[value_change_instance] @instanceID, @propertyID, @value, @clearProperty
+		exec [orm_meta].[value_change_instance] @instance_id, @property_id, @value, @clear_property
 	end
 
 	-- The remaining 4 base types are simpler: clear on NULL
-	if @clearProperty = 1 set @value = NULL
+	if @clear_property = 1 set @value = NULL
 
-	if		@dataTypeID = 1 -- nvarchar(max)
+	if		@data_type_id = 1 -- nvarchar(max)
 	begin
-		exec [orm_meta].[value_change_string]	@instanceID, @propertyID, @value
+		exec [orm_meta].[value_change_string]	@instance_id, @property_id, @value
 	end
 
-	if	@dataTypeID = 2 -- bigint
+	if	@data_type_id = 2 -- bigint
 	begin
-		declare @bigintValue bigint
-			if not @value is null set @bigintValue = convert(bigint, @value)
-		exec [orm_meta].[value_change_integer]	@instanceID, @propertyID, @bigintValue
+		declare @bigint_value bigint
+			if not @value is null set @bigint_value = convert(bigint, @value)
+		exec [orm_meta].[value_change_integer]	@instance_id, @property_id, @bigint_value
 	end
 	
-	if	@dataTypeID = 3 -- decimal(19,8)
+	if	@data_type_id = 3 -- decimal(19,8)
 	begin
-		declare @decimalValue decimal(19,8)
-			if not @value is null set @decimalValue = convert(decimal(19,8), @value)
-		exec [orm_meta].[value_change_decimal] @instanceID, @propertyID, @decimalValue
+		declare @decimal_value decimal(19,8)
+			if not @value is null set @decimal_value = convert(decimal(19,8), @value)
+		exec [orm_meta].[value_change_decimal] @instance_id, @property_id, @decimal_value
 	end
 
-	if	@dataTypeID = 4 -- datetime
+	if	@data_type_id = 4 -- datetime
 	begin
-		declare @datetimeValue datetime
-			if not @value is null set @datetimeValue = convert(datetime, @value, 121) -- ODBC canonical
-		exec [orm_meta].[value_change_datetime] @instanceID, @propertyID, @datetimeValue
+		declare @datetime_value datetime
+			if not @value is null set @datetime_value = convert(datetime, @value, 121) -- ODBC canonical
+		exec [orm_meta].[value_change_datetime] @instance_id, @property_id, @datetime_value
 	end
 
 	commit transaction
 	
 end try
 begin catch
-    declare @ErrorMessage nvarchar(max), @ErrorSeverity int, @ErrorState int
-    select @ErrorMessage = ERROR_MESSAGE() + ' Line ' + cast(ERROR_LINE() as nvarchar(5)), @ErrorSeverity = ERROR_SEVERITY(), @ErrorState = ERROR_STATE()
+    declare @error_message nvarchar(max), @error_severity int, @error_state int
+    select @error_message = ERROR_MESSAGE() + ' Line ' + cast(ERROR_LINE() as nvarchar(5)), @error_severity = ERROR_SEVERITY(), @error_state = ERROR_STATE()
     rollback transaction
-    raiserror (@ErrorMessage, @ErrorSeverity, @ErrorState)
+    raiserror (@error_message, @error_severity, @error_state)
 end catch
 end
 go
@@ -368,8 +368,8 @@ IF OBJECT_ID('[orm].[value_read]', 'P') IS NOT NULL
 go
 
 create procedure [orm].[value_read]
-	@templateName varchar(250)
-,	@instanceName varchar(250) = NULL
+	@template_name varchar(250)
+,	@instance_name varchar(250) = NULL
 as
 begin
 
@@ -378,16 +378,16 @@ begin
 	-- A NULL for the instance name results in all instances
 	select	Name 
 		,	Property 
-		,	IntValue 
-		,	FloatValue
-		,	StringValue
-		,	DateValue 
-		,	instanceValue 
-		,	instanceID
-		,	propertyID
-	from [orm].[values](@templateName) as v
-	where @instanceName is NULL 
-		or v.Name = @instanceName
+		,	[Integer]
+		,	[Float]
+		,	[String]
+		,	[Date]
+		,	[Instance]
+		,	instance_id
+		,	property_id
+	from [orm].[values](@template_name) as v
+	where @instance_name is NULL 
+		or v.Name = @instance_name
 
 end
 go
@@ -398,15 +398,15 @@ IF OBJECT_ID('[orm].[value_read_listing]', 'P') IS NOT NULL
 go
 
 create procedure [orm].[value_read_listing]
-	@templateName varchar(250)
-,	@instanceName varchar(250) = NULL
+	@template_name varchar(250)
+,	@instance_name varchar(250) = NULL
 as
 begin
 
 	-- Helper sproc to get values for a template and/or instance
 	--	in a handy stringly-typed format (good for looping over properties)
 	-- A NULL for the instance name results in all instances
-	set @instanceName = isnull(@instanceName,'')
+	set @instance_name = isnull(@instance_name,'')
 
 	-- Note that this is a little different from the [orm_values_listing] function:
 	--	this returns a blank for ALL relevant properties, 
@@ -420,45 +420,45 @@ begin
 	
 	from	[orm_meta].[instances] as o
 		inner join [orm_meta].[templates] as t
-			on o.templateID = t.templateID
+			on o.template_id = t.template_id
 		inner join [orm_meta].[properties] as p
-			on o.templateID = p.templateID
+			on o.template_id = p.template_id
 		inner join [orm_meta].[templates] as d
-			on p.datatypeID = d.templateID
+			on p.datatype_id = d.template_id
 		left join
-		(	select instanceID, propertyID, convert(nvarchar(max),value) as value
+		(	select instance_id, property_id, convert(nvarchar(max),value) as value
 			from [orm_meta].[values_integer]
 			
 			union
 
-			select instanceID, propertyID, convert(nvarchar(max),value) as value
+			select instance_id, property_id, convert(nvarchar(max),value) as value
 			from [orm_meta].[values_decimal]
 
 			union
 
-			select instanceID, propertyID, convert(nvarchar(max),value) as value
+			select instance_id, property_id, convert(nvarchar(max),value) as value
 			from [orm_meta].[values_string]
 
 			union
 						-- convert the datetime to ODBC canonical yyyy-mm-dd hh:mi:ss.mmm
-			select instanceID, propertyID, convert(nvarchar(max),value, 121) as value
+			select instance_id, property_id, convert(nvarchar(max),value, 121) as value
 			from [orm_meta].[values_datetime]
 
 			union
 
-			select instanceID, propertyID, convert(nvarchar(max),value) as value
+			select instance_id, property_id, convert(nvarchar(max),value) as value
 			from [orm_meta].[values_instance]
 
 			union 
 
-			select instanceID, propertyID, '' as value
+			select instance_id, property_id, '' as value
 			from [orm_meta].[values_instance]
 
 		) as v
-			on	o.instanceID   = v.instanceID
-			and	p.propertyID = v.propertyID
-	where t.name = @templateName
-		and	(@instanceName = '' or o.name = @instanceName)
+			on	o.instance_id   = v.instance_id
+			and	p.property_id = v.property_id
+	where t.name = @template_name
+		and	(@instance_name = '' or o.name = @instance_name)
 	order by o.name, p.name, v.value
 
 end

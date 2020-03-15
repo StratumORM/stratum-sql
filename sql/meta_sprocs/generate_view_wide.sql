@@ -8,184 +8,184 @@ go
 
 
 create procedure [orm_meta].[generate_template_view_wide]
-	@templateID int
+	@template_id int
 as
 begin
 
-	declare @stringColumns nvarchar(max)
-		,	@integerColumns nvarchar(max)
-		,	@decimalColumns nvarchar(max)
-		,	@datetimeColumns nvarchar(max)
-		,	@instanceColumns nvarchar(max)
+	declare @string_columns nvarchar(max)
+		,	@integer_columns nvarchar(max)
+		,	@decimal_columns nvarchar(max)
+		,	@datetime_columns nvarchar(max)
+		,	@instance_columns nvarchar(max)
 
-		,	@pivotQueryTemplate nvarchar(max)
-		,	@resolvedPivotTemplate nvarchar(max)
-		,	@pivotSubQuery nvarchar(max)
+		,	@pivot_query_template nvarchar(max)
+		,	@resolved_pivot_template nvarchar(max)
+		,	@pivot_sub_query nvarchar(max)
 		,	@query nvarchar(max)
 
-		,	@templateName varchar(250)
+		,	@template_name varchar(250)
 
-	set @templateName = (select top 1 name from [orm_meta].[templates] where templateID = @templateID)
+	set @template_name = (select top 1 name from [orm_meta].[templates] where template_id = @template_id)
 
-	set @stringColumns =	(	select QUOTENAME(name) + ',' 
+	set @string_columns =	(	select QUOTENAME(name) + ',' 
 								from [orm_meta].[properties] as p
-								where	p.datatypeID = 1 
-									and (p.isExtended is NULL or p.isExtended = 0) 
-									and p.templateID = @templateID 
+								where	p.datatype_id = 1 
+									and (p.is_extended is NULL or p.is_extended = 0) 
+									and p.template_id = @template_id 
 								for xml path(''))
 
-	set @integerColumns =	(	select QUOTENAME(name) + ','
+	set @integer_columns =	(	select QUOTENAME(name) + ','
 								from [orm_meta].[properties] as p
-								where	p.datatypeID = 2 
-									and (p.isExtended is NULL or p.isExtended = 0) 
-									and p.templateID = @templateID 
+								where	p.datatype_id = 2 
+									and (p.is_extended is NULL or p.is_extended = 0) 
+									and p.template_id = @template_id 
 								for xml path(''))
 
-	set @decimalColumns =	(	select QUOTENAME(name) + ','
+	set @decimal_columns =	(	select QUOTENAME(name) + ','
 								from [orm_meta].[properties] as p
-								where	p.datatypeID = 3 
-									and (p.isExtended is NULL or p.isExtended = 0) 
-									and p.templateID = @templateID 
+								where	p.datatype_id = 3 
+									and (p.is_extended is NULL or p.is_extended = 0) 
+									and p.template_id = @template_id 
 								for xml path(''))
 
-	set @datetimeColumns =	(	select QUOTENAME(name) + ','
+	set @datetime_columns =	(	select QUOTENAME(name) + ','
 								from [orm_meta].[properties] as p
-								where	p.datatypeID = 4
-									and (p.isExtended is NULL or p.isExtended = 0) 
-									and p.templateID = @templateID 
+								where	p.datatype_id = 4
+									and (p.is_extended is NULL or p.is_extended = 0) 
+									and p.template_id = @template_id 
 								for xml path(''))
 
-	set @instanceColumns =	(	select QUOTENAME(name) + ','
+	set @instance_columns =	(	select QUOTENAME(name) + ','
 								from [orm_meta].[properties] as p
-								where	not p.datatypeID in (1,2,3,4)
-									and (p.isExtended is NULL or p.isExtended = 0) 
-									and p.templateID = @templateID 
+								where	not p.datatype_id in (1,2,3,4)
+									and (p.is_extended is NULL or p.is_extended = 0) 
+									and p.template_id = @template_id 
 								for xml path(''))
 
 
-	IF OBJECT_ID('[dbo].' + QUOTENAME(@templateName), 'V') IS NOT NULL
+	IF OBJECT_ID('[dbo].' + QUOTENAME(@template_name), 'V') IS NOT NULL
 		set @query = 'alter'
 	else
 		set @query = 'create'
 
-	set @query = @query + ' view ' + QUOTENAME(@templateName) + '
+	set @query = @query + ' view ' + QUOTENAME(@template_name) + '
 	as
-	select	o.name as InstanceName '
+	select	o.name as Instance_name '
 
-	set @pivotQueryTemplate = '
+	set @pivot_query_template = '
 		left join
-			( 	select	o.instanceID
+			( 	select	o.instance_id
 					,	p.name as Property
 					,	v.value
 				from	[orm_meta].[instances] as o 
 					inner join [orm_meta].[properties] as p
-						on o.templateID = p.templateID
+						on o.template_id = p.template_id
 					inner join @@@META_VALUES_TABLE@@@ as v
-						on 	p.propertyID = v.propertyID
-						and	v.instanceID = o.instanceID
-				where (p.isExtended is NULL or p.isExtended = 0)
-					and p.datatypeID = @@@DATATYPE_ID@@@ 
+						on 	p.property_id = v.property_id
+						and	v.instance_id = o.instance_id
+				where (p.is_extended is NULL or p.is_extended = 0)
+					and p.datatype_id = @@@DATATYPE_ID@@@ 
 			) as src
 			pivot
 			(
 				max (value)
 				for Property in (@@@VALUES_COLUMNS@@@)
 			) as @@@META_VALUES_TABLE_SANITIZED@@@_pivot
-			on o.instanceID = @@@META_VALUES_TABLE_SANITIZED@@@_pivot.instanceID
+			on o.instance_id = @@@META_VALUES_TABLE_SANITIZED@@@_pivot.instance_id
 		'
-	set @pivotSubQuery = ''
+	set @pivot_sub_query = ''
 
-	if isnull(@stringColumns, '') <> ''
+	if isnull(@string_columns, '') <> ''
 	begin
-		set @stringColumns = left(@stringColumns, len(@stringColumns)-1)
+		set @string_columns = left(@string_columns, len(@string_columns)-1)
 
 		set @query = @query + '
-		,	' + @stringColumns
+		,	' + @string_columns
 
-		set @resolvedPivotTemplate = replace(@pivotQueryTemplate, '@@@META_VALUES_TABLE@@@', '[orm_meta].[values_string]')
-		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, '@@@META_VALUES_TABLE_SANITIZED@@@', '_orm_meta___values_string_')
-		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, '@@@VALUES_COLUMNS@@@', @stringColumns)
-		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, '@@@DATATYPE_ID@@@', convert(nvarchar(10), 1))
+		set @resolved_pivot_template = replace(@pivot_query_template, '@@@META_VALUES_TABLE@@@', '[orm_meta].[values_string]')
+		set @resolved_pivot_template = replace(@resolved_pivot_template, '@@@META_VALUES_TABLE_SANITIZED@@@', '_orm_meta___values_string_')
+		set @resolved_pivot_template = replace(@resolved_pivot_template, '@@@VALUES_COLUMNS@@@', @string_columns)
+		set @resolved_pivot_template = replace(@resolved_pivot_template, '@@@DATATYPE_ID@@@', convert(nvarchar(10), 1))
 
-		set @pivotSubQuery = @pivotSubQuery + @resolvedPivotTemplate
+		set @pivot_sub_query = @pivot_sub_query + @resolved_pivot_template
 	end
 
 
-	if isnull(@integerColumns, '') <> ''
+	if isnull(@integer_columns, '') <> ''
 	begin
-		set @integerColumns = left(@integerColumns, len(@integerColumns)-1)
+		set @integer_columns = left(@integer_columns, len(@integer_columns)-1)
 
 		set @query = @query + '
-		,	' + @integerColumns
+		,	' + @integer_columns
 
-		set @resolvedPivotTemplate = replace(@pivotQueryTemplate, '@@@META_VALUES_TABLE@@@', '[orm_meta].[values_integer]')
-		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, '@@@META_VALUES_TABLE_SANITIZED@@@', '_orm_meta___values_integer_')
-		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, '@@@VALUES_COLUMNS@@@', @integerColumns)
-		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, '@@@DATATYPE_ID@@@', convert(nvarchar(10), 2))
+		set @resolved_pivot_template = replace(@pivot_query_template, '@@@META_VALUES_TABLE@@@', '[orm_meta].[values_integer]')
+		set @resolved_pivot_template = replace(@resolved_pivot_template, '@@@META_VALUES_TABLE_SANITIZED@@@', '_orm_meta___values_integer_')
+		set @resolved_pivot_template = replace(@resolved_pivot_template, '@@@VALUES_COLUMNS@@@', @integer_columns)
+		set @resolved_pivot_template = replace(@resolved_pivot_template, '@@@DATATYPE_ID@@@', convert(nvarchar(10), 2))
 
-		set @pivotSubQuery = @pivotSubQuery + @resolvedPivotTemplate
+		set @pivot_sub_query = @pivot_sub_query + @resolved_pivot_template
 	end
 
 
-	if isnull(@decimalColumns, '') <> ''
+	if isnull(@decimal_columns, '') <> ''
 	begin
-		set @decimalColumns = left(@decimalColumns, len(@decimalColumns)-1)
+		set @decimal_columns = left(@decimal_columns, len(@decimal_columns)-1)
 
 		set @query = @query + '
-		,	' + @decimalColumns
+		,	' + @decimal_columns
 
-		set @resolvedPivotTemplate = replace(@pivotQueryTemplate, '@@@META_VALUES_TABLE@@@', '[orm_meta].[values_decimal]')
-		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, '@@@META_VALUES_TABLE_SANITIZED@@@', '_orm_meta___values_decimal_')
-		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, '@@@VALUES_COLUMNS@@@', @decimalColumns)
-		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, '@@@DATATYPE_ID@@@', convert(nvarchar(10), 3))
+		set @resolved_pivot_template = replace(@pivot_query_template, '@@@META_VALUES_TABLE@@@', '[orm_meta].[values_decimal]')
+		set @resolved_pivot_template = replace(@resolved_pivot_template, '@@@META_VALUES_TABLE_SANITIZED@@@', '_orm_meta___values_decimal_')
+		set @resolved_pivot_template = replace(@resolved_pivot_template, '@@@VALUES_COLUMNS@@@', @decimal_columns)
+		set @resolved_pivot_template = replace(@resolved_pivot_template, '@@@DATATYPE_ID@@@', convert(nvarchar(10), 3))
 
-		set @pivotSubQuery = @pivotSubQuery + @resolvedPivotTemplate
+		set @pivot_sub_query = @pivot_sub_query + @resolved_pivot_template
 	end
 
 
-	if isnull(@datetimeColumns, '') <> ''
+	if isnull(@datetime_columns, '') <> ''
 	begin
-		set @datetimeColumns = left(@datetimeColumns, len(@datetimeColumns)-1)
+		set @datetime_columns = left(@datetime_columns, len(@datetime_columns)-1)
 
 		set @query = @query + '
-		,	' + @datetimeColumns
+		,	' + @datetime_columns
 
-		set @resolvedPivotTemplate = replace(@pivotQueryTemplate, '@@@META_VALUES_TABLE@@@', '[orm_meta].[values_datetime]')
-		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, '@@@META_VALUES_TABLE_SANITIZED@@@', '_orm_meta___values_datetime_')
-		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, '@@@VALUES_COLUMNS@@@', @datetimeColumns)
-		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, '@@@DATATYPE_ID@@@', convert(nvarchar(10), 4))
+		set @resolved_pivot_template = replace(@pivot_query_template, '@@@META_VALUES_TABLE@@@', '[orm_meta].[values_datetime]')
+		set @resolved_pivot_template = replace(@resolved_pivot_template, '@@@META_VALUES_TABLE_SANITIZED@@@', '_orm_meta___values_datetime_')
+		set @resolved_pivot_template = replace(@resolved_pivot_template, '@@@VALUES_COLUMNS@@@', @datetime_columns)
+		set @resolved_pivot_template = replace(@resolved_pivot_template, '@@@DATATYPE_ID@@@', convert(nvarchar(10), 4))
 
-		set @pivotSubQuery = @pivotSubQuery + @resolvedPivotTemplate
+		set @pivot_sub_query = @pivot_sub_query + @resolved_pivot_template
 	end
 
 	
-	if isnull(@instanceColumns, '') <> ''
+	if isnull(@instance_columns, '') <> ''
 	begin
-		set @instanceColumns = left(@instanceColumns, len(@instanceColumns)-1)
+		set @instance_columns = left(@instance_columns, len(@instance_columns)-1)
 
 		set @query = @query + '
-		,	' + @instanceColumns
+		,	' + @instance_columns
 
-		set @resolvedPivotTemplate = replace(@pivotQueryTemplate, '@@@META_VALUES_TABLE@@@', '[orm_meta].[values_instance]')
-		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, '@@@META_VALUES_TABLE_SANITIZED@@@', '_orm_meta___values_instance_')
-		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, '@@@VALUES_COLUMNS@@@', @instanceColumns)
-		set @resolvedPivotTemplate = replace(@resolvedPivotTemplate, 'p.datatypeID = @@@DATATYPE_ID@@@', 'p.datatypeID > 4')
+		set @resolved_pivot_template = replace(@pivot_query_template, '@@@META_VALUES_TABLE@@@', '[orm_meta].[values_instance]')
+		set @resolved_pivot_template = replace(@resolved_pivot_template, '@@@META_VALUES_TABLE_SANITIZED@@@', '_orm_meta___values_instance_')
+		set @resolved_pivot_template = replace(@resolved_pivot_template, '@@@VALUES_COLUMNS@@@', @instance_columns)
+		set @resolved_pivot_template = replace(@resolved_pivot_template, 'p.datatype_id = @@@DATATYPE_ID@@@', 'p.datatype_id > 4')
 
-		set @pivotSubQuery = @pivotSubQuery + @resolvedPivotTemplate
+		set @pivot_sub_query = @pivot_sub_query + @resolved_pivot_template
 	end
 
 
-	set @query = @query + ' , o.InstanceID as InstanceID
+	set @query = @query + ' , o.Instance_id as Instance_id
 	from	[orm_meta].[instances] as o
-		inner join [orm_meta].[subTemplates](' + convert(nvarchar(100), @templateID) + ') as subTemplates
-			on o.templateID = subTemplates.templateID
-	' + @pivotSubQuery
+		inner join [orm_meta].[sub_templates](' + convert(nvarchar(100), @template_id) + ') as sub_templates
+			on o.template_id = sub_templates.template_id
+	' + @pivot_sub_query
 
 	-- print @query
 
 	exec sp_executesql @query
 
-	exec [orm_meta].[generate_template_view_triggers] @templateID
+	exec [orm_meta].[generate_template_view_triggers] @template_id
 
 end
 go

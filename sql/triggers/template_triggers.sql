@@ -13,7 +13,7 @@ create trigger [orm_meta].[templates_insert]
 as 
 begin
 
-	-- Make sure the templateName is legal (since this will go into dynamic sql)
+	-- Make sure the template_name is legal (since this will go into dynamic sql)
 	-- select i.name
 	-- from inserted as i
 	-- where i.name <> [orm_meta].[sanitize_string](i.name)
@@ -25,7 +25,7 @@ begin
 	-- 	end	
 
 	-- Make sure it doesn't already exist
-	select t.templateID 
+	select t.template_id 
 	from [orm_meta].[templates] as t
 		inner join inserted as i
 			on t.name = i.name
@@ -43,28 +43,28 @@ begin
 	from inserted as i
 
 	-- Loop over all the template names that were affected by the insert
-	declare @templateID int
+	declare @template_id int
 
-	declare templateIDCursor cursor
+	declare template_id_cursor cursor
 	  LOCAL STATIC READ_ONLY FORWARD_ONLY
 	for
-		select distinct t.templateID
+		select distinct t.template_id
 		from inserted as i
 			inner join [orm_meta].[templates] as t
 				on t.name = i.name
 	
-	open templateIDCursor
+	open template_id_cursor
 
-	fetch next from templateIDCursor into @templateID
+	fetch next from template_id_cursor into @template_id
 	
 	while @@FETCH_STATUS = 0
 	begin
-		exec [orm_meta].[generate_template_view_wide] @templateID
+		exec [orm_meta].[generate_template_view_wide] @template_id
 
-		fetch next from templateIDCursor into @templateID
+		fetch next from template_id_cursor into @template_id
 	end
-	close templateIDCursor 
-	deallocate templateIDCursor
+	close template_id_cursor 
+	deallocate template_id_cursor
 
 end
 go
@@ -80,7 +80,7 @@ create trigger [orm_meta].[templates_update]
 as 
 begin
 
-	-- Make sure the templateName is legal (since this will go into dynamic sql)
+	-- Make sure the template_name is legal (since this will go into dynamic sql)
 	-- select i.name
 	-- from inserted as i
 	-- where i.name <> [orm_meta].[sanitize_string](i.name)
@@ -97,41 +97,41 @@ begin
 		,	t.signature = i.signature
 	from [orm_meta].[templates] as t
 		inner join inserted as i 
-			on t.templateID = i.templateID
+			on t.template_id = i.template_id
 
 	-- Loop over all the template names that were affected by the update
-	declare @templateName varchar(250), @templateID int, @dropQuery nvarchar(max)
+	declare @template_name varchar(250), @template_id int, @drop_query nvarchar(max)
 
-	declare templateCursor cursor
+	declare template_cursor cursor
 	  LOCAL STATIC READ_ONLY FORWARD_ONLY
 	for
-		select distinct d.name, i.templateID
+		select distinct d.name, i.template_id
 		from deleted as d
 			inner join inserted as i
-				on d.templateID = i.templateID
+				on d.template_id = i.template_id
 		where d.name <> i.name
 	
-	open templateCursor
+	open template_cursor
 
-	fetch next from templateCursor into @templateName, @templateID
+	fetch next from template_cursor into @template_name, @template_id
 	
 	while @@FETCH_STATUS = 0
 	begin
 
-		set @dropQuery = 'drop view ' + QUOTENAME(@templateName)
-		exec sp_executesql @dropQuery
+		set @drop_query = 'drop view ' + QUOTENAME(@template_name)
+		exec sp_executesql @drop_query
 
-		exec [orm_meta].[generate_template_view_wide] @templateID
+		exec [orm_meta].[generate_template_view_wide] @template_id
 
-		fetch next from templateCursor into @templateName, @templateID
+		fetch next from template_cursor into @template_name, @template_id
 	end
-	close templateCursor 
-	deallocate templateCursor
+	close template_cursor 
+	deallocate template_cursor
 
 	-- Log the changes to history
 	insert into [orm_hist].[templates] 
-		  (templateID, name, signature)
-	select templateID, name, signature
+		  (template_id, name, signature)
+	select template_id, name, signature
 	from deleted
 
 end
@@ -150,16 +150,16 @@ begin
 
 	-- We need to make sure that the base templates are never deleted. So we'll mask the special
 	--	deleted table like the properties trigger manipulates them
-	declare @deleted table (templateID int, name varchar(250), signature nvarchar(max), primary key (templateID))
-		insert @deleted (templateID, name, signature)
-		select templateID, name, signature
+	declare @deleted table (template_id int, name varchar(250), signature nvarchar(max), primary key (template_id))
+		insert @deleted (template_id, name, signature)
+		select template_id, name, signature
 		from deleted
 
-		if (select min(templateID) from deleted) < 5 raiserror('Can not delete base templates. Other templates will be deleted, if any (otherwise error escalates rollback).',5,20)
+		if (select min(template_id) from deleted) < 5 raiserror('Can not delete base templates. Other templates will be deleted, if any (otherwise error escalates rollback).',5,20)
 
 		delete d
 		from @deleted as d
-		where templateID < 5
+		where template_id < 5
 
 		-- Sound a warning if this is the only data that was deleted
 		-- But we'll silently ignore these templates otherwise.
@@ -170,65 +170,65 @@ begin
 			end			
 
 	-- Get the list of the affected templates
-	declare @affectedTemplateIDs identities, @propIDs identities, @childTemplates identities
-		insert into @affectedTemplateIDs (id)
-		select distinct tree.templateID
+	declare @affected_template_ids identities, @prop_ids identities, @child_templates identities
+		insert into @affected_template_ids (id)
+		select distinct tree.template_id
 		from @deleted as d
-			cross apply [orm_meta].[templateTree](d.templateID) as tree
+			cross apply [orm_meta].[template_tree](d.template_id) as tree
 
-		insert into @childTemplates (id)
-		select distinct i.childTemplateID
+		insert into @child_templates (id)
+		select distinct i.child_template_id
 		from [orm_meta].[inheritance] as i
 			inner join @deleted as d
-				on i.parentTemplateID = d.templateID
+				on i.parent_template_id = d.template_id
 
 	-- If this template is the sole source of a base property, then we'll need
 	--  to purge that property from the children as well
 	-- So first, find out what properties *may* be affected...
-	insert into @propIDs (id)
-	select m.current_propertyID
-	from [orm_meta].[resolve_properties](@affectedTemplateIDs) as m
+	insert into @prop_ids (id)
+	select m.current_property_id
+	from [orm_meta].[resolve_properties](@affected_template_ids) as m
 		inner join @deleted as d 
-			on m.masked_templateID = d.templateID 
-	where isnull(m.masked_isExtended,0) = 0
+			on m.masked_template_id = d.template_id 
+	where isnull(m.masked_is_extended,0) = 0
 
 	-- first delete the properties ... (which will cascade deletes to the values)
 	delete p
 	from [orm_meta].[properties] as p 
 		inner join @deleted as d 
-			on p.templateID = d.templateID 
+			on p.template_id = d.template_id 
 
 	-- then delete the instances ...
 	delete o
 	from [orm_meta].[instances] as o 
 		inner join @deleted as d 
-			on o.templateID = d.templateID
+			on o.template_id = d.template_id
 
 	-- and update the children to inherit from the template's parents, if any
-	declare @myOrdinalInsert table (myID int, myOffset int)
-		insert into @myOrdinalInsert (myID, myOffset)
-		select d.templateID, count(i.ordinal)
+	declare @my_ordinal_insert table (my_id int, my_offset int)
+		insert into @my_ordinal_insert (my_id, my_offset)
+		select d.template_id, count(i.ordinal)
 		from @deleted as d 
 			inner join [orm_meta].[inheritance] as i
-				on d.templateID = i.childTemplateID
-		group by d.templateID
+				on d.template_id = i.child_template_id
+		group by d.template_id
 
 	-- We'll need to bump the other inherited templates to make room for the insert	
-	; with myChildren as
+	; with my_children as
 	(
-		select d.templateID as myID, i.childTemplateID, i.ordinal as myOrdinal
+		select d.template_id as my_id, i.child_template_id, i.ordinal as my_ordinal
 		from [orm_meta].[inheritance] as i
 			inner join @deleted as d
-				on i.parentTemplateID = d.templateID
+				on i.parent_template_id = d.template_id
 	)	
 	update i 
-	set i.ordinal = i.ordinal + o.myOffset --not off by one		
+	set i.ordinal = i.ordinal + o.my_offset --not off by one		
 	from [orm_meta].[inheritance] as i 
-		inner join myChildren as c 
-			on i.childTemplateID = c.childTemplateID
-		inner join @myOrdinalInsert as o 
-			on c.myID = o.myID
-	where i.ordinal >= c.myOrdinal 
+		inner join my_children as c 
+			on i.child_template_id = c.child_template_id
+		inner join @my_ordinal_insert as o 
+			on c.my_id = o.my_id
+	where i.ordinal >= c.my_ordinal 
 
 	--
 	-- The grandfather paradox is tripped here 
@@ -237,48 +237,48 @@ begin
 
 	-- ... and with that room, we can now insert the new inherited links
 
-	; with	myParents as
+	; with	my_parents as
 	(
-		select 	d.templateID as myID
-			,	i.parentTemplateID
-			,	dense_rank() over (partition by d.templateID order by ordinal) as ordinal
+		select 	d.template_id as my_id
+			,	i.parent_template_id
+			,	dense_rank() over (partition by d.template_id order by ordinal) as ordinal
 		from [orm_meta].[inheritance] as i
 			inner join @deleted as d
-				on i.childTemplateID = d.templateID	
+				on i.child_template_id = d.template_id	
 	)
-	,	myChildren as
+	,	my_children as
 	(
-		select 	d.templateID as myID
-			,	i.childTemplateID
+		select 	d.template_id as my_id
+			,	i.child_template_id
 			,	ordinal
 		from [orm_meta].[inheritance] as i
 			inner join @deleted as d
-				on i.parentTemplateID = d.templateID
+				on i.parent_template_id = d.template_id
 	)
-	,	newRelationship as
+	,	new_relationship as
 	(
-		select 	p.parentTemplateID
-			,	c.childTemplateID
-			,	c.ordinal + o.myOffset as ordinal
-		from myParents as p 
-			inner join myChildren as c 
-				on p.myID = c.myID
-			inner join @myOrdinalInsert as o 
-				on p.myID = o.myID
+		select 	p.parent_template_id
+			,	c.child_template_id
+			,	c.ordinal + o.my_offset as ordinal
+		from my_parents as p 
+			inner join my_children as c 
+				on p.my_id = c.my_id
+			inner join @my_ordinal_insert as o 
+				on p.my_id = o.my_id
 	)
 	merge into [orm_meta].[inheritance] as d 
-	using (	select 	r.parentTemplateID
-				,	r.childTemplateID
+	using (	select 	r.parent_template_id
+				,	r.child_template_id
 				,	r.ordinal
-			from newRelationship as r) as s 
-		on d.parentTemplateID = s.parentTemplateID
-		and d.childTemplateID = s.childTemplateID
+			from new_relationship as r) as s 
+		on d.parent_template_id = s.parent_template_id
+		and d.child_template_id = s.child_template_id
 	when matched then
 		update 
 		set d.ordinal = s.ordinal
 	when not matched then
-		insert (parentTemplateID, childTemplateID, ordinal)
-		values (s.parentTemplateID, s.childTemplateID, s.ordinal)
+		insert (parent_template_id, child_template_id, ordinal)
+		values (s.parent_template_id, s.child_template_id, s.ordinal)
 	;
 
 	-- Notice that we didn't have an off-by-one error above: we intentionally
@@ -287,66 +287,66 @@ begin
 	delete i
 	from [orm_meta].[inheritance] as i
 		inner join @deleted as d 
-			on 	childTemplateID = d.templateID 
-			or 	parentTemplateID = d.templateID	
+			on 	child_template_id = d.template_id 
+			or 	parent_template_id = d.template_id	
 
 	-- then finally delete the template ...
 	delete t 
 	from [orm_meta].[templates] as t
 		inner join @deleted as d 
-			on t.templateID = d.templateID
+			on t.template_id = d.template_id
 
 	-- And now check if a new template has stepped up to cover some or all of those properties.
 	-- We do that by checking if the masking template for those saved properties 
 	-- 	inherited from the one getting deleted
-	delete from @propIDs
+	delete from @prop_ids
 	where id not in (	
-		select m.current_propertyID
-		from @propIDs as p
-			inner join [orm_meta].[resolve_properties](@affectedTemplateIDs) as m
-				on m.current_propertyID = p.id
-			inner join @childTemplates as c 
-				on m.masked_templateID = c.id 
+		select m.current_property_id
+		from @prop_ids as p
+			inner join [orm_meta].[resolve_properties](@affected_template_ids) as m
+				on m.current_property_id = p.id
+			inner join @child_templates as c 
+				on m.masked_template_id = c.id 
 		)
 
 	-- Deletes will cascade once the properties trigger fires
 	delete p
 	from [orm_meta].[properties] as p
-		inner join @propIDs as pids 
-			on p.propertyID = pids.id
+		inner join @prop_ids as pids 
+			on p.property_id = pids.id
 
 	-- Finally, loop over all the template names that were affected by the delete
-	declare @templateName varchar(250), @dropQuery nvarchar(max)
+	declare @template_name varchar(250), @drop_query nvarchar(max)
 
 		select distinct d.name
 		from @deleted as d
 
 	-- from http://stackoverflow.com/a/18514133
-	declare templateNameCursor cursor
+	declare template_name_cursor cursor
 	  LOCAL STATIC READ_ONLY FORWARD_ONLY
 	for
 		select distinct d.name
 		from @deleted as d
 	
-	open templateNameCursor
+	open template_name_cursor
 
-	fetch next from templateNameCursor into @templateName
+	fetch next from template_name_cursor into @template_name
 	
 	while @@FETCH_STATUS = 0
 	begin
 
-		set @dropQuery = 'drop view ' + @templateName
-		exec sp_executesql @dropQuery
+		set @drop_query = 'drop view ' + @template_name
+		exec sp_executesql @drop_query
 
-		fetch next from templateNameCursor into @templateName
+		fetch next from template_name_cursor into @template_name
 	end
-	close templateNameCursor 
-	deallocate templateNameCursor
+	close template_name_cursor 
+	deallocate template_name_cursor
 
 	-- Log the changes to history
 	insert into [orm_hist].[templates] 
-		  (templateID, name, signature)
-	select templateID, name, signature
+		  (template_id, name, signature)
+	select template_id, name, signature
 	from deleted
 
 end

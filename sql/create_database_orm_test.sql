@@ -1,37 +1,37 @@
 print 'Dropping ALL connections to orm_test...'
 
-DECLARE @dbId int
-DECLARE @isStatAsyncOn bit
-DECLARE @jobId int
-DECLARE @sqlString nvarchar(500)
+DECLARE @db_id int
+DECLARE @is_stat_async_on bit
+DECLARE @job_id int
+DECLARE @sql_string nvarchar(500)
 
-SELECT @dbId = database_id,
-       @isStatAsyncOn = is_auto_update_stats_async_on
+SELECT @db_id = database_id,
+       @is_stat_async_on = is_auto_update_stats_async_on
 FROM sys.databases
 WHERE name = 'db_name'
 
-IF @isStatAsyncOn = 1
+IF @is_stat_async_on = 1
 BEGIN
     ALTER DATABASE [db_name] SET  AUTO_UPDATE_STATISTICS_ASYNC OFF
 
     -- kill running jobs
-    DECLARE jobsCursor CURSOR FOR
+    DECLARE jobs_cursor CURSOR FOR
     SELECT job_id
     FROM sys.dm_exec_background_job_queue
-    WHERE database_id = @dbId
+    WHERE database_id = @db_id
 
-    OPEN jobsCursor
+    OPEN jobs_cursor
 
-    FETCH NEXT FROM jobsCursor INTO @jobId
+    FETCH NEXT FROM jobs_cursor INTO @job_id
     WHILE @@FETCH_STATUS = 0
     BEGIN
-        set @sqlString = 'KILL STATS JOB ' + STR(@jobId)
-        EXECUTE sp_executesql @sqlString
-        FETCH NEXT FROM jobsCursor INTO @jobId
+        set @sql_string = 'KILL STATS JOB ' + STR(@job_id)
+        EXECUTE sp_executesql @sql_string
+        FETCH NEXT FROM jobs_cursor INTO @job_id
     END
 
-    CLOSE jobsCursor
-    DEALLOCATE jobsCursor
+    CLOSE jobs_cursor
+    DEALLOCATE jobs_cursor
 END
 
 alter database orm_test set single_user with rollback immediate
