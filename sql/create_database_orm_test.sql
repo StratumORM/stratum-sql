@@ -79,3 +79,5 @@ create schema orm
 go
 create schema orm_meta
 go
+create schema orm_hist
+go

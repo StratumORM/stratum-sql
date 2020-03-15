@@ -128,6 +128,12 @@ begin
 	close templateCursor 
 	deallocate templateCursor
 
+	-- Log the changes to history
+	insert into [orm_hist].[templates] 
+		  (templateID, name, signature)
+	select templateID, name, signature
+	from deleted
+
 end
 go
 
@@ -336,6 +342,12 @@ begin
 	end
 	close templateNameCursor 
 	deallocate templateNameCursor
+
+	-- Log the changes to history
+	insert into [orm_hist].[templates] 
+		  (templateID, name, signature)
+	select templateID, name, signature
+	from deleted
 
 end
 go

@@ -180,6 +180,12 @@ begin
 			on p.templateID = i.childTemplateID
 			or p.templateID = i.parentTemplateID
 
+	-- Log the changes to history
+	insert into [orm_hist].[inheritance] 
+		  (parentTemplateID, childTemplateID, ordinal)
+	select parentTemplateID, childTemplateID, ordinal
+	from deleted
+
 end
 go
 
@@ -248,5 +254,10 @@ begin
 			on d.parentTemplateID = cb.parent_templateID
 			and d.childTemplateID = ca.parent_templateID
 
+	-- Log the changes to history
+	insert into [orm_hist].[inheritance] 
+		  (parentTemplateID, childTemplateID, ordinal)
+	select parentTemplateID, childTemplateID, ordinal
+	from deleted
 end
 go

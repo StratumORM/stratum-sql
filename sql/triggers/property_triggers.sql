@@ -533,6 +533,12 @@ begin
 	close templateIDcursor 
 	deallocate templateIDcursor
 
+	-- Log the changes to history
+	insert into [orm_hist].[properties] 
+		  (propertyID, templateID, name, datatypeID, isExtended, signature)
+	select propertyID, templateID, name, datatypeID, isExtended, signature
+	from deleted
+
 end
 go
 
@@ -600,6 +606,12 @@ begin
 	end
 	close templateIDcursor 
 	deallocate templateIDcursor
+
+	-- Log the changes to history
+	insert into [orm_hist].[properties] 
+		  (propertyID, templateID, name, datatypeID, isExtended, signature)
+	select propertyID, templateID, name, datatypeID, isExtended, signature
+	from deleted
 
 end
 go

@@ -12,7 +12,8 @@ create table [orm_meta].[templates]
 ,	signature nvarchar(max)
 ,	constraint uq_orm_meta_templates_name unique nonclustered (name) 
 )
-create index ix_orm_meta_templates_name_id on [orm_meta].[templates] (name, templateID)
+create index ix_orm_meta_templates_name_id 
+          on [orm_meta].[templates] (name, templateID)
 go
 
 
@@ -43,7 +44,10 @@ create table [orm_meta].[properties]
 --,	constraint fk_orm_meta_properties_datatype foreign key (templateID) references [orm_meta].[templates] (templateID)
 ,	constraint uq_orm_meta_properties_templateID_name unique nonclustered (templateID, name)
 )
-create index ix_orm_meta_properties_templateID_name on [orm_meta].[properties] (templateID, name)
+create index ix_orm_meta_properties_templateID_name 
+          on [orm_meta].[properties] (templateID, name)
+create index ix_orm_meta_properties_propertyID_templateID_datatypeID_name 
+          on [orm_meta].[properties] (propertyID, templateID, datatypeID, name)
 go
 
 

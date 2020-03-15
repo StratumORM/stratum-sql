@@ -25,45 +25,104 @@ ECHO Dropping and creating orm_test
 REM Note that this command doesn't connect to the database: that's so we can drop it!
 sqlcmd -S %COMPUTERNAME%%INSTANCENAME% -r -i ..\sql\create_database_orm_test.sql >> %LOGFILE%
 
+
 ECHO Building base tables and views...
+ECHO --- base tables
 %SQL_COMMAND%\tables\base_tables.sql >> %LOGFILE%
+
+ECHO --- values tables
 %SQL_COMMAND%\tables\values_tables.sql >> %LOGFILE%
+
+ECHO --- inheritance tables
 %SQL_COMMAND%\tables\inheritance_tables.sql >> %LOGFILE%
 
+ECHO --- hist tables
+%SQL_COMMAND%\tables\hist_tables.sql >> %LOGFILE%
+
+
 ECHO Building views onto the tables...
+ECHO --- values views
 %SQL_COMMAND%\views\values_views.sql >> %LOGFILE%
+
+ECHO --- meta values views
 %SQL_COMMAND%\views\meta_values_views.sql >> %LOGFILE%
+
+ECHO --- helper views
 %SQL_COMMAND%\views\helper_views.sql >> %LOGFILE%
 
+
 ECHO Define functions ...
+ECHO --- inheritance
 %SQL_COMMAND%\functions\template_inheritance.sql >> %LOGFILE%
+
+ECHO --- sanitize string
 %SQL_COMMAND%\functions\sanitize_string.sql >> %LOGFILE%
+
+ECHO --- properties
 %SQL_COMMAND%\functions\resolve_properties.sql >> %LOGFILE%
+
+ECHO --- values
 %SQL_COMMAND%\functions\values.sql >> %LOGFILE%
 
+
 ECHO Define meta sprocs (sprocs that build sql)...
+ECHO --- gen template view wide
 %SQL_COMMAND%\meta_sprocs\generate_view_wide.sql >> %LOGFILE%
+
+ECHO --- gen template view tall
 %SQL_COMMAND%\meta_sprocs\generate_view_tall.sql >> %LOGFILE%
+
+ECHO --- gen template view listing
 %SQL_COMMAND%\meta_sprocs\generate_view_listing.sql >> %LOGFILE%
+
+ECHO --- cascade delete for properties
 %SQL_COMMAND%\meta_sprocs\cascadeDelete_properties.sql >> %LOGFILE%
 
+ECHO --- column bitmask decoding
 %SQL_COMMAND%\functions\decodeUpdatedColumnsBitmask.sql >> %LOGFILE%
+
+ECHO --- dynamic template view crud trigger
 %SQL_COMMAND%\meta_sprocs\template_view_crud_triggers.sql >> %LOGFILE%
+
+ECHO --- all values listing crud trigger
 %SQL_COMMAND%\meta_sprocs\all_values_listing_crud_triggers.sql >> %LOGFILE%
 
 
 ECHO Define CRUD sprocs...
+ECHO --- template
 %SQL_COMMAND%\crud\template_crud.sql >> %LOGFILE%
+
+ECHO --- property
 %SQL_COMMAND%\crud\properties_crud.sql >> %LOGFILE%
+
+ECHO --- value
 %SQL_COMMAND%\crud\value_crud.sql >> %LOGFILE%
+
+ECHO --- instance
 %SQL_COMMAND%\crud\instance_crud.sql >> %LOGFILE%
+
+ECHO --- inheritance
 %SQL_COMMAND%\crud\inheritance_crud.sql >> %LOGFILE%
 
+
 ECHO Add triggers to tables...
+ECHO --- template
 %SQL_COMMAND%\triggers\template_triggers.sql >> %LOGFILE%
+
+ECHO --- instance
+%SQL_COMMAND%\triggers\instance_triggers.sql >> %LOGFILE%
+
+ECHO --- values
+%SQL_COMMAND%\triggers\values_triggers.sql >> %LOGFILE%
+
+ECHO --- property
 %SQL_COMMAND%\triggers\property_triggers.sql >> %LOGFILE%
+
+ECHO --- inheritance
 %SQL_COMMAND%\triggers\inheritance_triggers.sql >> %LOGFILE%
 
+
+ECHO ------------------------
 ECHO Rebuild script finished!
 
 GOTO :finished
