@@ -1,8 +1,8 @@
 print '
 Generating base tables...'
 
-IF OBJECT_ID('[dbo].[orm_meta_templates]', 'U') IS NOT NULL
-	drop table [dbo].orm_meta_templates
+IF OBJECT_ID('[orm].[orm_meta_templates]', 'U') IS NOT NULL
+	drop table [orm].orm_meta_templates
 go
 
 create table orm_meta_templates
@@ -26,8 +26,8 @@ values	(1, 'nvarchar(max)')
 set identity_insert orm_meta_templates off
 
 
-IF OBJECT_ID('[dbo].[orm_meta_properties]', 'U') IS NOT NULL
-	drop table [dbo].orm_meta_properties
+IF OBJECT_ID('[orm].[orm_meta_properties]', 'U') IS NOT NULL
+	drop table [orm].orm_meta_properties
 go
 
 create table orm_meta_properties
@@ -47,8 +47,8 @@ create index ix_orm_meta_properties_templateID_name on orm_meta_properties (temp
 go
 
 
-IF OBJECT_ID('[dbo].[orm_meta_instances]', 'U') IS NOT NULL
-	drop table [dbo].orm_meta_instances
+IF OBJECT_ID('[orm].[orm_meta_instances]', 'U') IS NOT NULL
+	drop table [orm].orm_meta_instances
 go
 
 create table orm_meta_instances

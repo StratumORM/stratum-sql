@@ -2,8 +2,8 @@ print '
 Generating template inheritance definitions...'
 
 
-IF OBJECT_ID('[dbo].[orm_meta_inheritance]', 'U') IS NOT NULL
-	drop table [dbo].orm_meta_inheritance
+IF OBJECT_ID('[orm].[orm_meta_inheritance]', 'U') IS NOT NULL
+	drop table [orm].orm_meta_inheritance
 go
 
 create table orm_meta_inheritance

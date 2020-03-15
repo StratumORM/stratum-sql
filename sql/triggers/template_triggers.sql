@@ -3,12 +3,12 @@ Adding template table triggers...'
 
 
 
-if object_id('[dbo].[trigger_orm_meta_templates_insert]', 'TR')  is not null
-	drop trigger dbo.trigger_orm_meta_templates_insert
+if object_id('[orm].[trigger_orm_meta_templates_insert]', 'TR')  is not null
+	drop trigger [orm].trigger_orm_meta_templates_insert
 go
 
 create trigger trigger_orm_meta_templates_insert
-	on dbo.orm_meta_templates
+	on [orm].orm_meta_templates
 	instead of insert
 as 
 begin
@@ -16,7 +16,7 @@ begin
 	-- Make sure the templateName is legal (since this will go into dynamic sql)
 	select i.name
 	from inserted as i
-	where i.name <> dbo.meta_sanitize_string(i.name)
+	where i.name <> [orm].meta_sanitize_string(i.name)
 	if @@ROWCOUNT <> 0 
 		begin
 			rollback transaction		
@@ -70,12 +70,12 @@ end
 go
 
 
-if object_id('[dbo].[trigger_orm_meta_templates_update]', 'TR')  is not null
-	drop trigger dbo.trigger_orm_meta_templates_update
+if object_id('[orm].[trigger_orm_meta_templates_update]', 'TR')  is not null
+	drop trigger [orm].trigger_orm_meta_templates_update
 go
 
 create trigger trigger_orm_meta_templates_update
-	on dbo.orm_meta_templates
+	on [orm].orm_meta_templates
 	instead of update
 as 
 begin
@@ -83,7 +83,7 @@ begin
 	-- Make sure the templateName is legal (since this will go into dynamic sql)
 	select i.name
 	from inserted as i
-	where i.name <> dbo.meta_sanitize_string(i.name)
+	where i.name <> [orm].meta_sanitize_string(i.name)
 	if @@ROWCOUNT <> 0 
 		begin
 			rollback transaction		
@@ -132,12 +132,12 @@ end
 go
 
 
-if object_id('[dbo].[trigger_orm_meta_templates_delete]', 'TR')  is not null
-	drop trigger dbo.trigger_orm_meta_templates_delete
+if object_id('[orm].[trigger_orm_meta_templates_delete]', 'TR')  is not null
+	drop trigger [orm].trigger_orm_meta_templates_delete
 go
 
 create trigger trigger_orm_meta_templates_delete
-	on dbo.orm_meta_templates
+	on [orm].orm_meta_templates
 	instead of delete
 as 
 begin
@@ -168,7 +168,7 @@ begin
 		insert into @affectedTemplateIDs (id)
 		select distinct tree.templateID
 		from @deleted as d
-			cross apply dbo.orm_meta_templateTree(d.templateID) as tree
+			cross apply [orm].orm_meta_templateTree(d.templateID) as tree
 
 		insert into @childTemplates (id)
 		select distinct i.childTemplateID
@@ -181,7 +181,7 @@ begin
 	-- So first, find out what properties *may* be affected...
 	insert into @propIDs (id)
 	select m.current_propertyID
-	from dbo.orm_meta_resolve_properties(@affectedTemplateIDs) as m
+	from [orm].orm_meta_resolve_properties(@affectedTemplateIDs) as m
 		inner join @deleted as d 
 			on m.masked_templateID = d.templateID 
 	where isnull(m.masked_isExtended,0) = 0
@@ -297,7 +297,7 @@ begin
 	where id not in (	
 		select m.current_propertyID
 		from @propIDs as p
-			inner join dbo.orm_meta_resolve_properties(@affectedTemplateIDs) as m
+			inner join [orm].orm_meta_resolve_properties(@affectedTemplateIDs) as m
 				on m.current_propertyID = p.id
 			inner join @childTemplates as c 
 				on m.masked_templateID = c.id 

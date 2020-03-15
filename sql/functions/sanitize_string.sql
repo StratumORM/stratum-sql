@@ -3,8 +3,8 @@ Generating scalar function meta_sanitize_string...'
 
 
 
-IF OBJECT_ID('[dbo].[meta_sanitize_string]', 'FN') IS NOT NULL
-	drop function [dbo].meta_sanitize_string
+IF OBJECT_ID('[orm].[meta_sanitize_string]', 'FN') IS NOT NULL
+	drop function [orm].meta_sanitize_string
 go
 
 -- =============================================
@@ -15,7 +15,7 @@ go
 --  dynamically put in a sql query.
 --  Gotted from http://stackoverflow.com/a/1008566
 -- =============================================
-create function dbo.meta_sanitize_string
+create function [orm].meta_sanitize_string
 (
 	@Temp VarChar(1000)
 )

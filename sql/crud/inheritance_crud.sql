@@ -2,12 +2,12 @@ print '
 Generating template inheritance CRUD definitions...'
 
 
-IF OBJECT_ID('[dbo].[orm_inherit_add]', 'P') IS NOT NULL
-	DROP PROCEDURE [dbo].orm_inherit_add
+IF OBJECT_ID('[orm].[orm_inherit_add]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].orm_inherit_add
 go
 
-IF OBJECT_ID('[dbo].[orm_meta_inherit_add]', 'P') IS NOT NULL
-	DROP PROCEDURE [dbo].orm_meta_inherit_add
+IF OBJECT_ID('[orm].[orm_meta_inherit_add]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].orm_meta_inherit_add
 go
 
 
@@ -61,12 +61,12 @@ end
 go
 
 
-IF OBJECT_ID('[dbo].[orm_inherit_remove]', 'P') IS NOT NULL
-	DROP PROCEDURE [dbo].orm_inherit_remove
+IF OBJECT_ID('[orm].[orm_inherit_remove]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].orm_inherit_remove
 go
 
-IF OBJECT_ID('[dbo].[orm_meta_inherit_remove]', 'P') IS NOT NULL
-	DROP PROCEDURE [dbo].orm_meta_inherit_remove
+IF OBJECT_ID('[orm].[orm_meta_inherit_remove]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].orm_meta_inherit_remove
 go
 
 create procedure orm_meta_inherit_remove

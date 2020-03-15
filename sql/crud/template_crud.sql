@@ -3,8 +3,8 @@ Generating template CRUD definitions...'
 
 
 
-IF OBJECT_ID('[dbo].[orm_template_add]', 'P') IS NOT NULL
-	DROP PROCEDURE [dbo].orm_template_add
+IF OBJECT_ID('[orm].[orm_template_add]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].orm_template_add
 go
 
 create procedure orm_template_add
@@ -22,12 +22,12 @@ end
 go
 
 
-IF OBJECT_ID('[dbo].[orm_template_remove]', 'P') IS NOT NULL
-	DROP PROCEDURE [dbo].orm_template_remove
+IF OBJECT_ID('[orm].[orm_template_remove]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].orm_template_remove
 go
 
-IF OBJECT_ID('[dbo].[orm_meta_template_remove]', 'P') IS NOT NULL
-	DROP PROCEDURE [dbo].orm_meta_template_remove
+IF OBJECT_ID('[orm].[orm_meta_template_remove]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].orm_meta_template_remove
 go
 
 

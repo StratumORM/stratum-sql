@@ -2,12 +2,12 @@ print '
 Generating meta view value triggers...'
 
 
-IF OBJECT_ID('[dbo].[trigger_orm_meta_view_all_values_listing_delete]', 'tr') IS NOT NULL
-	drop trigger [dbo].trigger_orm_meta_view_all_values_listing_delete
+IF OBJECT_ID('[orm].[trigger_orm_meta_view_all_values_listing_delete]', 'tr') IS NOT NULL
+	drop trigger [orm].trigger_orm_meta_view_all_values_listing_delete
 go
 
 create trigger trigger_orm_meta_view_all_values_listing_delete
-	on dbo.orm_meta_all_values_listing
+	on [orm].orm_meta_all_values_listing
 	instead of delete
 as 
 begin
@@ -80,13 +80,13 @@ end
 
 
 
-IF OBJECT_ID('[dbo].[trigger_orm_meta_view_all_values_listing_update]', 'tr') IS NOT NULL
-	drop trigger [dbo].trigger_orm_meta_view_all_values_listing_update
+IF OBJECT_ID('[orm].[trigger_orm_meta_view_all_values_listing_update]', 'tr') IS NOT NULL
+	drop trigger [orm].trigger_orm_meta_view_all_values_listing_update
 go
 
 
 create trigger trigger_orm_meta_view_all_values_listing_update
-	on dbo.orm_meta_all_values_listing
+	on [orm].orm_meta_all_values_listing
 	instead of update
 as 
 begin
@@ -181,13 +181,13 @@ begin
 end
 
 
-IF OBJECT_ID('[dbo].[trigger_orm_meta_view_all_values_listing_insert]', 'TR') IS NOT NULL
-	DROP TRIGGER [dbo].trigger_orm_meta_view_all_values_listing_insert
+IF OBJECT_ID('[orm].[trigger_orm_meta_view_all_values_listing_insert]', 'TR') IS NOT NULL
+	DROP TRIGGER [orm].trigger_orm_meta_view_all_values_listing_insert
 go
 
 
 create trigger trigger_orm_meta_view_all_values_listing_insert
-	on dbo.orm_meta_all_values_listing
+	on [orm].orm_meta_all_values_listing
 	instead of insert
 as 
 begin

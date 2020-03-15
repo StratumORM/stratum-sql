@@ -2,11 +2,11 @@ print '
 Generating value functions...'
 
 
-if object_id('[dbo].[orm_values]', 'IF') is not null
-	drop function dbo.orm_values
+if object_id('[orm].[orm_values]', 'IF') is not null
+	drop function [orm].orm_values
 go
 
-create function [dbo].[orm_values]
+create function [orm].[orm_values]
 (
 	@templateName varchar(250)
 )
@@ -60,11 +60,11 @@ return
 GO
 
 
-if object_id('[dbo].[orm_values_listing]', 'IF') is not null
-	drop function dbo.orm_values_listing
+if object_id('[orm].[orm_values_listing]', 'IF') is not null
+	drop function [orm].orm_values_listing
 go
 
-create function [dbo].[orm_values_listing]
+create function [orm].[orm_values_listing]
 (
 	@templateName varchar(250)
 )

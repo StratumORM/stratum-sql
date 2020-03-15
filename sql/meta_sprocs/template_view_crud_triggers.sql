@@ -2,12 +2,12 @@ print '
 Generating template dynamic view triggers...'
 
 
-IF OBJECT_ID('[dbo].[orm_meta_generate_template_view_triggers]', 'P') IS NOT NULL
-	DROP PROCEDURE [dbo].orm_meta_generate_template_view_triggers
+IF OBJECT_ID('[orm].[orm_meta_generate_template_view_triggers]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].orm_meta_generate_template_view_triggers
 go
 
 
-create procedure [dbo].[orm_meta_generate_template_view_triggers]
+create procedure [orm].[orm_meta_generate_template_view_triggers]
 	@templateID int
 as
 begin
@@ -94,14 +94,14 @@ begin
 	-- @@@_ACTION_CHECK_@@@
 	-- @@@_META_TEMPLATE_NAME_@@@
 	-- @@@_META_TEMPLATE_ID_@@@
-	IF OBJECT_ID('dbo.trigger_orm_meta_view_' + @templateName + '_delete', 'TR') IS NOT NULL
+	IF OBJECT_ID('[orm].trigger_orm_meta_view_' + @templateName + '_delete', 'TR') IS NOT NULL
 		set @actionCheck = 'alter'
 	else
 		set @actionCheck = 'create'
 
 	set @deleteTriggerSQL = '
 		@@@_ACTION_CHECK_@@@ trigger trigger_orm_meta_view_@@@_META_TEMPLATE_NAME_@@@_delete
-			on dbo.@@@_META_TEMPLATE_NAME_@@@
+			on [orm].@@@_META_TEMPLATE_NAME_@@@
 			instead of delete
 		as 
 		begin
@@ -123,14 +123,14 @@ begin
 	-- @@@_ACTION_CHECK_@@@
 	-- @@@_META_TEMPLATE_NAME_@@@
 	-- @@@_META_TEMPLATE_ID_@@@
-	IF OBJECT_ID('dbo.trigger_orm_meta_view_' + @templateName + '_update', 'TR') IS NOT NULL
+	IF OBJECT_ID('[orm].trigger_orm_meta_view_' + @templateName + '_update', 'TR') IS NOT NULL
 		set @actionCheck = 'alter'
 	else
 		set @actionCheck = 'create'
 
 	set @updateTriggerSQL = '
 		@@@_ACTION_CHECK_@@@ trigger trigger_orm_meta_view_@@@_META_TEMPLATE_NAME_@@@_update
-			on dbo.@@@_META_TEMPLATE_NAME_@@@
+			on [orm].@@@_META_TEMPLATE_NAME_@@@
 			instead of update
 		as 
 		begin
@@ -294,14 +294,14 @@ begin
 	-- @@@_ACTION_CHECK_@@@
 	-- @@@_META_TEMPLATE_NAME_@@@
 	-- @@@_META_TEMPLATE_ID_@@@
-	IF OBJECT_ID('dbo.trigger_orm_meta_view_' + @templateName + '_insert', 'TR') IS NOT NULL
+	IF OBJECT_ID('[orm].trigger_orm_meta_view_' + @templateName + '_insert', 'TR') IS NOT NULL
 		set @actionCheck = 'alter'
 	else
 		set @actionCheck = 'create'
 
 	set @insertTriggerSQL = '
 	@@@_ACTION_CHECK_@@@ trigger trigger_orm_meta_view_@@@_META_TEMPLATE_NAME_@@@_insert
-		on dbo.@@@_META_TEMPLATE_NAME_@@@
+		on [orm].@@@_META_TEMPLATE_NAME_@@@
 		instead of insert
 	as 
 	begin

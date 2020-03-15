@@ -1,8 +1,8 @@
 print '
 Generating value tables...'
 
-IF OBJECT_ID('[dbo].[orm_meta_values_string]', 'U') IS NOT NULL
-	drop table [dbo].orm_meta_values_string
+IF OBJECT_ID('[orm].[orm_meta_values_string]', 'U') IS NOT NULL
+	drop table [orm].orm_meta_values_string
 go
 
 
@@ -19,8 +19,8 @@ create table orm_meta_values_string
 go
 
 
-IF OBJECT_ID('[dbo].[orm_meta_values_integer]', 'U') IS NOT NULL
-	drop table [dbo].orm_meta_values_integer
+IF OBJECT_ID('[orm].[orm_meta_values_integer]', 'U') IS NOT NULL
+	drop table [orm].orm_meta_values_integer
 go
 
 create table orm_meta_values_integer
@@ -36,8 +36,8 @@ create table orm_meta_values_integer
 go
 
 
-IF OBJECT_ID('[dbo].[orm_meta_values_decimal]', 'U') IS NOT NULL
-	drop table [dbo].orm_meta_values_decimal
+IF OBJECT_ID('[orm].[orm_meta_values_decimal]', 'U') IS NOT NULL
+	drop table [orm].orm_meta_values_decimal
 go
 
 create table orm_meta_values_decimal
@@ -53,8 +53,8 @@ create table orm_meta_values_decimal
 go
 
 
-IF OBJECT_ID('[dbo].[orm_meta_values_datetime]', 'U') IS NOT NULL
-	drop table [dbo].orm_meta_values_datetime
+IF OBJECT_ID('[orm].[orm_meta_values_datetime]', 'U') IS NOT NULL
+	drop table [orm].orm_meta_values_datetime
 go
 
 create table orm_meta_values_datetime
@@ -70,8 +70,8 @@ create table orm_meta_values_datetime
 go
 
 
-IF OBJECT_ID('[dbo].[orm_meta_values_instance]', 'U') IS NOT NULL
-	drop table [dbo].orm_meta_values_instance
+IF OBJECT_ID('[orm].[orm_meta_values_instance]', 'U') IS NOT NULL
+	drop table [orm].orm_meta_values_instance
 go
 
 create table orm_meta_values_instance

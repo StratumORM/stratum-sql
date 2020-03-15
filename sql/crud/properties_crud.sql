@@ -2,8 +2,8 @@ print '
 Generating property CRUD definitions...'
 
 
-IF OBJECT_ID('[dbo].[orm_property_add]', 'P') IS NOT NULL
-	DROP PROCEDURE [dbo].orm_property_add
+IF OBJECT_ID('[orm].[orm_property_add]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].orm_property_add
 go
 
 create procedure orm_property_add
@@ -31,8 +31,8 @@ begin
 end
 go
 
-IF OBJECT_ID('[dbo].[orm_property_remove]', 'P') IS NOT NULL
-	DROP PROCEDURE [dbo].orm_property_remove
+IF OBJECT_ID('[orm].[orm_property_remove]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].orm_property_remove
 go
 
 create procedure orm_property_remove
@@ -63,8 +63,8 @@ end
 go
 
 
-IF OBJECT_ID('[dbo].[orm_property_rename]', 'P') IS NOT NULL
-	DROP PROCEDURE [dbo].orm_property_rename
+IF OBJECT_ID('[orm].[orm_property_rename]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].orm_property_rename
 go
 
 create procedure orm_property_rename

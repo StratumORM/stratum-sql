@@ -39,11 +39,11 @@ go
 
 
 print 'Testing inheritance tree functions...(2,3,2,3)'
-select * from dbo.orm_meta_subTemplates(5) as subs
-select * from dbo.orm_meta_superTemplates(7) as supers
+select * from [orm].orm_meta_subTemplates(5) as subs
+select * from [orm].orm_meta_superTemplates(7) as supers
 
-select * from dbo.orm_meta_templateTree(5) as fullTree
-select * from dbo.orm_meta_templateTree(7) as fullTree
+select * from [orm].orm_meta_templateTree(5) as fullTree
+select * from [orm].orm_meta_templateTree(7) as fullTree
 /*
 select * from orm_ONE_listing
 select * from orm_ONE_wide

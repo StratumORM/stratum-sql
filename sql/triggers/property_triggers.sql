@@ -3,12 +3,12 @@ Adding property table triggers...'
 
 
 
-if object_id('[dbo].[trigger_orm_meta_properties_insert]', 'TR')  is not null
-	drop trigger dbo.trigger_orm_meta_properties_insert
+if object_id('[orm].[trigger_orm_meta_properties_insert]', 'TR')  is not null
+	drop trigger [orm].trigger_orm_meta_properties_insert
 go
 
 create trigger trigger_orm_meta_properties_insert
-	on dbo.orm_meta_properties
+	on [orm].orm_meta_properties
 	instead of insert
 as 
 begin
@@ -18,7 +18,7 @@ begin
 		select distinct
 			tree.templateID
 		from inserted as i
-			cross apply dbo.orm_meta_templateTree(i.templateID) as tree
+			cross apply [orm].orm_meta_templateTree(i.templateID) as tree
 
 	-- Referential integrity checks (needed instead of foreign keys due to constraint checks coming before triggers)
 	if (exists(	select i.templateID
@@ -58,7 +58,7 @@ begin
 	-- Verify the names are safe
 	if (exists(	select i.propertyID
 				from inserted as i
-				where i.name <> dbo.meta_sanitize_string(i.name) ))
+				where i.name <> [orm].meta_sanitize_string(i.name) ))
 		begin
 			rollback transaction	
 			raiserror('Property name is not purely alphanumeric.', 16, 10)
@@ -98,7 +98,7 @@ begin
 		,	p.current_datatypeID
 		,	p.current_isExtended
 		,	p.current_signature	
-	from dbo.orm_meta_resolve_properties(@templateIDs) as p
+	from [orm].orm_meta_resolve_properties(@templateIDs) as p
 
 	-- Next, we need to perform a sanity check. 
 	-- If a child is inheriting a property datatype change, then fail the transaction.
@@ -156,12 +156,12 @@ go
 
 
 
-if object_id('[dbo].[trigger_orm_meta_properties_update]', 'TR')  is not null
-	drop trigger dbo.trigger_orm_meta_properties_update
+if object_id('[orm].[trigger_orm_meta_properties_update]', 'TR')  is not null
+	drop trigger [orm].trigger_orm_meta_properties_update
 go
 
 create trigger trigger_orm_meta_properties_update
-	on dbo.orm_meta_properties
+	on [orm].orm_meta_properties
 	instead of update
 as 
 begin
@@ -220,7 +220,7 @@ begin
 	-- Verify the names are safe
 	if (exists(	select i.propertyID
 				from inserted as i
-				where i.name <> dbo.meta_sanitize_string(i.name) ))
+				where i.name <> [orm].meta_sanitize_string(i.name) ))
 		begin
 			rollback transaction		
 			raiserror('Property name is not purely alphanumeric.', 16, 10)
@@ -263,7 +263,7 @@ begin
 		,	p.current_datatypeID
 		,	p.current_isExtended
 		,	p.current_signature	
-	from dbo.orm_meta_resolve_properties(@templateIDs) as p
+	from [orm].orm_meta_resolve_properties(@templateIDs) as p
 
 	-- Grab the templates that are going to potentially be affected by the changes.
 	-- We'll use this later to rebuild the wide views.
@@ -466,7 +466,7 @@ begin
 		,	p.current_datatypeID
 		,	p.current_isExtended
 		,	p.current_signature	
-	from dbo.orm_meta_resolve_properties(@templateIDs) as p
+	from [orm].orm_meta_resolve_properties(@templateIDs) as p
 
 	-- The final pass here will do two things:
 	--  1) add new properties that were uncovered by the previous merge
@@ -537,12 +537,12 @@ end
 go
 
 
-if object_id('[dbo].[trigger_orm_meta_properties_delete]', 'TR')  is not null
-	drop trigger dbo.trigger_orm_meta_properties_delete
+if object_id('[orm].[trigger_orm_meta_properties_delete]', 'TR')  is not null
+	drop trigger [orm].trigger_orm_meta_properties_delete
 go
 
 create trigger trigger_orm_meta_properties_delete
-	on dbo.orm_meta_properties
+	on [orm].orm_meta_properties
 	instead of delete
 as 
 begin
@@ -552,14 +552,14 @@ begin
 	select distinct
 		tree.templateID
 	from deleted as d
-		cross apply dbo.orm_meta_templateTree(d.templateID) as tree
+		cross apply [orm].orm_meta_templateTree(d.templateID) as tree
 
 	-- Only allow deletion for properties that are uncovered!
 	--	and be sure to get children masked by it as well!
 	; with involvedProperties as
 	(
 		select m.masked_propertyID, m.masked_templateID, m.current_propertyID, m.current_templateID
-		from dbo.orm_meta_resolve_properties(@templateIDs) as m
+		from [orm].orm_meta_resolve_properties(@templateIDs) as m
 	)
 	,	uncovered as
 	(

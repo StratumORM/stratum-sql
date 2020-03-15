@@ -3,11 +3,11 @@ Generating template inheritance functions...'
 
 
 
-if object_id('[dbo].[orm_meta_subTemplates]', 'IF') is not null
-	drop function dbo.orm_meta_subTemplates
+if object_id('[orm].[orm_meta_subTemplates]', 'IF') is not null
+	drop function [orm].orm_meta_subTemplates
 go
 
-create function dbo.orm_meta_subTemplates
+create function [orm].orm_meta_subTemplates
 (	
 	@templateID int
 )
@@ -32,11 +32,11 @@ RETURN
 GO
 
 
-if object_id('[dbo].[orm_meta_superTemplates]', 'IF') is not null
-	drop function dbo.orm_meta_superTemplates
+if object_id('[orm].[orm_meta_superTemplates]', 'IF') is not null
+	drop function [orm].orm_meta_superTemplates
 go
 
-create function dbo.orm_meta_superTemplates
+create function [orm].orm_meta_superTemplates
 (	
 	@templateID int
 )
@@ -61,11 +61,11 @@ RETURN
 GO
 
 
-if object_id('[dbo].[orm_meta_templateTree]', 'IF') is not null
-	drop function dbo.orm_meta_templateTree
+if object_id('[orm].[orm_meta_templateTree]', 'IF') is not null
+	drop function [orm].orm_meta_templateTree
 go
 
-create function dbo.orm_meta_templateTree
+create function [orm].orm_meta_templateTree
 (	
 	@templateID int
 )
@@ -75,12 +75,12 @@ RETURN
 (
 	select templateID, echelon
 	from (	select templateID, echelon
-			from dbo.orm_meta_subTemplates(@templateID) as subs
+			from [orm].orm_meta_subTemplates(@templateID) as subs
 			
 			union
 			
 			select templateID, echelon
-			from dbo.orm_meta_superTemplates(@templateID) as supers
+			from [orm].orm_meta_superTemplates(@templateID) as supers
 		) as structure			
 )
 GO

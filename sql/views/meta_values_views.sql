@@ -1,8 +1,8 @@
 print '
 Generating meta value views...'
 
-IF OBJECT_ID('[dbo].[orm_meta_all_values]', 'V') IS NOT NULL
-	DROP VIEW [dbo].orm_meta_all_values
+IF OBJECT_ID('[orm].[orm_meta_all_values]', 'V') IS NOT NULL
+	DROP VIEW [orm].orm_meta_all_values
 go
 
 create view orm_meta_all_values
@@ -48,11 +48,11 @@ as
 go
 
 
-IF OBJECT_ID('[dbo].[orm_meta_all_values_listing]', 'V') IS NOT NULL
-	DROP VIEW [dbo].[orm_meta_all_values_listing]
+IF OBJECT_ID('[orm].[orm_meta_all_values_listing]', 'V') IS NOT NULL
+	DROP VIEW [orm].[orm_meta_all_values_listing]
 go
 
-create view [dbo].[orm_meta_all_values_listing]
+create view [orm].[orm_meta_all_values_listing]
 as
 	-- This is primarily a template view.
 	-- But it's useful as a consolidated place to scan for everything

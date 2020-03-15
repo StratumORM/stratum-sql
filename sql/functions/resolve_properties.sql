@@ -2,16 +2,16 @@ print '
 Generating property resolution function...'
 
 
-IF OBJECT_ID('[dbo].[orm_meta_resolve_properties]', 'IF') IS NOT NULL
-	DROP FUNCTION [dbo].orm_meta_resolve_properties
+IF OBJECT_ID('[orm].[orm_meta_resolve_properties]', 'IF') IS NOT NULL
+	DROP FUNCTION [orm].orm_meta_resolve_properties
 go
 
 
 IF TYPE_ID('[identities]') IS NOT NULL
-	DROP TYPE [dbo].[identities]
+	DROP TYPE [orm].[identities]
 go
 
-CREATE TYPE [dbo].[identities] AS TABLE(
+CREATE TYPE [orm].[identities] AS TABLE(
 	[id] [int] NOT NULL,
 	PRIMARY KEY CLUSTERED (	[id] ASC )
 		WITH (IGNORE_DUP_KEY = OFF)
@@ -33,7 +33,7 @@ RETURN
 		select distinct 
 				tree.templateID as inScopeTemplateID
 		from @templateIDs as t
-			cross apply dbo.orm_meta_templateTree(t.id) as tree
+			cross apply [orm].orm_meta_templateTree(t.id) as tree
 	)
 	,	currentScopedTemplateProperties as
 	(

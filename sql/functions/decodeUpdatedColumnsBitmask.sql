@@ -2,11 +2,11 @@ print '
 Generating update_columns decoder ring...'
 
 
-IF OBJECT_ID('[dbo].[orm_meta_decodeUpdatedColumnsBitmask]', 'FN') IS NOT NULL
-	drop function [dbo].orm_meta_decodeUpdatedColumnsBitmask
+IF OBJECT_ID('[orm].[orm_meta_decodeUpdatedColumnsBitmask]', 'FN') IS NOT NULL
+	drop function [orm].orm_meta_decodeUpdatedColumnsBitmask
 go
 
-create function dbo.orm_meta_decodeUpdatedColumnsBitmask
+create function [orm].orm_meta_decodeUpdatedColumnsBitmask
 (
 	@updatedColumns varbinary(255)
 ,	@tableName varchar(100)

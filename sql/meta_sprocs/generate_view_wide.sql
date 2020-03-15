@@ -2,12 +2,12 @@ print '
 Generating template dynamic view (wide)...'
 
 
-IF OBJECT_ID('[dbo].[orm_meta_generate_template_view_wide]', 'P') IS NOT NULL
-	DROP PROCEDURE [dbo].orm_meta_generate_template_view_wide
+IF OBJECT_ID('[orm].[orm_meta_generate_template_view_wide]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].orm_meta_generate_template_view_wide
 go
 
 
-create procedure [dbo].[orm_meta_generate_template_view_wide]
+create procedure [orm].[orm_meta_generate_template_view_wide]
 	@templateID int
 as
 begin
@@ -63,7 +63,7 @@ begin
 								for xml path(''))
 
 
-	IF OBJECT_ID('dbo.' + @templateName + '', 'V') IS NOT NULL
+	IF OBJECT_ID('[orm].' + @templateName + '', 'V') IS NOT NULL
 		set @query = 'alter'
 	else
 		set @query = 'create'
@@ -172,7 +172,7 @@ begin
 
 	set @query = @query + ' , o.InstanceID as InstanceID
 	from	orm_meta_instances as o
-		inner join dbo.orm_meta_subTemplates(' + convert(nvarchar(100), @templateID) + ') as subTemplates
+		inner join [orm].orm_meta_subTemplates(' + convert(nvarchar(100), @templateID) + ') as subTemplates
 			on o.templateID = subTemplates.templateID
 	' + @pivotSubQuery
 

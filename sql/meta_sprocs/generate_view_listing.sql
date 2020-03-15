@@ -2,11 +2,11 @@ print '
 Generating template dynamic view (tall listing)...'
 
 
-IF OBJECT_ID('[dbo].[orm_meta_generate_template_view_listing]', 'P') IS NOT NULL
-	DROP PROCEDURE [dbo].orm_meta_generate_template_view_listing
+IF OBJECT_ID('[orm].[orm_meta_generate_template_view_listing]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].orm_meta_generate_template_view_listing
 go
 
-create procedure [dbo].[orm_meta_generate_template_view_listing]
+create procedure [orm].[orm_meta_generate_template_view_listing]
 	@templateID int
 as
 begin
@@ -29,7 +29,7 @@ begin
 	set @viewQuery = replace(@viewQuery, 'inner join orm_meta_properties as p
 			on o.templateID = p.templateID', '
 		-- include instances from templates that inherit from this one
-		inner join dbo.orm_meta_subTemplates(' + convert(nvarchar(100), @templateID) + ') as subTemplates
+		inner join [orm].orm_meta_subTemplates(' + convert(nvarchar(100), @templateID) + ') as subTemplates
 			on o.templateID = subTemplates.templateID
 		
 		-- ... but only allow names relevant to this one

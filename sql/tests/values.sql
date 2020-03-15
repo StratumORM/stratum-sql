@@ -11,8 +11,8 @@ go
 --										
 --=============================================================================
 
-if OBJECT_ID('[dbo].[test_init_object]','P') is not null
-	drop procedure [dbo].test_init_object
+if OBJECT_ID('[orm].[test_init_object]','P') is not null
+	drop procedure [orm].test_init_object
 go
 
 create procedure test_init_object

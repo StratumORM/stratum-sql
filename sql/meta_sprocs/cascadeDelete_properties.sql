@@ -1,8 +1,8 @@
 print '
 Generating value cleanup sproc...'
 
-IF OBJECT_ID('[dbo].[orm_meta_cascadeDelete_property]', 'P') IS NOT NULL
-	DROP PROCEDURE [dbo].orm_meta_cascadeDelete_property
+IF OBJECT_ID('[orm].[orm_meta_cascadeDelete_property]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].orm_meta_cascadeDelete_property
 go
 
 create procedure orm_meta_cascadeDelete_property

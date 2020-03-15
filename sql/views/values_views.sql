@@ -1,11 +1,11 @@
 print '
 Generating values views...'
 
-IF OBJECT_ID('[dbo].[orm_values_string]', 'V') IS NOT NULL
-	DROP VIEW [dbo].[orm_values_string]
+IF OBJECT_ID('[orm].[orm_values_string]', 'V') IS NOT NULL
+	DROP VIEW [orm].[orm_values_string]
 go
 
-create view [dbo].[orm_values_string]
+create view [orm].[orm_values_string]
 as
 	select	t.name as [template]
 		,	o.name as [instance]
@@ -26,11 +26,11 @@ as
 GO
 
 
-IF OBJECT_ID('[dbo].[orm_values_integer]', 'V') IS NOT NULL
-	DROP VIEW [dbo].[orm_values_integer]
+IF OBJECT_ID('[orm].[orm_values_integer]', 'V') IS NOT NULL
+	DROP VIEW [orm].[orm_values_integer]
 go
 
-create view [dbo].[orm_values_integer]
+create view [orm].[orm_values_integer]
 as
 	select	t.name as [template]
 		,	o.name as [instance]
@@ -51,11 +51,11 @@ as
 GO
 
 
-IF OBJECT_ID('[dbo].[orm_values_decimal]', 'V') IS NOT NULL
-	DROP VIEW [dbo].[orm_values_decimal]
+IF OBJECT_ID('[orm].[orm_values_decimal]', 'V') IS NOT NULL
+	DROP VIEW [orm].[orm_values_decimal]
 go
 
-create view [dbo].[orm_values_decimal]
+create view [orm].[orm_values_decimal]
 as
 	select	t.name as [template]
 		,	o.name as [instance]
@@ -76,11 +76,11 @@ as
 GO
 
 
-IF OBJECT_ID('[dbo].[orm_values_datetime]', 'V') IS NOT NULL
-	DROP VIEW [dbo].[orm_values_datetime]
+IF OBJECT_ID('[orm].[orm_values_datetime]', 'V') IS NOT NULL
+	DROP VIEW [orm].[orm_values_datetime]
 go
 
-create view [dbo].[orm_values_datetime]
+create view [orm].[orm_values_datetime]
 as
 	select	t.name as [template]
 		,	o.name as [instance]
