@@ -31,10 +31,14 @@ begin
 		,	@insertMerge nvarchar(max)
 
 		,	@templateName varchar(250)
+		,	@templateNameQuoted varchar(250)
+		,	@templateNameSanitized varchar(250)
 
 	set @templateName = (select top 1 name from [orm_meta].[templates] where templateID = @templateID)
+	set @templateNameQuoted = QUOTENAME(@templateName)
+	set @templateNameSanitized = orm_meta.sanitize_string(@templateNameQuoted)
 
-	set @stringColumns =	(	select '[' + name + '],' 
+	set @stringColumns =	(	select QUOTENAME(name) + ',' 
 								from [orm_meta].[properties] as p
 								where	p.datatypeID = 1 
 									and (p.isExtended is NULL or p.isExtended = 0) 
@@ -46,7 +50,7 @@ begin
 		else
 			set @stringColumns = ''
 
-	set @integerColumns =	(	select '[' + name + '],' 
+	set @integerColumns =	(	select QUOTENAME(name) + ',' 
 								from [orm_meta].[properties] as p
 								where	p.datatypeID = 2 
 									and (p.isExtended is NULL or p.isExtended = 0) 
@@ -58,7 +62,7 @@ begin
 		else
 			set @integerColumns = ''
 
-	set @decimalColumns =	(	select '[' + name + '],' 
+	set @decimalColumns =	(	select QUOTENAME(name) + ',' 
 								from [orm_meta].[properties] as p
 								where	p.datatypeID = 3 
 									and (p.isExtended is NULL or p.isExtended = 0) 
@@ -70,7 +74,7 @@ begin
 		else
 			set @decimalColumns = ''
 
-	set @datetimeColumns =	(	select '[' + name + '],' 
+	set @datetimeColumns =	(	select QUOTENAME(name) + ',' 
 								from [orm_meta].[properties] as p
 								where	p.datatypeID = 4
 									and (p.isExtended is NULL or p.isExtended = 0) 
@@ -82,7 +86,7 @@ begin
 		else
 			set @datetimeColumns = ''
 
-	set @instanceColumns =	(	select '[' + name + '],' 
+	set @instanceColumns =	(	select QUOTENAME(name) + ',' 
 								from [orm_meta].[properties] as p
 								where	not p.datatypeID in (1,2,3,4)
 									and (p.isExtended is NULL or p.isExtended = 0) 
@@ -94,14 +98,14 @@ begin
 	-- @@@_ACTION_CHECK_@@@
 	-- @@@_META_TEMPLATE_NAME_@@@
 	-- @@@_META_TEMPLATE_ID_@@@
-	IF OBJECT_ID('trigger_orm_meta_view_' + @templateName + '_delete', 'TR') IS NOT NULL
+	IF OBJECT_ID('trigger_orm_meta_view_' + @templateNameSanitized + '_delete', 'TR') IS NOT NULL
 		set @actionCheck = 'alter'
 	else
 		set @actionCheck = 'create'
 
 	set @deleteTriggerSQL = '
-		@@@_ACTION_CHECK_@@@ trigger trigger_orm_meta_view_@@@_META_TEMPLATE_NAME_@@@_delete
-			on [dbo].[@@@_META_TEMPLATE_NAME_@@@]
+		@@@_ACTION_CHECK_@@@ trigger trigger_orm_meta_view_@@@_META_TEMPLATE_NAME_SANITIZED_@@@_delete
+			on [dbo].@@@_META_TEMPLATE_NAME_@@@
 			instead of delete
 		as 
 		begin
@@ -115,7 +119,8 @@ begin
 		end
 	'
 	set @deleteTriggerSQL = replace(@deleteTriggerSQL, '@@@_ACTION_CHECK_@@@', @actionCheck)
-	set @deleteTriggerSQL = replace(@deleteTriggerSQL, '@@@_META_TEMPLATE_NAME_@@@', @templateName)
+	set @deleteTriggerSQL = replace(@deleteTriggerSQL, '@@@_META_TEMPLATE_NAME_@@@', @templateNameQuoted)
+	set @deleteTriggerSQL = replace(@deleteTriggerSQL, '@@@_META_TEMPLATE_NAME_SANITIZED_@@@', @templateNameSanitized)
 	set @deleteTriggerSQL = replace(@deleteTriggerSQL, '@@@_META_TEMPLATE_ID_@@@', @templateID)
 
 
@@ -123,14 +128,14 @@ begin
 	-- @@@_ACTION_CHECK_@@@
 	-- @@@_META_TEMPLATE_NAME_@@@
 	-- @@@_META_TEMPLATE_ID_@@@
-	IF OBJECT_ID('trigger_orm_meta_view_' + @templateName + '_update', 'TR') IS NOT NULL
+	IF OBJECT_ID('trigger_orm_meta_view_' + @templateNameSanitized + '_update', 'TR') IS NOT NULL
 		set @actionCheck = 'alter'
 	else
 		set @actionCheck = 'create'
 
 	set @updateTriggerSQL = '
-		@@@_ACTION_CHECK_@@@ trigger trigger_orm_meta_view_@@@_META_TEMPLATE_NAME_@@@_update
-			on [dbo].[@@@_META_TEMPLATE_NAME_@@@]
+		@@@_ACTION_CHECK_@@@ trigger trigger_orm_meta_view_@@@_META_TEMPLATE_NAME_SANITIZED_@@@_update
+			on [dbo].@@@_META_TEMPLATE_NAME_@@@
 			instead of update
 		as 
 		begin
@@ -169,7 +174,8 @@ begin
 	'
 
 	set @updateTriggerSQL = replace(@updateTriggerSQL,'@@@_ACTION_CHECK_@@@', @actionCheck)
-	set @updateTriggerSQL = replace(@updateTriggerSQL,'@@@_META_TEMPLATE_NAME_@@@', @templateName)
+	set @updateTriggerSQL = replace(@updateTriggerSQL, '@@@_META_TEMPLATE_NAME_@@@', @templateNameQuoted)
+	set @updateTriggerSQL = replace(@updateTriggerSQL, '@@@_META_TEMPLATE_NAME_SANITIZED_@@@', @templateNameSanitized)
 	set @updateTriggerSQL = replace(@updateTriggerSQL,'@@@_META_TEMPLATE_ID_@@@', @templateID)
 
 	set @updateMergeTemplate = '
@@ -290,14 +296,14 @@ begin
 	-- @@@_ACTION_CHECK_@@@
 	-- @@@_META_TEMPLATE_NAME_@@@
 	-- @@@_META_TEMPLATE_ID_@@@
-	IF OBJECT_ID('trigger_orm_meta_view_' + @templateName + '_insert', 'TR') IS NOT NULL
+	IF OBJECT_ID('trigger_orm_meta_view_' + @templateNameSanitized + '_insert', 'TR') IS NOT NULL
 		set @actionCheck = 'alter'
 	else
 		set @actionCheck = 'create'
 
 	set @insertTriggerSQL = '
-	@@@_ACTION_CHECK_@@@ trigger trigger_orm_meta_view_@@@_META_TEMPLATE_NAME_@@@_insert
-		on [dbo].[@@@_META_TEMPLATE_NAME_@@@]
+	@@@_ACTION_CHECK_@@@ trigger trigger_orm_meta_view_@@@_META_TEMPLATE_NAME_SANITIZED_@@@_insert
+		on [dbo].@@@_META_TEMPLATE_NAME_@@@
 		instead of insert
 	as 
 	begin
@@ -344,7 +350,8 @@ begin
 	'
 
 	set @insertTriggerSQL = replace(@insertTriggerSQL,'@@@_ACTION_CHECK_@@@', @actionCheck)
-	set @insertTriggerSQL = replace(@insertTriggerSQL,'@@@_META_TEMPLATE_NAME_@@@', @templateName)
+	set @insertTriggerSQL = replace(@insertTriggerSQL, '@@@_META_TEMPLATE_NAME_@@@', @templateNameQuoted)
+	set @insertTriggerSQL = replace(@insertTriggerSQL, '@@@_META_TEMPLATE_NAME_SANITIZED_@@@', @templateNameSanitized)
 	set @insertTriggerSQL = replace(@insertTriggerSQL,'@@@_META_TEMPLATE_ID_@@@', @templateID)
 
 

@@ -16,29 +16,29 @@ declare @String_Type_ID   int
 
 -- Create the types
 insert into [orm_meta].[templates] (name)
-values ('FirstType'),('AnotherThing')
-exec [orm].[template_add] 'ThirdType'
+values ('First Type'),('Another Thing')
+exec [orm].[template_add] 'Third Type'
 
 -- For convenience get the IDs for the types
 declare @FirstType_ID int
 	,	@AnotherThing_ID int
 	,	@ThirdType_ID int
-	set @FirstType_ID    = (select top 1 templateid from [orm_meta].[templates] where name = 'FirstType')
-	set @AnotherThing_ID = (select top 1 templateid from [orm_meta].[templates] where name = 'AnotherThing')
-	set @ThirdType_ID    = (select top 1 templateid from [orm_meta].[templates] where name = 'ThirdType')
+	set @FirstType_ID    = (select top 1 templateid from [orm_meta].[templates] where name = 'First Type')
+	set @AnotherThing_ID = (select top 1 templateid from [orm_meta].[templates] where name = 'Another Thing')
+	set @ThirdType_ID    = (select top 1 templateid from [orm_meta].[templates] where name = 'Third Type')
 
 
 -- Add some properties to the types
-exec [orm].[property_add] 'FirstType', 'Integer', 'bigint'
+exec [orm].[property_add] 'First Type', 'Integer', 'bigint'
 insert into [orm_meta].[properties] (templateID, name, datatypeID)
 values	(5, 'String', 1) -- 5 happens to be the first ID after the base 4. 
 	,	(@FirstType_ID, 'DT', @Datetime_Type_ID)
 
-exec [orm].[property_add] 'AnotherThing', 'Realish', 'decimal(19,8)'
-exec [orm].[property_add] 'AnotherThing', 'Real2', 'decimal(19,8)'
+exec [orm].[property_add] 'Another Thing', 'Realish', 'decimal(19,8)'
+exec [orm].[property_add] 'Another Thing', 'Real 2', 'decimal(19,8)'
 
 insert into [orm_meta].[properties] (templateID, name, datatypeID)
-values	(@ThirdType_ID, 'AddonProp', 1)
+values	(@ThirdType_ID, 'Addon Prop', 1)
 	,	(@ThirdType_ID, 'Beginning', @Datetime_Type_ID)
 	,	(@ThirdType_ID, 'Ending', 4)
 
@@ -47,8 +47,8 @@ insert into [orm_meta].[instances] (templateID, name)
 values	(5, 'FirstObj')
 	,	(@ThirdType_ID, 'ThirdObj')
 
-exec [orm].[instance_add] 'AnotherThing', 'AnotherObj'
-exec [orm].[instance_add] 'AnotherThing', 'AnotherObject2'
+exec [orm].[instance_add] 'Another Thing', 'Another Obj'
+exec [orm].[instance_add] 'Another Thing', 'AnotherObject2'
 
 declare @FirstObj_ID int
 	,	@ThirdObj_ID int
@@ -56,16 +56,16 @@ declare @FirstObj_ID int
 	,	@AnotherObject2 int
 	set @FirstObj_ID    = (select top 1 instanceID from [orm_meta].[instances] where name = 'FirstObj')
 	set @ThirdObj_ID    = (select top 1 instanceID from [orm_meta].[instances] where name = 'ThirdObj')
-	set @AnotherObj_ID  = (select top 1 instanceID from [orm_meta].[instances] where name = 'AnotherObj')
+	set @AnotherObj_ID  = (select top 1 instanceID from [orm_meta].[instances] where name = 'Another Obj')
 	set @AnotherObject2 = (select top 1 instanceID from [orm_meta].[instances] where name = 'AnotherObject2')
 
 
 -- Add some data
-exec [orm].[value_change] 'FirstType', 'FirstObj', 'String', 'First words.'
-exec [orm].[value_change_datetime] 'FirstType', 'FirstObj', 'DT', '2020-02-20 20:02'
+exec [orm].[value_change] 'First Type', 'FirstObj', 'String', 'First words.'
+exec [orm].[value_change_datetime] 'First Type', 'FirstObj', 'DT', '2020-02-20 20:02'
 
 declare @templateID int, @instanceID int, @propertyID int
-	set @templateID	= (select top 1 templateID from [orm_meta].[templates] where name = 'FirstType')
+	set @templateID	= (select top 1 templateID from [orm_meta].[templates] where name = 'First Type')
 	set @instanceID	= (select top 1 instanceID from [orm_meta].[instances] where name = 'FirstObj' and templateID = @templateID)
 	set @propertyID	= (select top 1 propertyID from [orm_meta].[properties] where name = 'DT' and templateID = @templateID)
 
@@ -74,5 +74,5 @@ insert into [orm_meta].[values_decimal] (instanceID, propertyID, value)
 			, (select top 1 propertyID  
 			   from [orm_meta].[properties]  
 			   where templateID = @AnotherThing_ID 
-			   and name = 'Real2')
+			   and name = 'Real 2')
 			, 123.45)

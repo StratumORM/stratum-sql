@@ -56,14 +56,14 @@ begin
 		end
 
 	-- Verify the names are safe
-	if (exists(	select i.propertyID
-				from inserted as i
-				where i.name <> [orm_meta].[sanitize_string](i.name) ))
-		begin
-			rollback transaction	
-			raiserror('Property name is not purely alphanumeric.', 16, 10)
-			return
-		end
+	-- if (exists(	select i.propertyID
+	-- 			from inserted as i
+	-- 			where i.name <> [orm_meta].[sanitize_string](i.name) ))
+	-- 	begin
+	-- 		rollback transaction	
+	-- 		raiserror('Property name is not purely alphanumeric.', 16, 10)
+	-- 		return
+	-- 	end
 
 	-- To further simplify things, this procedure will use a table variable so we can more easily reference
 	--	and massage the masked property data.
@@ -218,14 +218,14 @@ begin
 		end	
 
 	-- Verify the names are safe
-	if (exists(	select i.propertyID
-				from inserted as i
-				where i.name <> [orm_meta].[sanitize_string](i.name) ))
-		begin
-			rollback transaction		
-			raiserror('Property name is not purely alphanumeric.', 16, 10)
-			return
-		end	
+	-- if (exists(	select i.propertyID
+	-- 			from inserted as i
+	-- 			where i.name <> [orm_meta].[sanitize_string](i.name) ))
+	-- 	begin
+	-- 		rollback transaction		
+	-- 		raiserror('Property name is not purely alphanumeric.', 16, 10)
+	-- 		return
+	-- 	end	
 
 	-- To make things simpler, the query that generates the report on what properties are masked is
 	--	abstracted out to a table valued function. These have the restriction that we can only pass in 

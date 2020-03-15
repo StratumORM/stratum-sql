@@ -14,15 +14,15 @@ as
 begin
 
 	-- Make sure the templateName is legal (since this will go into dynamic sql)
-	select i.name
-	from inserted as i
-	where i.name <> [orm_meta].[sanitize_string](i.name)
-	if @@ROWCOUNT <> 0 
-		begin
-			rollback transaction		
-			raiserror('Template name not purely alphanumeric.', 16, 10)
-			return
-		end	
+	-- select i.name
+	-- from inserted as i
+	-- where i.name <> [orm_meta].[sanitize_string](i.name)
+	-- if @@ROWCOUNT <> 0 
+	-- 	begin
+	-- 		rollback transaction		
+	-- 		raiserror('Template name not purely alphanumeric.', 16, 10)
+	-- 		return
+	-- 	end	
 
 	-- Make sure it doesn't already exist
 	select t.templateID 
@@ -81,15 +81,15 @@ as
 begin
 
 	-- Make sure the templateName is legal (since this will go into dynamic sql)
-	select i.name
-	from inserted as i
-	where i.name <> [orm_meta].[sanitize_string](i.name)
-	if @@ROWCOUNT <> 0 
-		begin
-			rollback transaction		
-			raiserror('Template name not purely alphanumeric.', 16, 10)
-			return
-		end	
+	-- select i.name
+	-- from inserted as i
+	-- where i.name <> [orm_meta].[sanitize_string](i.name)
+	-- if @@ROWCOUNT <> 0 
+	-- 	begin
+	-- 		rollback transaction		
+	-- 		raiserror('Template name not purely alphanumeric.', 16, 10)
+	-- 		return
+	-- 	end	
 
 	-- Perform the update
 	update t
@@ -118,7 +118,7 @@ begin
 	while @@FETCH_STATUS = 0
 	begin
 
-		set @dropQuery = 'drop view ' + @templateName
+		set @dropQuery = 'drop view ' + QUOTENAME(@templateName)
 		exec sp_executesql @dropQuery
 
 		exec [orm_meta].[generate_template_view_wide] @templateID

@@ -25,7 +25,10 @@ begin
 
     declare @KeepValues varchar(50)
     	Set @KeepValues = '%[^a-z0-9A-Z_]%'
-    	
+
+    SET @Temp = replace(@Temp, '[', '_')
+    SET @Temp = replace(@Temp, ']', '_')
+
     While PatIndex(@KeepValues, @Temp) > 0
         Set @Temp = Stuff(@Temp, PatIndex(@KeepValues, @Temp), 1, '')
 

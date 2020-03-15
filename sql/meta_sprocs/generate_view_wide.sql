@@ -27,35 +27,35 @@ begin
 
 	set @templateName = (select top 1 name from [orm_meta].[templates] where templateID = @templateID)
 
-	set @stringColumns =	(	select '[' + name + '],' 
+	set @stringColumns =	(	select QUOTENAME(name) + ',' 
 								from [orm_meta].[properties] as p
 								where	p.datatypeID = 1 
 									and (p.isExtended is NULL or p.isExtended = 0) 
 									and p.templateID = @templateID 
 								for xml path(''))
 
-	set @integerColumns =	(	select '[' + name + '],' 
+	set @integerColumns =	(	select QUOTENAME(name) + ','
 								from [orm_meta].[properties] as p
 								where	p.datatypeID = 2 
 									and (p.isExtended is NULL or p.isExtended = 0) 
 									and p.templateID = @templateID 
 								for xml path(''))
 
-	set @decimalColumns =	(	select '[' + name + '],' 
+	set @decimalColumns =	(	select QUOTENAME(name) + ','
 								from [orm_meta].[properties] as p
 								where	p.datatypeID = 3 
 									and (p.isExtended is NULL or p.isExtended = 0) 
 									and p.templateID = @templateID 
 								for xml path(''))
 
-	set @datetimeColumns =	(	select '[' + name + '],' 
+	set @datetimeColumns =	(	select QUOTENAME(name) + ','
 								from [orm_meta].[properties] as p
 								where	p.datatypeID = 4
 									and (p.isExtended is NULL or p.isExtended = 0) 
 									and p.templateID = @templateID 
 								for xml path(''))
 
-	set @instanceColumns =	(	select '[' + name + '],' 
+	set @instanceColumns =	(	select QUOTENAME(name) + ','
 								from [orm_meta].[properties] as p
 								where	not p.datatypeID in (1,2,3,4)
 									and (p.isExtended is NULL or p.isExtended = 0) 
@@ -63,12 +63,12 @@ begin
 								for xml path(''))
 
 
-	IF OBJECT_ID('[dbo].[' + @templateName + ']', 'V') IS NOT NULL
+	IF OBJECT_ID('[dbo].' + QUOTENAME(@templateName), 'V') IS NOT NULL
 		set @query = 'alter'
 	else
 		set @query = 'create'
 
-	set @query = @query + ' view [' + @templateName + ']
+	set @query = @query + ' view ' + QUOTENAME(@templateName) + '
 	as
 	select	o.name as InstanceName '
 
