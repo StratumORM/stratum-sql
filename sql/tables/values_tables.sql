@@ -14,7 +14,7 @@ create table [orm_meta].[values_string]
 
 ,	constraint pk_orm_meta_values_string_instance_property primary key (instance_id, property_id)
 ,	constraint fk_orm_meta_values_string_instance foreign key (instance_id) references [orm_meta].[instances] (instance_id) on delete cascade
-,	constraint fk_orm_meta_values_string_property foreign key (property_id) references [orm_meta].[properties] (property_id) 
+,	constraint fk_orm_meta_values_string_property foreign key (property_id) references [orm_meta].[properties] (property_id) on delete cascade
 )
 go
 
@@ -31,7 +31,7 @@ create table [orm_meta].[values_integer]
 
 ,	constraint pk_orm_meta_values_integer_instance_property primary key (instance_id, property_id)
 ,	constraint fk_orm_meta_values_integer_instance foreign key (instance_id) references [orm_meta].[instances] (instance_id) on delete cascade
-,	constraint fk_orm_meta_values_integer_property foreign key (property_id) references [orm_meta].[properties] (property_id) 
+,	constraint fk_orm_meta_values_integer_property foreign key (property_id) references [orm_meta].[properties] (property_id) on delete cascade
 )
 go
 
@@ -48,7 +48,7 @@ create table [orm_meta].[values_decimal]
 
 ,	constraint pk_orm_meta_values_decimal_instance_property primary key (instance_id, property_id)
 ,	constraint fk_orm_meta_values_decimal_instance foreign key (instance_id) references [orm_meta].[instances] (instance_id) on delete cascade
-,	constraint fk_orm_meta_values_decimal_property foreign key (property_id) references [orm_meta].[properties] (property_id) 
+,	constraint fk_orm_meta_values_decimal_property foreign key (property_id) references [orm_meta].[properties] (property_id) on delete cascade
 )
 go
 
@@ -65,7 +65,7 @@ create table [orm_meta].[values_datetime]
 
 ,	constraint pk_orm_meta_values_datetime_instance_property primary key (instance_id, property_id)
 ,	constraint fk_orm_meta_values_datetime_instance foreign key (instance_id) references [orm_meta].[instances] (instance_id) on delete cascade
-,	constraint fk_orm_meta_values_datetime_property foreign key (property_id) references [orm_meta].[properties] (property_id)
+,	constraint fk_orm_meta_values_datetime_property foreign key (property_id) references [orm_meta].[properties] (property_id) on delete cascade
 )
 go
 
@@ -82,7 +82,7 @@ create table [orm_meta].[values_instance]
 
 ,	constraint pk_orm_meta_values_instances_instance_property_instance_name primary key (instance_id, property_id, value)
 ,	constraint fk_orm_meta_values_instances_instance foreign key (instance_id) references [orm_meta].[instances] (instance_id) on delete cascade
-,	constraint fk_orm_meta_values_instances_property foreign key (property_id) references [orm_meta].[properties] (property_id) 
+,	constraint fk_orm_meta_values_instances_property foreign key (property_id) references [orm_meta].[properties] (property_id) on delete cascade
 )
 create index ix_orm_meta_values_instances_instance_property on [orm_meta].[values_instance] (instance_id, property_id)
 go
