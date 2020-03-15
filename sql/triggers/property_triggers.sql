@@ -3,12 +3,12 @@ Adding property table triggers...'
 
 
 
-if object_id('[dbo].[trigger_orm_meta_properties_insert]', 'TR')  is not null
-	drop trigger dbo.trigger_orm_meta_properties_insert
+if object_id('[orm_meta].[properties_insert]', 'TR')  is not null
+	drop trigger [orm_meta].[properties_insert]
 go
 
-create trigger trigger_orm_meta_properties_insert
-	on dbo.orm_meta_properties
+create trigger [orm_meta].[properties_insert]
+	on [orm_meta].[properties]
 	instead of insert
 as 
 begin
@@ -18,11 +18,11 @@ begin
 		select distinct
 			tree.templateID
 		from inserted as i
-			cross apply dbo.orm_meta_templateTree(i.templateID) as tree
+			cross apply [orm_meta].[templateTree](i.templateID) as tree
 
 	-- Referential integrity checks (needed instead of foreign keys due to constraint checks coming before triggers)
 	if (exists(	select i.templateID
-				from orm_meta_templates as t
+				from [orm_meta].[templates] as t
 					right join inserted as i
 						on t.templateID = i.templateID
 				where t.templateID is null)) 
@@ -33,7 +33,7 @@ begin
 		end
 
 	if (exists(	select i.datatypeID
-				from orm_meta_templates as t
+				from [orm_meta].[templates] as t
 					right join inserted as i
 						on t.templateID = i.datatypeID
 				where t.templateID is null)) 
@@ -46,7 +46,7 @@ begin
 	-- Check that no property inserted already exists.
 	if (exists(	select i.propertyID
 				from inserted as i
-					inner join orm_meta_properties as p
+					inner join [orm_meta].[properties] as p
 						on	i.templateID = p.templateID
 						and i.name = p.name))
 		begin
@@ -56,14 +56,14 @@ begin
 		end
 
 	-- Verify the names are safe
-	if (exists(	select i.propertyID
-				from inserted as i
-				where i.name <> dbo.meta_sanitize_string(i.name) ))
-		begin
-			rollback transaction	
-			raiserror('Property name is not purely alphanumeric.', 16, 10)
-			return
-		end
+	-- if (exists(	select i.propertyID
+	-- 			from inserted as i
+	-- 			where i.name <> [orm_meta].[sanitize_string](i.name) ))
+	-- 	begin
+	-- 		rollback transaction	
+	-- 		raiserror('Property name is not purely alphanumeric.', 16, 10)
+	-- 		return
+	-- 	end
 
 	-- To further simplify things, this procedure will use a table variable so we can more easily reference
 	--	and massage the masked property data.
@@ -72,7 +72,7 @@ begin
 							current_propertyID int, current_templateID int, current_name varchar(250), current_datatypeID int, current_isExtended int, current_signature nvarchar(max))
 
 	-- Insert the rows
-	insert into orm_meta_properties (templateID, name, datatypeID, isExtended, signature)
+	insert into [orm_meta].[properties] (templateID, name, datatypeID, isExtended, signature)
 	select templateID, name, datatypeID, isExtended, signature
 	from inserted as i
 
@@ -98,7 +98,7 @@ begin
 		,	p.current_datatypeID
 		,	p.current_isExtended
 		,	p.current_signature	
-	from dbo.orm_meta_resolve_properties(@templateIDs) as p
+	from [orm_meta].[resolve_properties](@templateIDs) as p
 
 	-- Next, we need to perform a sanity check. 
 	-- If a child is inheriting a property datatype change, then fail the transaction.
@@ -113,7 +113,7 @@ begin
 
 	-- Merge in the missing properties, inserting any properties that don't already exist
 	--	... but only the ones that *need* to
-	merge into orm_meta_properties as d
+	merge into [orm_meta].[properties] as d
 	using (	select	m.current_propertyID as propertyID
 				,	m.scoped_templateID as templateID
 				,	m.masking_name as name
@@ -144,7 +144,7 @@ begin
 	
 	while @@FETCH_STATUS = 0
 	begin
-		exec orm_meta_generate_template_view_wide @templateID
+		exec [orm_meta].[generate_template_view_wide] @templateID
 
 		fetch next from templateIDcursor into @templateID
 	end
@@ -156,12 +156,12 @@ go
 
 
 
-if object_id('[dbo].[trigger_orm_meta_properties_update]', 'TR')  is not null
-	drop trigger dbo.trigger_orm_meta_properties_update
+if object_id('[orm_meta].[properties_update]', 'TR')  is not null
+	drop trigger [orm_meta].[properties_update]
 go
 
-create trigger trigger_orm_meta_properties_update
-	on dbo.orm_meta_properties
+create trigger [orm_meta].[properties_update]
+	on [orm_meta].[properties]
 	instead of update
 as 
 begin
@@ -179,7 +179,7 @@ begin
 
 	-- Referential integrity checks (needed instead of foreign keys due to constraint checks coming before triggers)
 	if (exists(	select i.templateID
-				from orm_meta_templates as t
+				from [orm_meta].[templates] as t
 					right join inserted as i
 						on t.templateID = i.templateID
 				where t.templateID is null)) 
@@ -190,7 +190,7 @@ begin
 		end	
 		
 	if (exists(	select i.datatypeID
-				from orm_meta_templates as t
+				from [orm_meta].[templates] as t
 					right join inserted as i
 						on t.templateID = i.datatypeID
 				where t.templateID is null)) 
@@ -204,7 +204,7 @@ begin
 	-- (and make sure we're not merely double counting one that is merely changing )
 	if (exists(	select i.propertyID
 				from inserted as i
-					inner join orm_meta_properties as p
+					inner join [orm_meta].[properties] as p
 						on	i.templateID = p.templateID
 						and i.name = p.name
 				where i.propertyID not in (	select d.propertyID
@@ -218,14 +218,14 @@ begin
 		end	
 
 	-- Verify the names are safe
-	if (exists(	select i.propertyID
-				from inserted as i
-				where i.name <> dbo.meta_sanitize_string(i.name) ))
-		begin
-			rollback transaction		
-			raiserror('Property name is not purely alphanumeric.', 16, 10)
-			return
-		end	
+	-- if (exists(	select i.propertyID
+	-- 			from inserted as i
+	-- 			where i.name <> [orm_meta].[sanitize_string](i.name) ))
+	-- 	begin
+	-- 		rollback transaction		
+	-- 		raiserror('Property name is not purely alphanumeric.', 16, 10)
+	-- 		return
+	-- 	end	
 
 	-- To make things simpler, the query that generates the report on what properties are masked is
 	--	abstracted out to a table valued function. These have the restriction that we can only pass in 
@@ -263,7 +263,7 @@ begin
 		,	p.current_datatypeID
 		,	p.current_isExtended
 		,	p.current_signature	
-	from dbo.orm_meta_resolve_properties(@templateIDs) as p
+	from [orm_meta].[resolve_properties](@templateIDs) as p
 
 	-- Grab the templates that are going to potentially be affected by the changes.
 	-- We'll use this later to rebuild the wide views.
@@ -278,7 +278,7 @@ begin
 	-- Cascading deletes will take 'care' of the values currently associated with them.
 	delete p
 	output deleted.propertyID into @deletedProperties -- deleted is scoped to THIS statement!
-	from orm_meta_properties as p
+	from [orm_meta].[properties] as p
 		inner join @masking as m
 			on p.propertyID = m.current_propertyID
 		inner join @inserted as i
@@ -288,7 +288,7 @@ begin
 	where i.datatypeID <> d.datatypeID
 
 	-- Cascade delete the removed properties
-	exec orm_meta_cascadeDelete_property @deletedProperties
+	exec [orm_meta].[cascadeDelete_property] @deletedProperties
 	-- Reset for next deletion
 	delete from @deletedProperties
 
@@ -383,7 +383,7 @@ begin
 	-- removed these displaced properties from both the main table...
 	delete p
 	output deleted.propertyID into @deletedProperties -- deleted is scoped to THIS statement!		
-	from orm_meta_properties as p
+	from [orm_meta].[properties] as p
 		inner join @deadPigeons as dp
 			on p.propertyID = dp.id
 	-- ... and the mask (to make sure they're not just re-inserted!)
@@ -393,7 +393,7 @@ begin
 			on m.masking_propertyID = dp.id
 
 	-- Cascade delete the removed properties
-	exec orm_meta_cascadeDelete_property @deletedProperties
+	exec [orm_meta].[cascadeDelete_property] @deletedProperties
 	-- Reset for next deletion
 	delete from @deletedProperties			
 
@@ -401,7 +401,7 @@ begin
 	-- This is the first set of two corrections.
 	-- Once this is applied, we'll double check the masking again to see
 	--	if any new properties were uncovered. If so, add these in.
-	merge into orm_meta_properties as d
+	merge into [orm_meta].[properties] as d
 	using (	select	scoped_templateID
 				,	masking_propertyID
 				,	masking_templateID
@@ -466,14 +466,14 @@ begin
 		,	p.current_datatypeID
 		,	p.current_isExtended
 		,	p.current_signature	
-	from dbo.orm_meta_resolve_properties(@templateIDs) as p
+	from [orm_meta].[resolve_properties](@templateIDs) as p
 
 	-- The final pass here will do two things:
 	--  1) add new properties that were uncovered by the previous merge
 	--	2) re-solve and verify if properties are optional (which may have changed)
 	-- This merge is simpler since the only properties that can be wrong are either missing
 	--	or are marked (non)optional.
-	merge into orm_meta_properties as d
+	merge into [orm_meta].[properties] as d
 	using (	select	scoped_templateID
 				,	masking_propertyID
 				,	masking_templateID
@@ -526,7 +526,7 @@ begin
 	
 	while @@FETCH_STATUS = 0
 	begin
-		exec orm_meta_generate_template_view_wide @templateID
+		exec [orm_meta].[generate_template_view_wide] @templateID
 
 		fetch next from templateIDcursor into @templateID
 	end
@@ -537,12 +537,12 @@ end
 go
 
 
-if object_id('[dbo].[trigger_orm_meta_properties_delete]', 'TR')  is not null
-	drop trigger dbo.trigger_orm_meta_properties_delete
+if object_id('[orm_meta].[properties_delete]', 'TR')  is not null
+	drop trigger [orm_meta].[properties_delete]
 go
 
-create trigger trigger_orm_meta_properties_delete
-	on dbo.orm_meta_properties
+create trigger [orm_meta].[properties_delete]
+	on [orm_meta].[properties]
 	instead of delete
 as 
 begin
@@ -552,14 +552,14 @@ begin
 	select distinct
 		tree.templateID
 	from deleted as d
-		cross apply dbo.orm_meta_templateTree(d.templateID) as tree
+		cross apply [orm_meta].[templateTree](d.templateID) as tree
 
 	-- Only allow deletion for properties that are uncovered!
 	--	and be sure to get children masked by it as well!
 	; with involvedProperties as
 	(
 		select m.masked_propertyID, m.masked_templateID, m.current_propertyID, m.current_templateID
-		from dbo.orm_meta_resolve_properties(@templateIDs) as m
+		from [orm_meta].[resolve_properties](@templateIDs) as m
 	)
 	,	uncovered as
 	(
@@ -571,12 +571,12 @@ begin
 	)													-- the top-most one.
 	delete p
 	output deleted.propertyID into @deletedProperties -- deleted is scoped to THIS statement!		
-	from orm_meta_properties as p 
+	from [orm_meta].[properties] as p 
 		inner join uncovered as u
 			on p.propertyID = u.propertyID
 
 	-- Cascade delete the removed properties
-	exec orm_meta_cascadeDelete_property @deletedProperties
+	exec [orm_meta].[cascadeDelete_property] @deletedProperties
 
 	-- Finally, loop over all the templateIDs that were affected by the insert/delete
 	declare @templateID int
@@ -594,7 +594,7 @@ begin
 	
 	while @@FETCH_STATUS = 0
 	begin
-		exec orm_meta_generate_template_view_wide @templateID
+		exec [orm_meta].[generate_template_view_wide] @templateID
 
 		fetch next from templateIDcursor into @templateID
 	end

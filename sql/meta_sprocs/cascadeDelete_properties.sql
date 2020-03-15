@@ -1,11 +1,11 @@
 print '
 Generating value cleanup sproc...'
 
-IF OBJECT_ID('[dbo].[orm_meta_cascadeDelete_property]', 'P') IS NOT NULL
-	DROP PROCEDURE [dbo].orm_meta_cascadeDelete_property
+IF OBJECT_ID('[orm_meta].[cascadeDelete_property]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm_meta].[cascadeDelete_property]
 go
 
-create procedure orm_meta_cascadeDelete_property
+create procedure [orm_meta].[cascadeDelete_property]
 	@propertyIDs identities READONLY
 as
 begin
@@ -16,27 +16,27 @@ begin transaction cascadedPropertyDelete
 
 	-- Perform the cascading delete on the values tables 
 	delete v
-	from orm_meta_values_string as v 
+	from [orm_meta].[values_string] as v 
 		inner join @propertyIDs as dp 
 			on v.propertyID = dp.id
 
 	delete v
-	from orm_meta_values_integer as v 
+	from [orm_meta].[values_integer] as v 
 		inner join @propertyIDs as dp 
 			on v.propertyID = dp.id
 		
 	delete v
-	from orm_meta_values_decimal as v 
+	from [orm_meta].[values_decimal] as v 
 		inner join @propertyIDs as dp 
 			on v.propertyID = dp.id
 		
 	delete v
-	from orm_meta_values_datetime as v 
+	from [orm_meta].[values_datetime] as v 
 		inner join @propertyIDs as dp 
 			on v.propertyID = dp.id
 		
 	delete v
-	from orm_meta_values_instance as v 
+	from [orm_meta].[values_instance] as v 
 		inner join @propertyIDs as dp 
 			on v.propertyID = dp.id
 

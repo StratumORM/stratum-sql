@@ -75,3 +75,7 @@ go
 alter role db_owner add member orm_test_user
 go
 
+create schema orm 
+go
+create schema orm_meta
+go

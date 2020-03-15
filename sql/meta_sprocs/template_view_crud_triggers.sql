@@ -2,12 +2,12 @@ print '
 Generating template dynamic view triggers...'
 
 
-IF OBJECT_ID('[dbo].[orm_meta_generate_template_view_triggers]', 'P') IS NOT NULL
-	DROP PROCEDURE [dbo].orm_meta_generate_template_view_triggers
+IF OBJECT_ID('[orm_meta].[generate_template_view_triggers]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm_meta].[generate_template_view_triggers]
 go
 
 
-create procedure [dbo].[orm_meta_generate_template_view_triggers]
+create procedure [orm_meta].[generate_template_view_triggers]
 	@templateID int
 as
 begin
@@ -31,11 +31,15 @@ begin
 		,	@insertMerge nvarchar(max)
 
 		,	@templateName varchar(250)
+		,	@templateNameQuoted varchar(250)
+		,	@templateNameSanitized varchar(250)
 
-	set @templateName = (select top 1 name from orm_meta_templates where templateID = @templateID)
+	set @templateName = (select top 1 name from [orm_meta].[templates] where templateID = @templateID)
+	set @templateNameQuoted = QUOTENAME(@templateName)
+	set @templateNameSanitized = orm_meta.sanitize_string(@templateNameQuoted)
 
-	set @stringColumns =	(	select '[' + name + '],' 
-								from orm_meta_properties as p
+	set @stringColumns =	(	select QUOTENAME(name) + ',' 
+								from [orm_meta].[properties] as p
 								where	p.datatypeID = 1 
 									and (p.isExtended is NULL or p.isExtended = 0) 
 									and p.templateID = @templateID 
@@ -46,8 +50,8 @@ begin
 		else
 			set @stringColumns = ''
 
-	set @integerColumns =	(	select '[' + name + '],' 
-								from orm_meta_properties as p
+	set @integerColumns =	(	select QUOTENAME(name) + ',' 
+								from [orm_meta].[properties] as p
 								where	p.datatypeID = 2 
 									and (p.isExtended is NULL or p.isExtended = 0) 
 									and p.templateID = @templateID 
@@ -58,8 +62,8 @@ begin
 		else
 			set @integerColumns = ''
 
-	set @decimalColumns =	(	select '[' + name + '],' 
-								from orm_meta_properties as p
+	set @decimalColumns =	(	select QUOTENAME(name) + ',' 
+								from [orm_meta].[properties] as p
 								where	p.datatypeID = 3 
 									and (p.isExtended is NULL or p.isExtended = 0) 
 									and p.templateID = @templateID 
@@ -70,8 +74,8 @@ begin
 		else
 			set @decimalColumns = ''
 
-	set @datetimeColumns =	(	select '[' + name + '],' 
-								from orm_meta_properties as p
+	set @datetimeColumns =	(	select QUOTENAME(name) + ',' 
+								from [orm_meta].[properties] as p
 								where	p.datatypeID = 4
 									and (p.isExtended is NULL or p.isExtended = 0) 
 									and p.templateID = @templateID 
@@ -82,8 +86,8 @@ begin
 		else
 			set @datetimeColumns = ''
 
-	set @instanceColumns =	(	select '[' + name + '],' 
-								from orm_meta_properties as p
+	set @instanceColumns =	(	select QUOTENAME(name) + ',' 
+								from [orm_meta].[properties] as p
 								where	not p.datatypeID in (1,2,3,4)
 									and (p.isExtended is NULL or p.isExtended = 0) 
 									and p.templateID = @templateID 
@@ -94,14 +98,14 @@ begin
 	-- @@@_ACTION_CHECK_@@@
 	-- @@@_META_TEMPLATE_NAME_@@@
 	-- @@@_META_TEMPLATE_ID_@@@
-	IF OBJECT_ID('dbo.trigger_orm_meta_view_' + @templateName + '_delete', 'TR') IS NOT NULL
+	IF OBJECT_ID('trigger_orm_meta_view_' + @templateNameSanitized + '_delete', 'TR') IS NOT NULL
 		set @actionCheck = 'alter'
 	else
 		set @actionCheck = 'create'
 
 	set @deleteTriggerSQL = '
-		@@@_ACTION_CHECK_@@@ trigger trigger_orm_meta_view_@@@_META_TEMPLATE_NAME_@@@_delete
-			on dbo.@@@_META_TEMPLATE_NAME_@@@
+		@@@_ACTION_CHECK_@@@ trigger trigger_orm_meta_view_@@@_META_TEMPLATE_NAME_SANITIZED_@@@_delete
+			on [dbo].@@@_META_TEMPLATE_NAME_@@@
 			instead of delete
 		as 
 		begin
@@ -109,13 +113,14 @@ begin
 				set @templateID = @@@_META_TEMPLATE_ID_@@@
 
 			delete omi
-			from orm_meta_instances as omi
+			from [orm_meta].[instances] as omi
 				inner join deleted as d
 					on d.InstanceID = omi.instanceID
 		end
 	'
 	set @deleteTriggerSQL = replace(@deleteTriggerSQL, '@@@_ACTION_CHECK_@@@', @actionCheck)
-	set @deleteTriggerSQL = replace(@deleteTriggerSQL, '@@@_META_TEMPLATE_NAME_@@@', @templateName)
+	set @deleteTriggerSQL = replace(@deleteTriggerSQL, '@@@_META_TEMPLATE_NAME_@@@', @templateNameQuoted)
+	set @deleteTriggerSQL = replace(@deleteTriggerSQL, '@@@_META_TEMPLATE_NAME_SANITIZED_@@@', @templateNameSanitized)
 	set @deleteTriggerSQL = replace(@deleteTriggerSQL, '@@@_META_TEMPLATE_ID_@@@', @templateID)
 
 
@@ -123,14 +128,14 @@ begin
 	-- @@@_ACTION_CHECK_@@@
 	-- @@@_META_TEMPLATE_NAME_@@@
 	-- @@@_META_TEMPLATE_ID_@@@
-	IF OBJECT_ID('dbo.trigger_orm_meta_view_' + @templateName + '_update', 'TR') IS NOT NULL
+	IF OBJECT_ID('trigger_orm_meta_view_' + @templateNameSanitized + '_update', 'TR') IS NOT NULL
 		set @actionCheck = 'alter'
 	else
 		set @actionCheck = 'create'
 
 	set @updateTriggerSQL = '
-		@@@_ACTION_CHECK_@@@ trigger trigger_orm_meta_view_@@@_META_TEMPLATE_NAME_@@@_update
-			on dbo.@@@_META_TEMPLATE_NAME_@@@
+		@@@_ACTION_CHECK_@@@ trigger trigger_orm_meta_view_@@@_META_TEMPLATE_NAME_SANITIZED_@@@_update
+			on [dbo].@@@_META_TEMPLATE_NAME_@@@
 			instead of update
 		as 
 		begin
@@ -142,8 +147,8 @@ begin
 			declare @updatedColumns table (columnName varchar(100), propertyID int)
 				insert into @updatedColumns (columnName, propertyID)
 				select ducb.COLUMN_NAME, p.propertyID
-				from orm_meta_decodeUpdatedColumnsBitmask( columns_updated(), ''@@@_META_TEMPLATE_NAME_@@@'' ) as ducb
-					inner join orm_meta_properties as p
+				from [orm_meta].[decodeUpdatedColumnsBitmask]( columns_updated(), ''@@@_META_TEMPLATE_NAME_@@@'' ) as ducb
+					inner join [orm_meta].[properties] as p
 						on p.name = ducb.COLUMN_NAME
 				where p.templateID = @templateID
 
@@ -159,7 +164,7 @@ begin
 				begin
 					update omi 
 					set omi.name = ins.InstanceName
-					from orm_meta_instances as omi
+					from [orm_meta].[instances] as omi
 						inner join inserted as ins 
 							on omi.instanceID = ins.InstanceID
 				end	
@@ -169,69 +174,66 @@ begin
 	'
 
 	set @updateTriggerSQL = replace(@updateTriggerSQL,'@@@_ACTION_CHECK_@@@', @actionCheck)
-	set @updateTriggerSQL = replace(@updateTriggerSQL,'@@@_META_TEMPLATE_NAME_@@@', @templateName)
+	set @updateTriggerSQL = replace(@updateTriggerSQL, '@@@_META_TEMPLATE_NAME_@@@', @templateNameQuoted)
+	set @updateTriggerSQL = replace(@updateTriggerSQL, '@@@_META_TEMPLATE_NAME_SANITIZED_@@@', @templateNameSanitized)
 	set @updateTriggerSQL = replace(@updateTriggerSQL,'@@@_META_TEMPLATE_ID_@@@', @templateID)
 
 	set @updateMergeTemplate = '
-	------------------------------------
-	--	@@@_BASE_TYPE_@@@
-	------------------------------------
-	;with updatedValues as
-	(
-		select	instanceName
-		,	propertyName
-		,	value
-		,	instances.instanceID
-		,	properties.propertyID
-		from inserted unpivot
-				(	value
-					for propertyName 
-					in (@@@_TYPE_COLUMNS_@@@)
-				) unpivoted
-			inner join orm_meta_properties as properties
-				on unpivoted.propertyName = properties.name
-			inner join orm_meta_instances as instances
-				on unpivoted.InstanceName = instances.name
-		where properties.templateID = @templateID
-			and properties.datatypeID @@@_BASE_DATATYPE_ID_FILTER_@@@
-			and instances.templateID = @templateID
-	)
-	-- UNPIVOT will not include the NULLs, so we need to add them back
-	,	possibleValues as
-	(
-		select NULL as value
-			,	i.InstanceID
-			,	uc.propertyID
-		from inserted as i
-			cross join @updatedColumns as uc
-	)
-	,	updateSet as
-	(
-		select	uv.value
-			,	pv.InstanceID
-			,	pv.propertyID
-		from possibleValues as pv
-			left join updatedValues as uv
-				on pv.InstanceID = uv.instanceID
-				and pv.propertyID = uv.propertyID
-	)
-	merge into orm_meta_values_@@@_BASE_TYPE_@@@ as d
-	using updateSet as s
-		on	d.instanceID = s.instanceID
-		and	d.propertyID = s.propertyID
-	when not matched and (s.value is not null) then
-		insert (instanceID, propertyID, value)
-		values (s.instanceID, s.propertyID, s.value)
-	when matched and (s.value is null) then
-		delete
-	when matched and (not s.value is null) then
-		update
-		set d.value = s.value
-	;
-
-
-
-
+		------------------------------------
+		--	@@@_BASE_TYPE_@@@
+		------------------------------------
+		;with updatedValues as
+		(
+			select	instanceName
+			,	propertyName
+			,	value
+			,	instances.instanceID
+			,	properties.propertyID
+			from inserted unpivot
+					(	value
+						for propertyName 
+						in (@@@_TYPE_COLUMNS_@@@)
+					) unpivoted
+				inner join [orm_meta].[properties] as properties
+					on unpivoted.propertyName = properties.name
+				inner join [orm_meta].[instances] as instances
+					on unpivoted.InstanceName = instances.name
+			where properties.templateID = @templateID
+				and properties.datatypeID @@@_BASE_DATATYPE_ID_FILTER_@@@
+				and instances.templateID = @templateID
+		)
+		-- UNPIVOT will not include the NULLs, so we need to add them back
+		,	possibleValues as
+		(
+			select NULL as value
+				,	i.InstanceID
+				,	uc.propertyID
+			from inserted as i
+				cross join @updatedColumns as uc
+		)
+		,	updateSet as
+		(
+			select	uv.value
+				,	pv.InstanceID
+				,	pv.propertyID
+			from possibleValues as pv
+				left join updatedValues as uv
+					on pv.InstanceID = uv.instanceID
+					and pv.propertyID = uv.propertyID
+		)
+		merge into [orm_meta].[values_@@@_BASE_TYPE_@@@] as d
+		using updateSet as s
+			on	d.instanceID = s.instanceID
+			and	d.propertyID = s.propertyID
+		when not matched and (s.value is not null) then
+			insert (instanceID, propertyID, value)
+			values (s.instanceID, s.propertyID, s.value)
+		when matched and (s.value is null) then
+			delete
+		when matched and (not s.value is null) then
+			update
+			set d.value = s.value
+		;
 	'
 
 	-- string
@@ -294,14 +296,14 @@ begin
 	-- @@@_ACTION_CHECK_@@@
 	-- @@@_META_TEMPLATE_NAME_@@@
 	-- @@@_META_TEMPLATE_ID_@@@
-	IF OBJECT_ID('dbo.trigger_orm_meta_view_' + @templateName + '_insert', 'TR') IS NOT NULL
+	IF OBJECT_ID('trigger_orm_meta_view_' + @templateNameSanitized + '_insert', 'TR') IS NOT NULL
 		set @actionCheck = 'alter'
 	else
 		set @actionCheck = 'create'
 
 	set @insertTriggerSQL = '
-	@@@_ACTION_CHECK_@@@ trigger trigger_orm_meta_view_@@@_META_TEMPLATE_NAME_@@@_insert
-		on dbo.@@@_META_TEMPLATE_NAME_@@@
+	@@@_ACTION_CHECK_@@@ trigger trigger_orm_meta_view_@@@_META_TEMPLATE_NAME_SANITIZED_@@@_insert
+		on [dbo].@@@_META_TEMPLATE_NAME_@@@
 		instead of insert
 	as 
 	begin
@@ -320,7 +322,7 @@ begin
 		-- verify that all the instances does not already exist (this aint an update statement!)
 		if (exists(	select ins.instanceName
 					from inserted as ins
-						inner join orm_meta_instances as omi
+						inner join [orm_meta].[instances] as omi
 							on ins.InstanceName = omi.name
 					where omi.templateID = @templateID))
 			begin	
@@ -330,7 +332,7 @@ begin
 			end	
 
 		-- Add any instances not yet tracked in the instance table
-		merge into orm_meta_instances as d
+		merge into [orm_meta].[instances] as d
 		using (	select instanceName as name
 				from inserted	) as s 
 		on d.name = s.name
@@ -348,57 +350,58 @@ begin
 	'
 
 	set @insertTriggerSQL = replace(@insertTriggerSQL,'@@@_ACTION_CHECK_@@@', @actionCheck)
-	set @insertTriggerSQL = replace(@insertTriggerSQL,'@@@_META_TEMPLATE_NAME_@@@', @templateName)
+	set @insertTriggerSQL = replace(@insertTriggerSQL, '@@@_META_TEMPLATE_NAME_@@@', @templateNameQuoted)
+	set @insertTriggerSQL = replace(@insertTriggerSQL, '@@@_META_TEMPLATE_NAME_SANITIZED_@@@', @templateNameSanitized)
 	set @insertTriggerSQL = replace(@insertTriggerSQL,'@@@_META_TEMPLATE_ID_@@@', @templateID)
 
 
 	set @insertMergeTemplate = '
-	------------------------------------
-	--	@@@_BASE_TYPE_@@@
-	------------------------------------
-	begin try
-			
-		;with insertValues as
-		(
-			select	instanceName
-			,	propertyName
-			,	value
-			,	instances.instanceID
-			,	properties.propertyID
-			from inserted unpivot
-					(	value
-						for propertyName in (@@@_TYPE_COLUMNS_@@@)
-					) unpivoted
-				inner join orm_meta_properties as properties
-					on unpivoted.propertyName = properties.name
-				inner join orm_meta_instances as instances
-					on unpivoted.InstanceName = instances.name
-			where properties.templateID = @templateID
-				and properties.datatypeID @@@_BASE_DATATYPE_ID_FILTER_@@@
-				and instances.templateID = @templateID
-				and value is not null
-		)
-		merge into orm_meta_values_@@@_BASE_TYPE_@@@ as d
-		using (	select	instanceID
-					,	propertyID
-					,	value
-				from insertValues	) as s
-			on	d.instanceID = s.instanceID
-			and	d.propertyID = s.propertyID
-		when not matched then
-			insert (instanceID, propertyID, value)
-			values (s.instanceID, s.propertyID, s.value)
-		when matched then
-			update
-			set d.value = d.value + convert(nvarchar(max), 0/0)
-		;
+		------------------------------------
+		--	@@@_BASE_TYPE_@@@
+		------------------------------------
+		begin try
+				
+			;with insertValues as
+			(
+				select	instanceName
+				,	propertyName
+				,	value
+				,	instances.instanceID
+				,	properties.propertyID
+				from inserted unpivot
+						(	value
+							for propertyName in (@@@_TYPE_COLUMNS_@@@)
+						) unpivoted
+					inner join [orm_meta].[properties] as properties
+						on unpivoted.propertyName = properties.name
+					inner join [orm_meta].[instances] as instances
+						on unpivoted.InstanceName = instances.name
+				where properties.templateID = @templateID
+					and properties.datatypeID @@@_BASE_DATATYPE_ID_FILTER_@@@
+					and instances.templateID = @templateID
+					and value is not null
+			)
+			merge into [orm_meta].[values_@@@_BASE_TYPE_@@@] as d
+			using (	select	instanceID
+						,	propertyID
+						,	value
+					from insertValues	) as s
+				on	d.instanceID = s.instanceID
+				and	d.propertyID = s.propertyID
+			when not matched then
+				insert (instanceID, propertyID, value)
+				values (s.instanceID, s.propertyID, s.value)
+			when matched then
+				update
+				set d.value = d.value + convert(nvarchar(max), 0/0)
+			;
 
-	end try
-	begin catch
-		rollback transaction	
-		raiserror(''Can not insert over an existing value. Use update instead.'', 16, 5)
-		return
-	end catch
+		end try
+		begin catch
+			rollback transaction	
+			raiserror(''Can not insert over an existing value. Use update instead.'', 16, 5)
+			return
+		end catch
 	'
 
 	-- string
@@ -455,7 +458,7 @@ begin
 	set @insertTriggerSQL = @insertTriggerSQL + '
 	end
 	'
-
+	
 	--begin transaction generate_triggers
 	--begin try
 

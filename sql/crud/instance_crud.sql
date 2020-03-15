@@ -2,11 +2,11 @@ print '
 Generating instance CRUD definitions...'
 
 
-IF OBJECT_ID('[dbo].[orm_instance_add]', 'P') IS NOT NULL
-	DROP PROCEDURE [dbo].orm_instance_add
+IF OBJECT_ID('[orm].[instance_add]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].[instance_add]
 go
 
-create procedure orm_instance_add
+create procedure [orm].[instance_add]
 	@templateName varchar(250)
 ,	@newInstanceName varchar(250)
 as
@@ -15,14 +15,14 @@ begin
 
 	declare @templateID int, @instanceID int
 		select @templateID = templateID
-		from orm_meta_templates
+		from [orm_meta].[templates]
 		where name = @templateName
 	
 	-- Make sure the instance doesn't already exist
-	select instanceID from orm_meta_instances where name = @newInstanceName and templateID = @templateID
+	select instanceID from [orm_meta].[instances] where name = @newInstanceName and templateID = @templateID
 	if @@ROWCOUNT <> 0 raiserror('instance already exists.', 16, 1)
 	
-	insert orm_meta_instances (templateID, name)
+	insert [orm_meta].[instances] (templateID, name)
 	values (@templateID, @newInstanceName)	
 
 	set @instanceID = @@identity
@@ -32,11 +32,11 @@ end
 go
 
 
-IF OBJECT_ID('[dbo].[orm_instance_remove]', 'P') IS NOT NULL
-	DROP PROCEDURE [dbo].orm_instance_remove
+IF OBJECT_ID('[orm].[instance_remove]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].[instance_remove]
 go
 
-create procedure orm_instance_remove
+create procedure [orm].[instance_remove]
 	@templateName varchar(250)
 ,	@oldInstanceName varchar(250)
 as
@@ -45,11 +45,11 @@ begin
 
 	declare @templateID int, @instanceID int
 		select @templateID = templateID
-		from orm_meta_templates
+		from [orm_meta].[templates]
 		where name = @templateName
 	
 	-- Make sure the instance doesn't already exist
-	delete orm_meta_instances
+	delete [orm_meta].[instances]
 	where name = @oldInstanceName
 		and templateID = @templateID
 

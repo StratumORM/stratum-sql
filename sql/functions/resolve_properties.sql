@@ -2,16 +2,16 @@ print '
 Generating property resolution function...'
 
 
-IF OBJECT_ID('[dbo].[orm_meta_resolve_properties]', 'IF') IS NOT NULL
-	DROP FUNCTION [dbo].orm_meta_resolve_properties
+IF OBJECT_ID('[orm_meta].[resolve_properties]', 'IF') IS NOT NULL
+	DROP FUNCTION [orm_meta].[resolve_properties]
 go
 
 
-IF TYPE_ID('[identities]') IS NOT NULL
-	DROP TYPE [dbo].[identities]
+IF TYPE_ID('[orm_meta].[identities]') IS NOT NULL
+	DROP TYPE [orm_meta].[identities]
 go
 
-CREATE TYPE [dbo].[identities] AS TABLE(
+CREATE TYPE [orm_meta].[identities] AS TABLE(
 	[id] [int] NOT NULL,
 	PRIMARY KEY CLUSTERED (	[id] ASC )
 		WITH (IGNORE_DUP_KEY = OFF)
@@ -19,7 +19,7 @@ CREATE TYPE [dbo].[identities] AS TABLE(
 GO
 
 
-CREATE FUNCTION orm_meta_resolve_properties
+CREATE FUNCTION [orm_meta].[resolve_properties]
 (	
 	@templateIDs identities readonly
 )
@@ -33,7 +33,7 @@ RETURN
 		select distinct 
 				tree.templateID as inScopeTemplateID
 		from @templateIDs as t
-			cross apply dbo.orm_meta_templateTree(t.id) as tree
+			cross apply [orm_meta].[templateTree](t.id) as tree
 	)
 	,	currentScopedTemplateProperties as
 	(
@@ -44,7 +44,7 @@ RETURN
 			,	p.isExtended
 			,	p.signature
 		from scopedTemplates as s
-			inner join orm_meta_properties as p
+			inner join [orm_meta].[properties] as p
 				on p.templateID = s.inScopeTemplateID
 	)
 	,	templateInheritance as
@@ -60,8 +60,8 @@ RETURN
 												, supers.echelon desc
 								) as inheritRank
 		from scopedTemplates as s 
-			cross apply orm_meta_superTemplates(s.inScopeTemplateID) as supers
-			left join orm_meta_inheritance as inherit
+			cross apply [orm_meta].[superTemplates](s.inScopeTemplateID) as supers
+			left join [orm_meta].[inheritance] as inherit
 				on supers.templateID = inherit.parentTemplateID
 	)
 	,	allInheritedProperties as
@@ -81,7 +81,7 @@ RETURN
 			,	i.inScopeTemplateID
 			,	i.inheritRank
 		from templateInheritance as i
-			inner join orm_meta_properties as p
+			inner join [orm_meta].[properties] as p
 				on p.templateID = i.sourceID
 	)
 	,	inScopedTemplateOverrides as
@@ -132,9 +132,9 @@ RETURN
 				on aip.inScopeTemplateID = isto.topMostInscopeID
 				and aip.masked_name = isto.topMostPropertyName
 				and aip.inheritRank = isto.topMostInheritRank
-			inner join orm_meta_templates as t
+			inner join [orm_meta].[templates] as t
 				on aip.masked_templateID = t.templateID
-			inner join orm_meta_templates as it
+			inner join [orm_meta].[templates] as it
 				on aip.inScopeTemplateID = it.templateID
 	)
 	select	
@@ -153,7 +153,7 @@ RETURN
 		,	p.isExtended as current_isExtended
 		,	p.signature as current_signature	
 	from fullyScopedMask as fsm
-		left join orm_meta_properties as p
+		left join [orm_meta].[properties] as p
 			on fsm.templateID = p.templateID
 			and fsm.propertyName = p.name
 )

@@ -2,12 +2,12 @@ print '
 Generating template inheritance triggers...'
 
 
-if object_id('[dbo].[trigger_orm_meta_inheritance_insert]', 'TR')  is not null
-	drop trigger dbo.trigger_orm_meta_inheritance_insert
+if object_id('[orm_meta].[inheritance_insert]', 'TR')  is not null
+	drop trigger [orm_meta].[inheritance_insert]
 go
 
-create trigger trigger_orm_meta_inheritance_insert
-	on dbo.orm_meta_inheritance
+create trigger [orm_meta].[inheritance_insert]
+	on [orm_meta].[inheritance]
 	instead of insert
 as 
 begin
@@ -16,8 +16,8 @@ begin
 	-- Make sure not to exclude mere ordinal changes
 	if (exists( select *
 				from inserted as i
-					cross apply dbo.orm_meta_templateTree(i.parentTemplateID) as ptree
-					cross apply dbo.orm_meta_templateTree(i.childTemplateID) as ctree
+					cross apply [orm_meta].[templateTree](i.parentTemplateID) as ptree
+					cross apply [orm_meta].[templateTree](i.childTemplateID) as ctree
 				where	ptree.templateID = i.parentTemplateID and ptree.echelon <> 0
 					and ctree.templateID = i.childTemplateID and ctree.echelon <> 0
 					and not exists (select *
@@ -42,14 +42,14 @@ begin
 		end
 
 	-- If that passes, perform the insert...
-	insert into orm_meta_inheritance (parentTemplateID, childTemplateID, ordinal)
+	insert into [orm_meta].[inheritance] (parentTemplateID, childTemplateID, ordinal)
 	select i.parentTemplateID, i.childTemplateID, i.ordinal
 	from inserted as i
 		
 	-- ... and force an update on the property table (let it resolve the complexities)
 	update p
 	set p.templateID = p.templateID
-	from orm_meta_properties as p
+	from [orm_meta].[properties] as p
 		inner join inserted as i
 			on p.templateID = i.childTemplateID
 			or p.templateID = i.parentTemplateID
@@ -58,12 +58,12 @@ end
 go
 
 
-if object_id('[dbo].[trigger_orm_meta_inheritance_update]', 'TR')  is not null
-	drop trigger dbo.trigger_orm_meta_inheritance_update
+if object_id('[orm_meta].[inheritance_update]', 'TR')  is not null
+	drop trigger [orm_meta].[inheritance_update]
 go
 
-create trigger trigger_orm_meta_inheritance_update
-	on dbo.orm_meta_inheritance
+create trigger [orm_meta].[inheritance_update]
+	on [orm_meta].[inheritance]
 	instead of update
 as 
 begin
@@ -78,8 +78,8 @@ begin
 	-- Make sure not to exclude mere ordinal changes
 	if (exists( select *
 				from inserted as i
-					cross apply dbo.orm_meta_templateTree(i.parentTemplateID) as ptree
-					cross apply dbo.orm_meta_templateTree(i.childTemplateID) as ctree
+					cross apply [orm_meta].[templateTree](i.parentTemplateID) as ptree
+					cross apply [orm_meta].[templateTree](i.childTemplateID) as ctree
 				where	ptree.templateID = i.parentTemplateID and ptree.echelon <> 0
 					and ctree.templateID = i.childTemplateID and ctree.echelon <> 0
 					and not exists (select *
@@ -123,20 +123,20 @@ begin
 	-- First, get the properties that are covered before the change
 	insert into @covering_before (parent_templateID, child_templateID, child_propertyID)
 	select m.masked_templateID, m.current_templateID, m.current_propertyID
-	from dbo.orm_meta_resolve_properties(@templateIDs) as m
+	from [orm_meta].[resolve_properties](@templateIDs) as m
 	where m.masked_templateID <> m.current_templateID
 	
 	-- Make the changes:
 	-- First delete...
 	delete i
-	from orm_meta_inheritance as i
+	from [orm_meta].[inheritance] as i
 		inner join deleted as d
 			on d.parentTemplateID = i.parentTemplateID
 			and d.childTemplateID = i.childTemplateID
 			and d.ordinal = i.ordinal
 	-- Second insert... (since this is an update, after all: we may add the 
 	--	relationship right back in but with another ordinal.)
-	insert into orm_meta_inheritance (parentTemplateID, childTemplateID, ordinal)
+	insert into [orm_meta].[inheritance] (parentTemplateID, childTemplateID, ordinal)
 	select i.parentTemplateID, i.childTemplateID, i.ordinal
 	from inserted as i
 	
@@ -150,7 +150,7 @@ begin
 	-- Now re-solve the property tree given the change
 	insert into @covering_after (parent_templateID, child_templateID, child_propertyID)
 	select m.masked_templateID, m.current_templateID, m.current_propertyID
-	from dbo.orm_meta_resolve_properties(@templateIDs) as m
+	from [orm_meta].[resolve_properties](@templateIDs) as m
 
 	-- We can now check if any properties are uncovered.
 	-- Any property whose masking ID is was the parent, but is now the child
@@ -158,7 +158,7 @@ begin
 	-- These properties with this masking ID need to be removed.
 
 	delete p
-	from orm_meta_properties as p
+	from [orm_meta].[properties] as p
 		inner join @covering_after as ca
 			on p.propertyID = ca.child_propertyID
 		inner join @covering_before as cb
@@ -175,7 +175,7 @@ begin
 	--	By tripping a no-op update on the property table, we can let it re-resolve the details and apply corrections.
 	update p
 	set p.templateID = p.templateID
-	from orm_meta_properties as p
+	from [orm_meta].[properties] as p
 		inner join inserted as i
 			on p.templateID = i.childTemplateID
 			or p.templateID = i.parentTemplateID
@@ -184,12 +184,12 @@ end
 go
 
 
-if object_id('[dbo].[trigger_orm_meta_inheritance_delete]', 'TR')  is not null
-	drop trigger dbo.trigger_orm_meta_inheritance_delete
+if object_id('[orm_meta].[inheritance_delete]', 'TR')  is not null
+	drop trigger [orm_meta].[inheritance_delete]
 go
 
-create trigger trigger_orm_meta_inheritance_delete
-	on dbo.orm_meta_inheritance
+create trigger [orm_meta].[inheritance_delete]
+	on [orm_meta].[inheritance]
 	instead of delete
 as 
 begin
@@ -210,12 +210,12 @@ begin
 	-- First, get the properties that are covered before the change
 	insert into @covering_before (parent_templateID, child_templateID, child_propertyID)
 	select m.masked_templateID, m.current_templateID, m.current_propertyID
-	from dbo.orm_meta_resolve_properties(@templateIDs) as m
+	from [orm_meta].[resolve_properties](@templateIDs) as m
 	where m.masked_templateID <> m.current_templateID
 	
 	-- Make the change...
 	delete i
-	from orm_meta_inheritance as i
+	from [orm_meta].[inheritance] as i
 		inner join deleted as d
 			on d.parentTemplateID = i.parentTemplateID
 			and d.childTemplateID = i.childTemplateID
@@ -231,7 +231,7 @@ begin
 	-- Now re-solve the property tree given the change
 	insert into @covering_after (parent_templateID, child_templateID, child_propertyID)
 	select m.masked_templateID, m.current_templateID, m.current_propertyID
-	from dbo.orm_meta_resolve_properties(@templateIDs) as m
+	from [orm_meta].[resolve_properties](@templateIDs) as m
 
 	-- We can now check if any properties are uncovered.
 	-- Any property whose masking ID is was the parent, but is now the child
@@ -239,7 +239,7 @@ begin
 	-- These properties with this masking ID need to be removed.
 
 	delete p
-	from orm_meta_properties as p
+	from [orm_meta].[properties] as p
 		inner join @covering_after as ca
 			on p.propertyID = ca.child_propertyID
 		inner join @covering_before as cb

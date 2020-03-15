@@ -3,11 +3,11 @@ Generating template inheritance functions...'
 
 
 
-if object_id('[dbo].[orm_meta_subTemplates]', 'IF') is not null
-	drop function dbo.orm_meta_subTemplates
+if object_id('[orm_meta].[subTemplates]', 'IF') is not null
+	drop function [orm_meta].[subTemplates]
 go
 
-create function dbo.orm_meta_subTemplates
+create function [orm_meta].[subTemplates]
 (	
 	@templateID int
 )
@@ -23,7 +23,7 @@ RETURN
 
 		select i.childTemplateID, echelon - 1
 		from includedTemplates as it
-			inner join orm_meta_inheritance as i
+			inner join [orm_meta].[inheritance] as i
 				on it.templateID = i.parentTemplateID
 	)
 	select templateID, echelon
@@ -32,11 +32,11 @@ RETURN
 GO
 
 
-if object_id('[dbo].[orm_meta_superTemplates]', 'IF') is not null
-	drop function dbo.orm_meta_superTemplates
+if object_id('[orm_meta].[superTemplates]', 'IF') is not null
+	drop function [orm_meta].[superTemplates]
 go
 
-create function dbo.orm_meta_superTemplates
+create function [orm_meta].[superTemplates]
 (	
 	@templateID int
 )
@@ -52,7 +52,7 @@ RETURN
 
 		select i.parentTemplateID, echelon + 1
 		from includedTemplates as it
-			inner join orm_meta_inheritance as i
+			inner join [orm_meta].[inheritance] as i
 				on it.templateID = i.childTemplateID
 	)
 	select templateID, echelon
@@ -61,11 +61,11 @@ RETURN
 GO
 
 
-if object_id('[dbo].[orm_meta_templateTree]', 'IF') is not null
-	drop function dbo.orm_meta_templateTree
+if object_id('[orm_meta].[templateTree]', 'IF') is not null
+	drop function [orm_meta].[templateTree]
 go
 
-create function dbo.orm_meta_templateTree
+create function [orm_meta].[templateTree]
 (	
 	@templateID int
 )
@@ -75,12 +75,12 @@ RETURN
 (
 	select templateID, echelon
 	from (	select templateID, echelon
-			from dbo.orm_meta_subTemplates(@templateID) as subs
+			from [orm_meta].[subTemplates](@templateID) as subs
 			
 			union
 			
 			select templateID, echelon
-			from dbo.orm_meta_superTemplates(@templateID) as supers
+			from [orm_meta].[superTemplates](@templateID) as supers
 		) as structure			
 )
 GO
