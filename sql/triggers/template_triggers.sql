@@ -3,12 +3,12 @@ Adding template table triggers...'
 
 
 
-if object_id('[orm].[trigger_orm_meta_templates_insert]', 'TR')  is not null
-	drop trigger [orm].trigger_orm_meta_templates_insert
+if object_id('[orm_meta].[templates_insert]', 'TR')  is not null
+	drop trigger [orm_meta].[templates_insert]
 go
 
-create trigger trigger_orm_meta_templates_insert
-	on [orm].orm_meta_templates
+create trigger [orm_meta].[templates_insert]
+	on [orm_meta].[templates]
 	instead of insert
 as 
 begin
@@ -26,7 +26,7 @@ begin
 
 	-- Make sure it doesn't already exist
 	select t.templateID 
-	from orm_meta_templates as t
+	from [orm_meta].[templates] as t
 		inner join inserted as i
 			on t.name = i.name
 
@@ -38,7 +38,7 @@ begin
 		end	
 
 	-- Now insert it into the templates table
-	insert into orm_meta_templates (name, signature)
+	insert into [orm_meta].[templates] (name, signature)
 	select i.name, i.signature
 	from inserted as i
 
@@ -50,7 +50,7 @@ begin
 	for
 		select distinct t.templateID
 		from inserted as i
-			inner join orm_meta_templates as t
+			inner join [orm_meta].[templates] as t
 				on t.name = i.name
 	
 	open templateIDCursor
@@ -59,7 +59,7 @@ begin
 	
 	while @@FETCH_STATUS = 0
 	begin
-		exec orm_meta_generate_template_view_wide @templateID
+		exec [orm_meta].[generate_template_view_wide] @templateID
 
 		fetch next from templateIDCursor into @templateID
 	end
@@ -70,12 +70,12 @@ end
 go
 
 
-if object_id('[orm].[trigger_orm_meta_templates_update]', 'TR')  is not null
-	drop trigger [orm].trigger_orm_meta_templates_update
+if object_id('[orm_meta].[templates_update]', 'TR')  is not null
+	drop trigger [orm_meta].[templates_update]
 go
 
-create trigger trigger_orm_meta_templates_update
-	on [orm].orm_meta_templates
+create trigger [orm_meta].[templates_update]
+	on [orm_meta].[templates]
 	instead of update
 as 
 begin
@@ -95,7 +95,7 @@ begin
 	update t
 	set 	t.name = i.name
 		,	t.signature = i.signature
-	from orm_meta_templates as t
+	from [orm_meta].[templates] as t
 		inner join inserted as i 
 			on t.templateID = i.templateID
 
@@ -121,7 +121,7 @@ begin
 		set @dropQuery = 'drop view ' + @templateName
 		exec sp_executesql @dropQuery
 
-		exec orm_meta_generate_template_view_wide @templateID
+		exec [orm_meta].[generate_template_view_wide] @templateID
 
 		fetch next from templateCursor into @templateName, @templateID
 	end
@@ -132,12 +132,12 @@ end
 go
 
 
-if object_id('[orm].[trigger_orm_meta_templates_delete]', 'TR')  is not null
-	drop trigger [orm].trigger_orm_meta_templates_delete
+if object_id('[orm_meta].[templates_delete]', 'TR')  is not null
+	drop trigger [orm_meta].[templates_delete]
 go
 
-create trigger trigger_orm_meta_templates_delete
-	on [orm].orm_meta_templates
+create trigger [orm_meta].[templates_delete]
+	on [orm_meta].[templates]
 	instead of delete
 as 
 begin
@@ -168,11 +168,11 @@ begin
 		insert into @affectedTemplateIDs (id)
 		select distinct tree.templateID
 		from @deleted as d
-			cross apply [orm].orm_meta_templateTree(d.templateID) as tree
+			cross apply [orm_meta].[templateTree](d.templateID) as tree
 
 		insert into @childTemplates (id)
 		select distinct i.childTemplateID
-		from orm_meta_inheritance as i
+		from [orm_meta].[inheritance] as i
 			inner join @deleted as d
 				on i.parentTemplateID = d.templateID
 
@@ -181,20 +181,20 @@ begin
 	-- So first, find out what properties *may* be affected...
 	insert into @propIDs (id)
 	select m.current_propertyID
-	from [orm].orm_meta_resolve_properties(@affectedTemplateIDs) as m
+	from [orm_meta].[resolve_properties](@affectedTemplateIDs) as m
 		inner join @deleted as d 
 			on m.masked_templateID = d.templateID 
 	where isnull(m.masked_isExtended,0) = 0
 
 	-- first delete the properties ... (which will cascade deletes to the values)
 	delete p
-	from orm_meta_properties as p 
+	from [orm_meta].[properties] as p 
 		inner join @deleted as d 
 			on p.templateID = d.templateID 
 
 	-- then delete the instances ...
 	delete o
-	from orm_meta_instances as o 
+	from [orm_meta].[instances] as o 
 		inner join @deleted as d 
 			on o.templateID = d.templateID
 
@@ -203,7 +203,7 @@ begin
 		insert into @myOrdinalInsert (myID, myOffset)
 		select d.templateID, count(i.ordinal)
 		from @deleted as d 
-			inner join orm_meta_inheritance as i
+			inner join [orm_meta].[inheritance] as i
 				on d.templateID = i.childTemplateID
 		group by d.templateID
 
@@ -211,13 +211,13 @@ begin
 	; with myChildren as
 	(
 		select d.templateID as myID, i.childTemplateID, i.ordinal as myOrdinal
-		from orm_meta_inheritance as i
+		from [orm_meta].[inheritance] as i
 			inner join @deleted as d
 				on i.parentTemplateID = d.templateID
 	)	
 	update i 
 	set i.ordinal = i.ordinal + o.myOffset --not off by one		
-	from orm_meta_inheritance as i 
+	from [orm_meta].[inheritance] as i 
 		inner join myChildren as c 
 			on i.childTemplateID = c.childTemplateID
 		inner join @myOrdinalInsert as o 
@@ -236,7 +236,7 @@ begin
 		select 	d.templateID as myID
 			,	i.parentTemplateID
 			,	dense_rank() over (partition by d.templateID order by ordinal) as ordinal
-		from orm_meta_inheritance as i
+		from [orm_meta].[inheritance] as i
 			inner join @deleted as d
 				on i.childTemplateID = d.templateID	
 	)
@@ -245,7 +245,7 @@ begin
 		select 	d.templateID as myID
 			,	i.childTemplateID
 			,	ordinal
-		from orm_meta_inheritance as i
+		from [orm_meta].[inheritance] as i
 			inner join @deleted as d
 				on i.parentTemplateID = d.templateID
 	)
@@ -260,7 +260,7 @@ begin
 			inner join @myOrdinalInsert as o 
 				on p.myID = o.myID
 	)
-	merge into orm_meta_inheritance as d 
+	merge into [orm_meta].[inheritance] as d 
 	using (	select 	r.parentTemplateID
 				,	r.childTemplateID
 				,	r.ordinal
@@ -279,14 +279,14 @@ begin
 	--	jump over the current relationship's ordinal so that when we delete
 	-- 	this one, the old ones will be immediately exposed (and no ordinal collisions)
 	delete i
-	from orm_meta_inheritance as i
+	from [orm_meta].[inheritance] as i
 		inner join @deleted as d 
 			on 	childTemplateID = d.templateID 
 			or 	parentTemplateID = d.templateID	
 
 	-- then finally delete the template ...
 	delete t 
-	from orm_meta_templates as t
+	from [orm_meta].[templates] as t
 		inner join @deleted as d 
 			on t.templateID = d.templateID
 
@@ -297,7 +297,7 @@ begin
 	where id not in (	
 		select m.current_propertyID
 		from @propIDs as p
-			inner join [orm].orm_meta_resolve_properties(@affectedTemplateIDs) as m
+			inner join [orm_meta].[resolve_properties](@affectedTemplateIDs) as m
 				on m.current_propertyID = p.id
 			inner join @childTemplates as c 
 				on m.masked_templateID = c.id 
@@ -305,7 +305,7 @@ begin
 
 	-- Deletes will cascade once the properties trigger fires
 	delete p
-	from orm_meta_properties as p
+	from [orm_meta].[properties] as p
 		inner join @propIDs as pids 
 			on p.propertyID = pids.id
 

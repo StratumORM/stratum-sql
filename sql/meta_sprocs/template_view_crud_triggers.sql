@@ -2,12 +2,12 @@ print '
 Generating template dynamic view triggers...'
 
 
-IF OBJECT_ID('[orm].[orm_meta_generate_template_view_triggers]', 'P') IS NOT NULL
-	DROP PROCEDURE [orm].orm_meta_generate_template_view_triggers
+IF OBJECT_ID('[orm_meta].[generate_template_view_triggers]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm_meta].[generate_template_view_triggers]
 go
 
 
-create procedure [orm].[orm_meta_generate_template_view_triggers]
+create procedure [orm_meta].[generate_template_view_triggers]
 	@templateID int
 as
 begin
@@ -32,10 +32,10 @@ begin
 
 		,	@templateName varchar(250)
 
-	set @templateName = (select top 1 name from orm_meta_templates where templateID = @templateID)
+	set @templateName = (select top 1 name from [orm_meta].[templates] where templateID = @templateID)
 
 	set @stringColumns =	(	select '[' + name + '],' 
-								from orm_meta_properties as p
+								from [orm_meta].[properties] as p
 								where	p.datatypeID = 1 
 									and (p.isExtended is NULL or p.isExtended = 0) 
 									and p.templateID = @templateID 
@@ -47,7 +47,7 @@ begin
 			set @stringColumns = ''
 
 	set @integerColumns =	(	select '[' + name + '],' 
-								from orm_meta_properties as p
+								from [orm_meta].[properties] as p
 								where	p.datatypeID = 2 
 									and (p.isExtended is NULL or p.isExtended = 0) 
 									and p.templateID = @templateID 
@@ -59,7 +59,7 @@ begin
 			set @integerColumns = ''
 
 	set @decimalColumns =	(	select '[' + name + '],' 
-								from orm_meta_properties as p
+								from [orm_meta].[properties] as p
 								where	p.datatypeID = 3 
 									and (p.isExtended is NULL or p.isExtended = 0) 
 									and p.templateID = @templateID 
@@ -71,7 +71,7 @@ begin
 			set @decimalColumns = ''
 
 	set @datetimeColumns =	(	select '[' + name + '],' 
-								from orm_meta_properties as p
+								from [orm_meta].[properties] as p
 								where	p.datatypeID = 4
 									and (p.isExtended is NULL or p.isExtended = 0) 
 									and p.templateID = @templateID 
@@ -83,7 +83,7 @@ begin
 			set @datetimeColumns = ''
 
 	set @instanceColumns =	(	select '[' + name + '],' 
-								from orm_meta_properties as p
+								from [orm_meta].[properties] as p
 								where	not p.datatypeID in (1,2,3,4)
 									and (p.isExtended is NULL or p.isExtended = 0) 
 									and p.templateID = @templateID 
@@ -94,13 +94,13 @@ begin
 	-- @@@_ACTION_CHECK_@@@
 	-- @@@_META_TEMPLATE_NAME_@@@
 	-- @@@_META_TEMPLATE_ID_@@@
-	IF OBJECT_ID('[orm].trigger_orm_meta_view_' + @templateName + '_delete', 'TR') IS NOT NULL
+	IF OBJECT_ID('[orm_meta].[view_]' + @templateName + '_delete', 'TR') IS NOT NULL
 		set @actionCheck = 'alter'
 	else
 		set @actionCheck = 'create'
 
 	set @deleteTriggerSQL = '
-		@@@_ACTION_CHECK_@@@ trigger trigger_orm_meta_view_@@@_META_TEMPLATE_NAME_@@@_delete
+		@@@_ACTION_CHECK_@@@ trigger [orm_meta].[view_]@@@_META_TEMPLATE_NAME_@@@_delete
 			on [orm].@@@_META_TEMPLATE_NAME_@@@
 			instead of delete
 		as 
@@ -109,7 +109,7 @@ begin
 				set @templateID = @@@_META_TEMPLATE_ID_@@@
 
 			delete omi
-			from orm_meta_instances as omi
+			from [orm_meta].[instances] as omi
 				inner join deleted as d
 					on d.InstanceID = omi.instanceID
 		end
@@ -123,13 +123,13 @@ begin
 	-- @@@_ACTION_CHECK_@@@
 	-- @@@_META_TEMPLATE_NAME_@@@
 	-- @@@_META_TEMPLATE_ID_@@@
-	IF OBJECT_ID('[orm].trigger_orm_meta_view_' + @templateName + '_update', 'TR') IS NOT NULL
+	IF OBJECT_ID('[orm_meta].[view_]' + @templateName + '_update', 'TR') IS NOT NULL
 		set @actionCheck = 'alter'
 	else
 		set @actionCheck = 'create'
 
 	set @updateTriggerSQL = '
-		@@@_ACTION_CHECK_@@@ trigger trigger_orm_meta_view_@@@_META_TEMPLATE_NAME_@@@_update
+		@@@_ACTION_CHECK_@@@ trigger [orm_meta].[view_]@@@_META_TEMPLATE_NAME_@@@_update
 			on [orm].@@@_META_TEMPLATE_NAME_@@@
 			instead of update
 		as 
@@ -142,8 +142,8 @@ begin
 			declare @updatedColumns table (columnName varchar(100), propertyID int)
 				insert into @updatedColumns (columnName, propertyID)
 				select ducb.COLUMN_NAME, p.propertyID
-				from orm_meta_decodeUpdatedColumnsBitmask( columns_updated(), ''@@@_META_TEMPLATE_NAME_@@@'' ) as ducb
-					inner join orm_meta_properties as p
+				from [orm_meta].[decodeUpdatedColumnsBitmask]( columns_updated(), ''@@@_META_TEMPLATE_NAME_@@@'' ) as ducb
+					inner join [orm_meta].[properties] as p
 						on p.name = ducb.COLUMN_NAME
 				where p.templateID = @templateID
 
@@ -159,7 +159,7 @@ begin
 				begin
 					update omi 
 					set omi.name = ins.InstanceName
-					from orm_meta_instances as omi
+					from [orm_meta].[instances] as omi
 						inner join inserted as ins 
 							on omi.instanceID = ins.InstanceID
 				end	
@@ -188,9 +188,9 @@ begin
 					for propertyName 
 					in (@@@_TYPE_COLUMNS_@@@)
 				) unpivoted
-			inner join orm_meta_properties as properties
+			inner join [orm_meta].[properties] as properties
 				on unpivoted.propertyName = properties.name
-			inner join orm_meta_instances as instances
+			inner join [orm_meta].[instances] as instances
 				on unpivoted.InstanceName = instances.name
 		where properties.templateID = @templateID
 			and properties.datatypeID @@@_BASE_DATATYPE_ID_FILTER_@@@
@@ -215,7 +215,7 @@ begin
 				on pv.InstanceID = uv.instanceID
 				and pv.propertyID = uv.propertyID
 	)
-	merge into orm_meta_values_@@@_BASE_TYPE_@@@ as d
+	merge into [orm_meta].[values_]@@@_BASE_TYPE_@@@ as d
 	using updateSet as s
 		on	d.instanceID = s.instanceID
 		and	d.propertyID = s.propertyID
@@ -294,13 +294,13 @@ begin
 	-- @@@_ACTION_CHECK_@@@
 	-- @@@_META_TEMPLATE_NAME_@@@
 	-- @@@_META_TEMPLATE_ID_@@@
-	IF OBJECT_ID('[orm].trigger_orm_meta_view_' + @templateName + '_insert', 'TR') IS NOT NULL
+	IF OBJECT_ID('[orm_meta].[view_]' + @templateName + '_insert', 'TR') IS NOT NULL
 		set @actionCheck = 'alter'
 	else
 		set @actionCheck = 'create'
 
 	set @insertTriggerSQL = '
-	@@@_ACTION_CHECK_@@@ trigger trigger_orm_meta_view_@@@_META_TEMPLATE_NAME_@@@_insert
+	@@@_ACTION_CHECK_@@@ trigger [orm_meta].[view_]@@@_META_TEMPLATE_NAME_@@@_insert
 		on [orm].@@@_META_TEMPLATE_NAME_@@@
 		instead of insert
 	as 
@@ -320,7 +320,7 @@ begin
 		-- verify that all the instances does not already exist (this aint an update statement!)
 		if (exists(	select ins.instanceName
 					from inserted as ins
-						inner join orm_meta_instances as omi
+						inner join [orm_meta].[instances] as omi
 							on ins.InstanceName = omi.name
 					where omi.templateID = @templateID))
 			begin	
@@ -330,7 +330,7 @@ begin
 			end	
 
 		-- Add any instances not yet tracked in the instance table
-		merge into orm_meta_instances as d
+		merge into [orm_meta].[instances] as d
 		using (	select instanceName as name
 				from inserted	) as s 
 		on d.name = s.name
@@ -369,16 +369,16 @@ begin
 					(	value
 						for propertyName in (@@@_TYPE_COLUMNS_@@@)
 					) unpivoted
-				inner join orm_meta_properties as properties
+				inner join [orm_meta].[properties] as properties
 					on unpivoted.propertyName = properties.name
-				inner join orm_meta_instances as instances
+				inner join [orm_meta].[instances] as instances
 					on unpivoted.InstanceName = instances.name
 			where properties.templateID = @templateID
 				and properties.datatypeID @@@_BASE_DATATYPE_ID_FILTER_@@@
 				and instances.templateID = @templateID
 				and value is not null
 		)
-		merge into orm_meta_values_@@@_BASE_TYPE_@@@ as d
+		merge into [orm_meta].[values_]@@@_BASE_TYPE_@@@ as d
 		using (	select	instanceID
 					,	propertyID
 					,	value

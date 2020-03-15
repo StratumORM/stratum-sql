@@ -2,12 +2,12 @@ print '
 Generating meta view value triggers...'
 
 
-IF OBJECT_ID('[orm].[trigger_orm_meta_view_all_values_listing_delete]', 'tr') IS NOT NULL
-	drop trigger [orm].trigger_orm_meta_view_all_values_listing_delete
+IF OBJECT_ID('[orm_meta].[view_all_values_listing_delete]', 'tr') IS NOT NULL
+	drop trigger [orm_meta].[view_all_values_listing_delete]
 go
 
-create trigger trigger_orm_meta_view_all_values_listing_delete
-	on [orm].orm_meta_all_values_listing
+create trigger [orm_meta].[view_all_values_listing_delete]
+	on [orm_meta].[all_values_listing]
 	instead of delete
 as 
 begin
@@ -28,49 +28,49 @@ begin
 		,	omd.templateID as datatypeID
 		,	d.Value
 	from deleted as d
-		inner join orm_meta_templates as omt 
+		inner join [orm_meta].[templates] as omt 
 			on	d.Template = omt.name
-		inner join orm_meta_instances as omi 
+		inner join [orm_meta].[instances] as omi 
 			on	d.Instance = omi.name
 			and omt.templateID = omi.templateID
-		inner join orm_meta_properties as omp 
+		inner join [orm_meta].[properties] as omp 
 			on	d.Property = omp.name
 			and omt.templateID = omp.templateID
-		inner join orm_meta_templates as omd 
+		inner join [orm_meta].[templates] as omd 
 			on	d.Datatype = omd.name
 			and omp.datatypeID = omd.templateID
 
 
 	delete omv
-	from orm_meta_values_string as omv 
+	from [orm_meta].[values_string] as omv 
 		inner join @resolved_deleted as rd
 			on 	rd.instanceID = omv.instanceID
 			and rd.propertyID = omv.propertyID
 	where rd.datatypeID = 1
 
 	delete omv
-	from orm_meta_values_integer as omv 
+	from [orm_meta].[values_integer] as omv 
 		inner join @resolved_deleted as rd
 			on 	rd.instanceID = omv.instanceID
 			and rd.propertyID = omv.propertyID
 	where rd.datatypeID = 2
 
 	delete omv
-	from orm_meta_values_decimal as omv 
+	from [orm_meta].[values_decimal] as omv 
 		inner join @resolved_deleted as rd
 			on 	rd.instanceID = omv.instanceID
 			and rd.propertyID = omv.propertyID
 	where rd.datatypeID = 3
 
 	delete omv
-	from orm_meta_values_datetime as omv 
+	from [orm_meta].[values_datetime] as omv 
 		inner join @resolved_deleted as rd
 			on 	rd.instanceID = omv.instanceID
 			and rd.propertyID = omv.propertyID
 	where rd.datatypeID = 4
 
 	delete omv
-	from orm_meta_values_instance as omv 
+	from [orm_meta].[values_instance] as omv 
 		inner join @resolved_deleted as rd
 			on 	rd.instanceID = omv.instanceID
 			and rd.propertyID = omv.propertyID
@@ -80,13 +80,13 @@ end
 
 
 
-IF OBJECT_ID('[orm].[trigger_orm_meta_view_all_values_listing_update]', 'tr') IS NOT NULL
-	drop trigger [orm].trigger_orm_meta_view_all_values_listing_update
+IF OBJECT_ID('[orm_meta].[view_all_values_listing_update]', 'tr') IS NOT NULL
+	drop trigger [orm_meta].[view_all_values_listing_update]
 go
 
 
-create trigger trigger_orm_meta_view_all_values_listing_update
-	on [orm].orm_meta_all_values_listing
+create trigger [orm_meta].[view_all_values_listing_update]
+	on [orm_meta].[all_values_listing]
 	instead of update
 as 
 begin
@@ -107,17 +107,17 @@ begin
 		,	omp.datatypeID
 		,	i.Value
 	from inserted as i
-		inner join orm_meta_templates as omt 
+		inner join [orm_meta].[templates] as omt 
 			on	i.Template = omt.name
-		inner join orm_meta_instances as omi 
+		inner join [orm_meta].[instances] as omi 
 			on	i.Instance = omi.name
 			and omt.templateID = omi.templateID
-		inner join orm_meta_properties as omp 
+		inner join [orm_meta].[properties] as omp 
 			on	i.Property = omp.name
 			and omt.templateID = omp.templateID
 
 
-	merge into orm_meta_values_string as omv
+	merge into [orm_meta].[values_string] as omv
 	using @resolved_updated as ru
 		on 	ru.instanceID = omv.instanceID
 		and ru.propertyID = omv.propertyID
@@ -129,7 +129,7 @@ begin
 		delete
 	;
 
-	merge into orm_meta_values_integer as omv
+	merge into [orm_meta].[values_integer] as omv
 	using @resolved_updated as ru
 		on 	ru.instanceID = omv.instanceID
 		and ru.propertyID = omv.propertyID
@@ -141,7 +141,7 @@ begin
 		delete
 	;
 
-	merge into orm_meta_values_decimal as omv
+	merge into [orm_meta].[values_decimal] as omv
 	using @resolved_updated as ru
 		on 	ru.instanceID = omv.instanceID
 		and ru.propertyID = omv.propertyID
@@ -153,7 +153,7 @@ begin
 		delete
 	;
 	
-	merge into orm_meta_values_datetime as omv
+	merge into [orm_meta].[values_datetime] as omv
 	using @resolved_updated as ru
 		on 	ru.instanceID = omv.instanceID
 		and ru.propertyID = omv.propertyID
@@ -165,7 +165,7 @@ begin
 		delete
 	;
 	
-	merge into orm_meta_values_instance as omv
+	merge into [orm_meta].[values_instance] as omv
 	using @resolved_updated as ru
 		on 	ru.instanceID = omv.instanceID
 		and ru.propertyID = omv.propertyID
@@ -181,13 +181,13 @@ begin
 end
 
 
-IF OBJECT_ID('[orm].[trigger_orm_meta_view_all_values_listing_insert]', 'TR') IS NOT NULL
-	DROP TRIGGER [orm].trigger_orm_meta_view_all_values_listing_insert
+IF OBJECT_ID('[orm_meta].[view_all_values_listing_insert]', 'TR') IS NOT NULL
+	DROP TRIGGER [orm_meta].[view_all_values_listing_insert]
 go
 
 
-create trigger trigger_orm_meta_view_all_values_listing_insert
-	on [orm].orm_meta_all_values_listing
+create trigger [orm_meta].[view_all_values_listing_insert]
+	on [orm_meta].[all_values_listing]
 	instead of insert
 as 
 begin
@@ -208,12 +208,12 @@ begin
 		,	omp.datatypeID
 		,	i.Value
 	from inserted as i
-		inner join orm_meta_templates as omt 
+		inner join [orm_meta].[templates] as omt 
 			on	i.Template = omt.name
-		inner join orm_meta_instances as omi 
+		inner join [orm_meta].[instances] as omi 
 			on	i.Instance = omi.name
 			and omt.templateID = omi.templateID
-		inner join orm_meta_properties as omp 
+		inner join [orm_meta].[properties] as omp 
 			on	i.Property = omp.name
 			and omt.templateID = omp.templateID
 
@@ -226,7 +226,7 @@ begin
 	(	select instanceID, propertyID, value
 		from @resolved_inserted as ri 
 		where ri.datatypeID = 1)
-	merge into orm_meta_values_string as omv
+	merge into [orm_meta].[values_string] as omv
 	using filtered_values as v
 		on 	v.instanceID = omv.instanceID
 		and v.propertyID = omv.propertyID
@@ -244,7 +244,7 @@ begin
 	(	select instanceID, propertyID, value
 		from @resolved_inserted as ri 
 		where ri.datatypeID = 2)
-	merge into orm_meta_values_integer as omv
+	merge into [orm_meta].[values_integer] as omv
 	using filtered_values as v
 		on 	v.instanceID = omv.instanceID
 		and v.propertyID = omv.propertyID
@@ -262,7 +262,7 @@ begin
 	(	select instanceID, propertyID, value
 		from @resolved_inserted as ri 
 		where ri.datatypeID = 3)
-	merge into orm_meta_values_decimal as omv
+	merge into [orm_meta].[values_decimal] as omv
 	using filtered_values as v
 		on 	v.instanceID = omv.instanceID
 		and v.propertyID = omv.propertyID
@@ -280,7 +280,7 @@ begin
 	(	select instanceID, propertyID, value
 		from @resolved_inserted as ri 
 		where ri.datatypeID = 4)
-	merge into orm_meta_values_datetime as omv
+	merge into [orm_meta].[values_datetime] as omv
 	using filtered_values as v
 		on 	v.instanceID = omv.instanceID
 		and v.propertyID = omv.propertyID
@@ -298,7 +298,7 @@ begin
 	(	select instanceID, propertyID, value
 		from @resolved_inserted as ri 
 		where ri.datatypeID > 4)
-	merge into orm_meta_values_instance as omv
+	merge into [orm_meta].[values_instance] as omv
 	using filtered_values as v
 		on 	v.instanceID = omv.instanceID
 		and v.propertyID = omv.propertyID

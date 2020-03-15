@@ -15,14 +15,14 @@ begin
 
 	declare @templateID int, @instanceID int
 		select @templateID = templateID
-		from orm_meta_templates
+		from [orm_meta].[templates]
 		where name = @templateName
 	
 	-- Make sure the instance doesn't already exist
-	select instanceID from orm_meta_instances where name = @newInstanceName and templateID = @templateID
+	select instanceID from [orm_meta].[instances] where name = @newInstanceName and templateID = @templateID
 	if @@ROWCOUNT <> 0 raiserror('instance already exists.', 16, 1)
 	
-	insert orm_meta_instances (templateID, name)
+	insert [orm_meta].[instances] (templateID, name)
 	values (@templateID, @newInstanceName)	
 
 	set @instanceID = @@identity
@@ -45,11 +45,11 @@ begin
 
 	declare @templateID int, @instanceID int
 		select @templateID = templateID
-		from orm_meta_templates
+		from [orm_meta].[templates]
 		where name = @templateName
 	
 	-- Make sure the instance doesn't already exist
-	delete orm_meta_instances
+	delete [orm_meta].[instances]
 	where name = @oldInstanceName
 		and templateID = @templateID
 

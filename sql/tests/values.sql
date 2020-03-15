@@ -4,7 +4,7 @@
 --									  Reset!
 --=============================================================================
 
-exec orm_meta_PURGE_OBJECTS 'I really mean it'
+exec [orm_meta].[PURGE_OBJECTS] 'I really mean it'
 go
 
 --=============================================================================
@@ -29,7 +29,7 @@ begin
 	set @num = (select objNum
 				from (	select name
 						,	row_number() over (order by templateID) as objNum 
-						from orm_meta_templates 
+						from [orm_meta].[templates] 
 						where templateid > 4
 					) as objnums
 				where name = @templateName)

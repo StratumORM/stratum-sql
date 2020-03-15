@@ -17,14 +17,14 @@ begin
 	
 	declare @templateID int, @datatypeID int
 		select @templateID = templateID
-		from orm_meta_templates
+		from [orm_meta].[templates]
 		where name = @templateName
 
 		select @datatypeID = templateID
-		from orm_meta_templates 
+		from [orm_meta].[templates] 
 		where name = @dataType
 	
-	insert orm_meta_properties (templateID, name, datatypeID, isExtended)
+	insert [orm_meta].[properties] (templateID, name, datatypeID, isExtended)
 	values (@templateID, @newPropertyName, @datatypeID, @isExtended)
 
 	return @@identity
@@ -45,17 +45,17 @@ begin
 	declare @templateID int, @datatypeID int, @propertyID int
 
 		select @templateID = templateID
-		from orm_meta_templates
+		from [orm_meta].[templates]
 		where name = @templateName
 
 		select	@datatypeID = p.datatypeID
 			,	@propertyID = p.propertyID
-		from orm_meta_properties as p
+		from [orm_meta].[properties] as p
 		where p.templateID = @templateID
 			and p.name = @propertyName
 
 	-- remove the property
-	delete orm_meta_properties
+	delete [orm_meta].[properties]
 	where	templateID = @templateID
 		and name = @propertyName
 		
@@ -76,8 +76,8 @@ begin
 
 	update p
 	set name = @newPropertyName
-	from orm_meta_properties as p
-		inner join orm_meta_templates as t
+	from [orm_meta].[properties] as p
+		inner join [orm_meta].[templates] as t
 			on t.templateID = p.templateID
 	where	t.name = @templateName
 		and p.name = @oldPropertyName

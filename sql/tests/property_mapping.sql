@@ -1,10 +1,10 @@
 
 
-delete orm_meta_templates
+delete [orm_meta].[templates]
 where name in ('triangle','square','pentagon','homeBase')
 go
 
-insert into orm_meta_templates (name)
+insert into [orm_meta].[templates] (name)
 values	('triangle')
 	,	('square')
 	,	('pentagon')
@@ -69,13 +69,13 @@ exec orm_property_add 'square', 'color', 'nvarchar(max)', 0
 
 
 /*
-insert into orm_meta_templates (name) values ('asdf')
+insert into [orm_meta].[templates] (name) values ('asdf')
 
-update orm_meta_templates
+update [orm_meta].[templates]
 set name = 'qazwsx'
 where name = 'asdf'
 
-delete orm_meta_templates
+delete [orm_meta].[templates]
 where name = 'qazwsx'
 
 */

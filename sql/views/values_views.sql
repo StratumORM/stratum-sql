@@ -14,12 +14,12 @@ as
 		--,	t.templateID
 		--,	o.instanceID
 		--,	p.propertyID
-	from orm_meta_values_string as v
-		inner join orm_meta_instances as o
+	from [orm_meta].[values_string] as v
+		inner join [orm_meta].[instances] as o
 			on v.instanceID = o.instanceID
-		inner join orm_meta_properties as p
+		inner join [orm_meta].[properties] as p
 			on v.propertyID = p.propertyID
-		inner join orm_meta_templates as t
+		inner join [orm_meta].[templates] as t
 			on p.templateID = t.templateID
 	where p.datatypeID = 1
 	--order by t.templateID, o.name, p.name
@@ -39,12 +39,12 @@ as
 		--,	t.templateID
 		--,	o.instanceID
 		--,	p.propertyID
-	from orm_meta_values_integer as v
-		inner join orm_meta_instances as o
+	from [orm_meta].[values_integer] as v
+		inner join [orm_meta].[instances] as o
 			on v.instanceID = o.instanceID
-		inner join orm_meta_properties as p
+		inner join [orm_meta].[properties] as p
 			on v.propertyID = p.propertyID
-		inner join orm_meta_templates as t
+		inner join [orm_meta].[templates] as t
 			on p.templateID = t.templateID
 	where p.datatypeID = 2
 	--order by t.templateID, o.name, p.name
@@ -64,12 +64,12 @@ as
 		--,	t.templateID
 		--,	o.instanceID
 		--,	p.propertyID
-	from orm_meta_values_decimal as v
-		inner join orm_meta_instances as o
+	from [orm_meta].[values_decimal] as v
+		inner join [orm_meta].[instances] as o
 			on v.instanceID = o.instanceID
-		inner join orm_meta_properties as p
+		inner join [orm_meta].[properties] as p
 			on v.propertyID = p.propertyID
-		inner join orm_meta_templates as t
+		inner join [orm_meta].[templates] as t
 			on p.templateID = t.templateID
 	where p.datatypeID = 3
 	--order by t.templateID, o.name, p.name
@@ -89,12 +89,12 @@ as
 		--,	t.templateID
 		--,	o.instanceID
 		--,	p.propertyID
-	from orm_meta_values_datetime as v
-		inner join orm_meta_instances as o
+	from [orm_meta].[values_datetime] as v
+		inner join [orm_meta].[instances] as o
 			on v.instanceID = o.instanceID
-		inner join orm_meta_properties as p
+		inner join [orm_meta].[properties] as p
 			on v.propertyID = p.propertyID
-		inner join orm_meta_templates as t
+		inner join [orm_meta].[templates] as t
 			on p.templateID = t.templateID
 	where p.datatypeID = 4
 	--order by t.templateID, o.name, p.name
