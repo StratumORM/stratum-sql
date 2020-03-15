@@ -2,8 +2,8 @@ print '
 Generating template inheritance CRUD definitions...'
 
 
-IF OBJECT_ID('[orm].[orm_inherit_add]', 'P') IS NOT NULL
-	DROP PROCEDURE [orm].orm_inherit_add
+IF OBJECT_ID('[orm].[inherit_add]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].[inherit_add]
 go
 
 IF OBJECT_ID('[orm_meta].[inherit_add]', 'P') IS NOT NULL
@@ -61,8 +61,8 @@ end
 go
 
 
-IF OBJECT_ID('[orm].[orm_inherit_remove]', 'P') IS NOT NULL
-	DROP PROCEDURE [orm].orm_inherit_remove
+IF OBJECT_ID('[orm].[inherit_remove]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].[inherit_remove]
 go
 
 IF OBJECT_ID('[orm_meta].[inherit_remove]', 'P') IS NOT NULL

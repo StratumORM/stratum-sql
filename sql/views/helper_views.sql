@@ -2,8 +2,8 @@ print '
 Generating helper views...'
 
 
-IF OBJECT_ID('[orm].[orm_instance_properties]', 'V') IS NOT NULL
-	DROP VIEW [orm].orm_instance_properties
+IF OBJECT_ID('[orm].[instance_properties]', 'V') IS NOT NULL
+	DROP VIEW [orm].[instance_properties]
 go
 
 create view orm_instance_properties

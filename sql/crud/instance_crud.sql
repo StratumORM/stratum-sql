@@ -2,8 +2,8 @@ print '
 Generating instance CRUD definitions...'
 
 
-IF OBJECT_ID('[orm].[orm_instance_add]', 'P') IS NOT NULL
-	DROP PROCEDURE [orm].orm_instance_add
+IF OBJECT_ID('[orm].[instance_add]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].[instance_add]
 go
 
 create procedure orm_instance_add
@@ -32,8 +32,8 @@ end
 go
 
 
-IF OBJECT_ID('[orm].[orm_instance_remove]', 'P') IS NOT NULL
-	DROP PROCEDURE [orm].orm_instance_remove
+IF OBJECT_ID('[orm].[instance_remove]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].[instance_remove]
 go
 
 create procedure orm_instance_remove

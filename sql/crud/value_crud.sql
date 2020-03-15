@@ -2,8 +2,8 @@ print '
 Generating all value change sprocs...'
 
 
-IF OBJECT_ID('[orm].[orm_value_change_string]', 'P') IS NOT NULL
-	DROP PROCEDURE [orm].orm_value_change_string
+IF OBJECT_ID('[orm].[value_change_string]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].[value_change_string]
 go
 
 IF OBJECT_ID('[orm_meta].[value_change_string]', 'P') IS NOT NULL
@@ -54,8 +54,8 @@ end
 go
 
 
-IF OBJECT_ID('[orm].[orm_value_change_integer]', 'P') IS NOT NULL
-	DROP PROCEDURE [orm].orm_value_change_integer
+IF OBJECT_ID('[orm].[value_change_integer]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].[value_change_integer]
 go
 
 IF OBJECT_ID('[orm_meta].[value_change_integer]', 'P') IS NOT NULL
@@ -106,8 +106,8 @@ end
 go
 
 
-IF OBJECT_ID('[orm].[orm_value_change_decimal]', 'P') IS NOT NULL
-	DROP PROCEDURE [orm].orm_value_change_decimal
+IF OBJECT_ID('[orm].[value_change_decimal]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].[value_change_decimal]
 go
 
 IF OBJECT_ID('[orm_meta].[value_change_decimal]', 'P') IS NOT NULL
@@ -158,8 +158,8 @@ end
 go
 
 
-IF OBJECT_ID('[orm].[orm_value_change_datetime]', 'P') IS NOT NULL
-	DROP PROCEDURE [orm].orm_value_change_datetime
+IF OBJECT_ID('[orm].[value_change_datetime]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].[value_change_datetime]
 go
 
 IF OBJECT_ID('[orm_meta].[value_change_datetime]', 'P') IS NOT NULL
@@ -210,8 +210,8 @@ end
 go
 
 
-IF OBJECT_ID('[orm].[orm_value_change_instance]', 'P') IS NOT NULL
-	DROP PROCEDURE [orm].orm_value_change_instance
+IF OBJECT_ID('[orm].[value_change_instance]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].[value_change_instance]
 go
 
 IF OBJECT_ID('[orm_meta].[value_change_instance]', 'P') IS NOT NULL
@@ -284,8 +284,8 @@ end
 go
 
 
-if OBJECT_ID('[orm].[orm_value_change]','P') is not null
-	drop procedure [orm].orm_value_change
+if OBJECT_ID('[orm].[value_change]','P') is not null
+	drop procedure [orm].[value_change]
 go
 
 create procedure orm_value_change
@@ -363,8 +363,8 @@ end
 go
 
 
-IF OBJECT_ID('[orm].[orm_value_read]', 'P') IS NOT NULL
-	DROP PROCEDURE [orm].orm_value_read
+IF OBJECT_ID('[orm].[value_read]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].[value_read]
 go
 
 create procedure orm_value_read
@@ -385,7 +385,7 @@ begin
 		,	instanceValue 
 		,	instanceID
 		,	propertyID
-	from [orm].orm_values(@templateName) as v
+	from [orm].[values](@templateName) as v
 	where @instanceName is NULL 
 		or v.Name = @instanceName
 
@@ -393,8 +393,8 @@ end
 go
 
 
-IF OBJECT_ID('[orm].[orm_value_read_listing]', 'P') IS NOT NULL
-	DROP PROCEDURE [orm].orm_value_read_listing
+IF OBJECT_ID('[orm].[value_read_listing]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].[value_read_listing]
 go
 
 create procedure orm_value_read_listing
