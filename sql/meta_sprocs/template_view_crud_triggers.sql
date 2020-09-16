@@ -32,10 +32,12 @@ begin
 
 		,	@template_name varchar(250)
 		,	@template_name_quoted varchar(250)
+		,	@template_name_unquoted varchar(250)
 		,	@template_name_sanitized varchar(250)
 
 	set @template_name = (select top 1 name from [orm_meta].[templates] where template_id = @template_id)
 	set @template_name_quoted = QUOTENAME(@template_name)
+	set @template_name_unquoted = substring(@template_name_quoted, 2,len(@template_name_quoted)-2) -- remove the brackets
 	set @template_name_sanitized = orm_meta.sanitize_string(@template_name_quoted)
 
 	set @string_columns =	(	select QUOTENAME(name) + ',' 
@@ -127,6 +129,7 @@ begin
 	-- update trigger
 	-- @@@_ACTION_CHECK_@@@
 	-- @@@_META_TEMPLATE_NAME_@@@
+	-- @@@_META_TEMPLATE_NAME_UNQUOTED_@@@
 	-- @@@_META_TEMPLATE_ID_@@@
 	IF OBJECT_ID('trigger_orm_meta_view_' + @template_name_sanitized + '_update', 'TR') IS NOT NULL
 		set @action_check = 'alter'
@@ -147,7 +150,7 @@ begin
 			declare @updated_columns table (column_name varchar(100), property_id int)
 				insert into @updated_columns (column_name, property_id)
 				select ducb.COLUMN_NAME, p.property_id
-				from [orm_meta].[decode_updated_columns_bitmask]( columns_updated(), ''@@@_META_TEMPLATE_NAME_@@@'' ) as ducb
+				from [orm_meta].[decode_updated_columns_bitmask]( columns_updated(), ''@@@_META_TEMPLATE_NAME_UNQUOTED_@@@'' ) as ducb
 					inner join [orm_meta].[properties] as p
 						on p.name = ducb.COLUMN_NAME
 				where p.template_id = @template_id
@@ -175,6 +178,7 @@ begin
 
 	set @update_trigger_sql = replace(@update_trigger_sql,'@@@_ACTION_CHECK_@@@', @action_check)
 	set @update_trigger_sql = replace(@update_trigger_sql, '@@@_META_TEMPLATE_NAME_@@@', @template_name_quoted)
+	set @update_trigger_sql = replace(@update_trigger_sql, '@@@_META_TEMPLATE_NAME_UNQUOTED_@@@', @template_name_unquoted)
 	set @update_trigger_sql = replace(@update_trigger_sql, '@@@_META_TEMPLATE_NAME_SANITIZED_@@@', @template_name_sanitized)
 	set @update_trigger_sql = replace(@update_trigger_sql,'@@@_META_TEMPLATE_ID_@@@', @template_id)
 

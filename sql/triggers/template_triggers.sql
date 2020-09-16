@@ -335,7 +335,7 @@ begin
 	while @@FETCH_STATUS = 0
 	begin
 
-		set @drop_query = 'drop view ' + @template_name
+		set @drop_query = 'drop view ' + QUOTENAME(@template_name)
 		exec sp_executesql @drop_query
 
 		fetch next from template_name_cursor into @template_name

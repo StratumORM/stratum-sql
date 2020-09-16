@@ -8,12 +8,16 @@ ECHO Command outputs are directed to rebuild_orm_test.log
 
 ECHO Ensure that sqlcmd.exe is in the PATH environment variable!
 
-SET INSTANCENAME=\SQLEXPRESS
+SET INSTANCENAME=%COMPUTERNAME%\SQLEXPRESS
 SET DATABASENAME=orm_test
 
-ECHO Interacting with %COMPUTERNAME% (at %INSTANCENAME%) using %DATABASENAME%
+SET USERNAME=
+SET PASSWORD=
 
-SET SQL_COMMAND=sqlcmd -S %COMPUTERNAME%%INSTANCENAME% -r -d %DATABASENAME% -i ..\sql
+ECHO Interacting with (at %INSTANCENAME%) using %DATABASENAME%
+
+IF "%USERNAME%"=="" (SET SQL_COMMAND=sqlcmd -S %INSTANCENAME% -r -d %DATABASENAME% -i ..\sql) ELSE (SET SQL_COMMAND=sqlcmd -U %USERNAME% -P %PASSWORD% -S %INSTANCENAME% -r -d %DATABASENAME% -i ..\sql)
+
 SET LOGFILE=rebuild_orm_test.log
 
 ECHO Starting batch for recreating orm_test > %LOGFILE%
@@ -23,7 +27,7 @@ IF not "%DATABASENAME%" == "orm_test" (goto :not_test_db)
 
 ECHO Dropping and creating orm_test
 REM Note that this command doesn't connect to the database: that's so we can drop it!
-sqlcmd -S %COMPUTERNAME%%INSTANCENAME% -r -i ..\sql\create_database_orm_test.sql >> %LOGFILE%
+sqlcmd -S %INSTANCENAME% -r -i ..\sql\create_database_orm_test.sql >> %LOGFILE%
 
 
 ECHO Building base tables and views...
