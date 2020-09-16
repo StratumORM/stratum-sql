@@ -535,8 +535,8 @@ begin
 
 	-- Log the changes to history
 	insert into [orm_hist].[properties] 
-		  (property_id, template_id, name, datatype_id, is_extended, signature)
-	select property_id, template_id, name, datatype_id, is_extended, signature
+		  (property_id, template_id, name, datatype_id, is_extended, signature, transaction_id)
+	select property_id, template_id, name, datatype_id, is_extended, signature, CURRENT_TRANSACTION_ID()
 	from deleted
 
 end
@@ -609,8 +609,8 @@ begin
 
 	-- Log the changes to history
 	insert into [orm_hist].[properties] 
-		  (property_id, template_id, name, datatype_id, is_extended, signature)
-	select property_id, template_id, name, datatype_id, is_extended, signature
+		  (property_id, template_id, name, datatype_id, is_extended, signature, transaction_id)
+	select property_id, template_id, name, datatype_id, is_extended, signature, CURRENT_TRANSACTION_ID()
 	from deleted
 
 end

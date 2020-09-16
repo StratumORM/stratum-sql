@@ -14,6 +14,7 @@ create table [orm_hist].[templates]
 ,	template_id int not null
 ,	name varchar(250) not null
 ,	signature nvarchar(max)
+,	transaction_id bigint not null
 
 ,	constraint pk_orm_hist_templates_id primary key (last_timestamp, template_id)
 )
@@ -37,6 +38,7 @@ create table [orm_hist].[properties]
 ,	datatype_id int not null
 ,	is_extended int
 ,	signature nvarchar(max)
+,	transaction_id bigint not null
 
 ,	constraint pk_orm_hist_properties_id primary key (last_timestamp, property_id)
 )
@@ -61,6 +63,7 @@ create table [orm_hist].[instances]
 ,	template_id int not null
 ,	name varchar(250) not null
 ,	signature nvarchar(max)
+,	transaction_id bigint not null
 
 ,	constraint pk_orm_hist_instances_id primary key (last_timestamp, instance_id)
 )
@@ -84,6 +87,7 @@ create table [orm_hist].[values_string]
 ,	instance_id int not null
 ,	property_id int not null
 ,	value nvarchar(max)
+,	transaction_id bigint not null
 
 ,	constraint pk_orm_hist_values_string_instance_property 
    primary key (last_timestamp, instance_id, property_id)
@@ -101,6 +105,7 @@ create table [orm_hist].[values_integer]
 ,	instance_id int not null
 ,	property_id int not null
 ,	value bigint
+,	transaction_id bigint not null
 
 ,	constraint pk_orm_hist_values_integer_instance_property 
    primary key (last_timestamp, instance_id, property_id)
@@ -118,6 +123,7 @@ create table [orm_hist].[values_decimal]
 ,	instance_id int not null
 ,	property_id int not null
 ,	value decimal(19,8)
+,	transaction_id bigint not null
 
 ,	constraint pk_orm_hist_values_decimal_instance_property 
    primary key (last_timestamp, instance_id, property_id)
@@ -135,6 +141,7 @@ create table [orm_hist].[values_datetime]
 ,	instance_id int not null
 ,	property_id int not null
 ,	value datetime
+,	transaction_id bigint not null
 
 ,	constraint pk_orm_hist_values_datetime_instance_property 
    primary key (last_timestamp, instance_id, property_id)
@@ -152,6 +159,7 @@ create table [orm_hist].[values_instance]
 ,	instance_id int not null
 ,	property_id int not null
 ,	value varchar(250)
+,	transaction_id bigint not null
 
 ,	constraint pk_orm_hist_values_instances_instance_property_instance_name 
    primary key (last_timestamp, instance_id, property_id)
@@ -171,6 +179,7 @@ create table [orm_hist].[inheritance]
 ,	parent_template_id int not null
 ,	child_template_id int not null
 ,	ordinal int not null
+,	transaction_id bigint not null
 
 ,	constraint pk_orm_hist_inheritance_parent_child_ordinal 
    primary key (last_timestamp, parent_template_id, child_template_id)

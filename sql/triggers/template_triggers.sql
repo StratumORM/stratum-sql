@@ -130,8 +130,8 @@ begin
 
 	-- Log the changes to history
 	insert into [orm_hist].[templates] 
-		  (template_id, name, signature)
-	select template_id, name, signature
+		  (template_id, name, signature, transaction_id)
+	select template_id, name, signature, CURRENT_TRANSACTION_ID()
 	from deleted
 
 end
@@ -345,8 +345,8 @@ begin
 
 	-- Log the changes to history
 	insert into [orm_hist].[templates] 
-		  (template_id, name, signature)
-	select template_id, name, signature
+		  (template_id, name, signature, transaction_id)
+	select template_id, name, signature, CURRENT_TRANSACTION_ID()
 	from deleted
 
 end

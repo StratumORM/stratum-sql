@@ -182,8 +182,8 @@ begin
 
 	-- Log the changes to history
 	insert into [orm_hist].[inheritance] 
-		  (parent_template_id, child_template_id, ordinal)
-	select parent_template_id, child_template_id, ordinal
+		  (parent_template_id, child_template_id, ordinal, transaction_id)
+	select parent_template_id, child_template_id, ordinal, CURRENT_TRANSACTION_ID()
 	from deleted
 
 end
@@ -256,8 +256,8 @@ begin
 
 	-- Log the changes to history
 	insert into [orm_hist].[inheritance] 
-		  (parent_template_id, child_template_id, ordinal)
-	select parent_template_id, child_template_id, ordinal
+		  (parent_template_id, child_template_id, ordinal, transaction_id)
+	select parent_template_id, child_template_id, ordinal, CURRENT_TRANSACTION_ID()
 	from deleted
 end
 go
