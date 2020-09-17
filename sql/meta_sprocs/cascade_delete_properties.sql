@@ -5,6 +5,19 @@ IF OBJECT_ID('[orm_meta].[cascade_delete_property]', 'P') IS NOT NULL
 	DROP PROCEDURE [orm_meta].[cascade_delete_property]
 go
 
+
+IF TYPE_ID('[orm_meta].[identities]') IS NULL
+-- 	DROP TYPE [orm_meta].[identities]
+-- go
+
+	CREATE TYPE [orm_meta].[identities] AS TABLE(
+		[id] [int] NOT NULL,
+		PRIMARY KEY CLUSTERED (	[id] ASC )
+			WITH (IGNORE_DUP_KEY = OFF)
+	)
+GO
+
+
 create procedure [orm_meta].[cascade_delete_property]
 	@property_ids identities READONLY
 as

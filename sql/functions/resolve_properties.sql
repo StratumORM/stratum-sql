@@ -7,15 +7,15 @@ IF OBJECT_ID('[orm_meta].[resolve_properties]', 'IF') IS NOT NULL
 go
 
 
-IF TYPE_ID('[orm_meta].[identities]') IS NOT NULL
-	DROP TYPE [orm_meta].[identities]
-go
+IF TYPE_ID('[orm_meta].[identities]') IS NULL
+-- 	DROP TYPE [orm_meta].[identities]
+-- go
 
-CREATE TYPE [orm_meta].[identities] AS TABLE(
-	[id] [int] NOT NULL,
-	PRIMARY KEY CLUSTERED (	[id] ASC )
-		WITH (IGNORE_DUP_KEY = OFF)
-)
+	CREATE TYPE [orm_meta].[identities] AS TABLE(
+		[id] [int] NOT NULL,
+		PRIMARY KEY CLUSTERED (	[id] ASC )
+			WITH (IGNORE_DUP_KEY = OFF)
+	)
 GO
 
 

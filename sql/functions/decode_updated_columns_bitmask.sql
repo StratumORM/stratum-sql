@@ -2,7 +2,7 @@ print '
 Generating update_columns decoder ring...'
 
 
-IF OBJECT_ID('[orm_meta].[decode_updated_columns_bitmask]', 'FN') IS NOT NULL
+IF OBJECT_ID('[orm_meta].[decode_updated_columns_bitmask]', 'IF') IS NOT NULL
 	drop function [orm_meta].[decode_updated_columns_bitmask]
 go
 
