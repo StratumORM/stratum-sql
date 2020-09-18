@@ -16,7 +16,7 @@ return
 (
 	-- This is a generic view on the template's values
 	--	presented in a format similar to Ignition's historian tables.
-	
+
 	select  o.name as Name
 		,	p.name as Property
 
@@ -26,35 +26,35 @@ return
 		,	vd.value as [Date]
 		,	vo.value as [Instance]
 	
-		,	o.instance_id
-		,	p.property_id
+		,	o.instance_guid
+		,	p.property_guid
 	
 	from	[orm_meta].[instances] as o
 		inner join [orm_meta].[properties] as p
-			on o.template_id = p.template_id
+			on o.template_guid = p.template_guid
 
 		inner join [orm_meta].[templates] as t 
-			on p.template_id = t.template_id
+			on p.template_guid = t.template_guid
 
 		left join [orm_meta].[values_integer]	as vi
-			on	o.instance_id   = vi.instance_id
-			and	p.property_id = vi.property_id
+			on	o.instance_guid = vi.instance_guid
+			and	p.property_guid = vi.property_guid
 
 		left join [orm_meta].[values_decimal]	as vf
-			on	o.instance_id   = vf.instance_id
-			and	p.property_id = vf.property_id
+			on	o.instance_guid = vf.instance_guid
+			and	p.property_guid = vf.property_guid
 
 		left join [orm_meta].[values_string]	as vs
-			on	o.instance_id   = vs.instance_id
-			and	p.property_id = vs.property_id
+			on	o.instance_guid = vs.instance_guid
+			and	p.property_guid = vs.property_guid
 
 		left join [orm_meta].[values_datetime]	as vd
-			on	o.instance_id   = vd.instance_id
-			and	p.property_id = vd.property_id
+			on	o.instance_guid = vd.instance_guid
+			and	p.property_guid = vd.property_guid
 
 		left join [orm_meta].[values_instance]	as vo
-			on	o.instance_id   = vo.instance_id
-			and	p.property_id = vo.property_id
+			on	o.instance_guid = vo.instance_guid
+			and	p.property_guid = vo.property_guid
 	where t.name = @template_name
 )
 GO
@@ -82,44 +82,44 @@ return
 		,	p.name as Property
 		,	isnull(v.value,'') as Value
 		,	d.name as Datatype
-		,	o.instance_id
-		,	p.property_id
-		,	p.datatype_id
+		,	o.instance_guid
+		,	p.property_guid
+		,	p.datatype_guid
 	
 	from	[orm_meta].[instances] as o
 		inner join [orm_meta].[templates] as t
-			on o.template_id = t.template_id
+			on o.template_guid = t.template_guid
 		inner join [orm_meta].[properties] as p
-			on o.template_id = p.template_id
+			on o.template_guid = p.template_guid
 		inner join [orm_meta].[templates] as d
-			on p.datatype_id = d.template_id
+			on p.datatype_guid = d.template_guid
 		inner join
-		(	select instance_id, property_id, convert(nvarchar(max),value) as value
+		(	select instance_guid, property_guid, convert(nvarchar(max),value) as value
 			from [orm_meta].[values_integer]
 			
 			union
 
-			select instance_id, property_id, convert(nvarchar(max),value) as value
+			select instance_guid, property_guid, convert(nvarchar(max),value) as value
 			from [orm_meta].[values_decimal]
 
 			union
 
-			select instance_id, property_id, convert(nvarchar(max),value) as value
+			select instance_guid, property_guid, convert(nvarchar(max),value) as value
 			from [orm_meta].[values_string]
 
 			union
 						-- convert the datetime to ODBC canonical yyyy-mm-dd hh:mi:ss.mmm
-			select instance_id, property_id, convert(nvarchar(max),value, 121) as value
+			select instance_guid, property_guid, convert(nvarchar(max),value, 121) as value
 			from [orm_meta].[values_datetime]
 
 			union
 
-			select instance_id, property_id, convert(nvarchar(max),value) as value
+			select instance_guid, property_guid, convert(nvarchar(max),value) as value
 			from [orm_meta].[values_instance]
 
 		) as v
-			on	o.instance_id   = v.instance_id
-			and	p.property_id = v.property_id
+			on	o.instance_guid   = v.instance_guid
+			and	p.property_guid = v.property_guid
 	where t.name = @template_name
 )
 GO

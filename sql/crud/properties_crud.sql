@@ -15,17 +15,20 @@ as
 begin
 	SET NOCOUNT ON;
 	
-	declare @template_id int, @datatype_id int
-		select @template_id = template_id
+	declare @template_guid uniqueidentifier
+		, 	@datatype_guid uniqueidentifier
+		
+		select @template_guid = template_guid
 		from [orm_meta].[templates]
 		where name = @template_name
 
-		select @datatype_id = template_id
+		select @datatype_guid = template_guid
 		from [orm_meta].[templates] 
 		where name = @data_type
 	
-	insert [orm_meta].[properties] (template_id, name, datatype_id, is_extended)
-	values (@template_id, @new_property_name, @datatype_id, @is_extended)
+	insert [orm_meta].[properties] 
+		   ( template_guid,               name,  datatype_guid,  is_extended)
+	values (@template_guid, @new_property_name, @datatype_guid, @is_extended)
 
 	return @@identity
 end
@@ -42,21 +45,15 @@ as
 begin
 	SET NOCOUNT ON;
 	
-	declare @template_id int, @datatype_id int, @property_id int
+	declare @template_guid uniqueidentifier
 
-		select @template_id = template_id
+		select @template_guid = template_guid
 		from [orm_meta].[templates]
 		where name = @template_name
 
-		select	@datatype_id = p.datatype_id
-			,	@property_id = p.property_id
-		from [orm_meta].[properties] as p
-		where p.template_id = @template_id
-			and p.name = @property_name
-
 	-- remove the property
 	delete [orm_meta].[properties]
-	where	template_id = @template_id
+	where	template_guid = @template_guid
 		and name = @property_name
 		
 end
@@ -78,7 +75,7 @@ begin
 	set name = @new_property_name
 	from [orm_meta].[properties] as p
 		inner join [orm_meta].[templates] as t
-			on t.template_id = p.template_id
+			on t.template_guid = p.template_guid
 	where	t.name = @template_name
 		and p.name = @old_property_name
 

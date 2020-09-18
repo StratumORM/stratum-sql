@@ -16,15 +16,15 @@ begin
 	-- Make sure not to exclude mere ordinal changes
 	if (exists( select *
 				from inserted as i
-					cross apply [orm_meta].[template_tree](i.parent_template_id) as ptree
-					cross apply [orm_meta].[template_tree](i.child_template_id) as ctree
-				where	ptree.template_id = i.parent_template_id and ptree.echelon <> 0
-					and ctree.template_id = i.child_template_id and ctree.echelon <> 0
+					cross apply [orm_meta].[template_tree](i.parent_template_guid) as ptree
+					cross apply [orm_meta].[template_tree](i.child_template_guid) as ctree
+				where	ptree.template_guid = i.parent_template_guid and ptree.echelon <> 0
+					and ctree.template_guid = i.child_template_guid and ctree.echelon <> 0
 					and not exists (select *
 									from deleted as d
 										inner join inserted as i
-											on d.parent_template_id = i.parent_template_id
-											and d.child_template_id = i.child_template_id)))
+											on d.parent_template_guid = i.parent_template_guid
+											and d.child_template_guid = i.child_template_guid)))
 		begin
 			rollback transaction	
 			raiserror('Insert will cause a recursive loop in inheritance (no grandfather paradoxes, please).', 16, 1)
@@ -42,17 +42,17 @@ begin
 		end
 
 	-- If that passes, perform the insert...
-	insert into [orm_meta].[inheritance] (parent_template_id, child_template_id, ordinal)
-	select i.parent_template_id, i.child_template_id, i.ordinal
+	insert into [orm_meta].[inheritance] (parent_template_guid, child_template_guid, ordinal)
+	select i.parent_template_guid, i.child_template_guid, i.ordinal
 	from inserted as i
 		
 	-- ... and force an update on the property table (let it resolve the complexities)
 	update p
-	set p.template_id = p.template_id
+	set p.template_guid = p.template_guid
 	from [orm_meta].[properties] as p
 		inner join inserted as i
-			on p.template_id = i.child_template_id
-			or p.template_id = i.parent_template_id
+			on p.template_guid = i.child_template_guid
+			or p.template_guid = i.parent_template_guid
 
 end
 go
@@ -78,15 +78,15 @@ begin
 	-- Make sure not to exclude mere ordinal changes
 	if (exists( select *
 				from inserted as i
-					cross apply [orm_meta].[template_tree](i.parent_template_id) as ptree
-					cross apply [orm_meta].[template_tree](i.child_template_id) as ctree
-				where	ptree.template_id = i.parent_template_id and ptree.echelon <> 0
-					and ctree.template_id = i.child_template_id and ctree.echelon <> 0
+					cross apply [orm_meta].[template_tree](i.parent_template_guid) as ptree
+					cross apply [orm_meta].[template_tree](i.child_template_guid) as ctree
+				where	ptree.template_guid = i.parent_template_guid and ptree.echelon <> 0
+					and ctree.template_guid = i.child_template_guid and ctree.echelon <> 0
 					and not exists (select *
 									from deleted as d
 										inner join inserted as i
-											on d.parent_template_id = i.parent_template_id
-											and d.child_template_id = i.child_template_id)))
+											on d.parent_template_guid = i.parent_template_guid
+											and d.child_template_guid = i.child_template_guid)))
 		begin
 			rollback transaction	
 			raiserror('Insert will cause a recursive loop in inheritance (no grandfather paradoxes, please).', 16, 1)
@@ -109,48 +109,48 @@ begin
 
 	-- In the case of a deletion, we need to determine what properties are not going to be covered. 
 	-- We can detect any relevant covered property as one who has a mask that isn't their own
-	--	and whose masking template_id becomes the child of the parent
+	--	and whose masking template_guid becomes the child of the parent
 	-- We'll do this in two steps.
 
-	declare @covering_before table (parent_template_id int, child_template_id int, child_property_id int)
-	declare @covering_after table  (parent_template_id int, child_template_id int, child_property_id int)
+	declare @covering_before table (parent_template_guid uniqueidentifier, child_template_guid uniqueidentifier, child_property_guid uniqueidentifier)
+	declare @covering_after table  (parent_template_guid uniqueidentifier, child_template_guid uniqueidentifier, child_property_guid uniqueidentifier)
 
-	declare	@template_ids identities
-		insert into @template_ids (id)
-		select distinct d.parent_template_id
+	declare	@template_guids identities
+		insert into @template_guids (guid)
+		select distinct d.parent_template_guid
 		from deleted as d
 
 	-- First, get the properties that are covered before the change
-	insert into @covering_before (parent_template_id, child_template_id, child_property_id)
-	select m.masked_template_id, m.current_template_id, m.current_property_id
-	from [orm_meta].[resolve_properties](@template_ids) as m
-	where m.masked_template_id <> m.current_template_id
+	insert into @covering_before (parent_template_guid, child_template_guid, child_property_guid)
+	select m.masked_template_guid, m.current_template_guid, m.current_property_guid
+	from [orm_meta].[resolve_properties](@template_guids) as m
+	where m.masked_template_guid <> m.current_template_guid
 	
 	-- Make the changes:
 	-- First delete...
 	delete i
 	from [orm_meta].[inheritance] as i
 		inner join deleted as d
-			on d.parent_template_id = i.parent_template_id
-			and d.child_template_id = i.child_template_id
+			on d.parent_template_guid = i.parent_template_guid
+			and d.child_template_guid = i.child_template_guid
 			and d.ordinal = i.ordinal
 	-- Second insert... (since this is an update, after all: we may add the 
 	--	relationship right back in but with another ordinal.)
-	insert into [orm_meta].[inheritance] (parent_template_id, child_template_id, ordinal)
-	select i.parent_template_id, i.child_template_id, i.ordinal
+	insert into [orm_meta].[inheritance] (parent_template_guid, child_template_guid, ordinal)
+	select i.parent_template_guid, i.child_template_guid, i.ordinal
 	from inserted as i
 	
-	-- Reset the template_ids so we can check again from the children's point of view
-	delete @template_ids
+	-- Reset the template_guids so we can check again from the children's point of view
+	delete @template_guids
 
-	insert into @template_ids (id)
-	select distinct d.child_template_id
+	insert into @template_guids (guid)
+	select distinct d.child_template_guid
 	from deleted as d
 
 	-- Now re-solve the property tree given the change
-	insert into @covering_after (parent_template_id, child_template_id, child_property_id)
-	select m.masked_template_id, m.current_template_id, m.current_property_id
-	from [orm_meta].[resolve_properties](@template_ids) as m
+	insert into @covering_after (parent_template_guid, child_template_guid, child_property_guid)
+	select m.masked_template_guid, m.current_template_guid, m.current_property_guid
+	from [orm_meta].[resolve_properties](@template_guids) as m
 
 	-- We can now check if any properties are uncovered.
 	-- Any property whose masking ID is was the parent, but is now the child
@@ -160,12 +160,12 @@ begin
 	delete p
 	from [orm_meta].[properties] as p
 		inner join @covering_after as ca
-			on p.property_id = ca.child_property_id
+			on p.property_guid = ca.child_property_guid
 		inner join @covering_before as cb
-			on ca.child_property_id = cb.child_property_id
+			on ca.child_property_guid = cb.child_property_guid
 		inner join deleted as d
-			on d.parent_template_id = cb.parent_template_id
-			and d.child_template_id = ca.parent_template_id
+			on d.parent_template_guid = cb.parent_template_guid
+			and d.child_template_guid = ca.parent_template_guid
 
 
 	-- Force the properties table to heal itself, if needed.
@@ -174,16 +174,16 @@ begin
 	-- This can be an issue if we cleared uncovered properties, but never added newly covered properties.
 	--	By tripping a no-op update on the property table, we can let it re-resolve the details and apply corrections.
 	update p
-	set p.template_id = p.template_id
+	set p.template_guid = p.template_guid
 	from [orm_meta].[properties] as p
 		inner join inserted as i
-			on p.template_id = i.child_template_id
-			or p.template_id = i.parent_template_id
+			on p.template_guid = i.child_template_guid
+			or p.template_guid = i.parent_template_guid
 
 	-- Log the changes to history
 	insert into [orm_hist].[inheritance] 
-		  (parent_template_id, child_template_id, ordinal, transaction_id)
-	select parent_template_id, child_template_id, ordinal, CURRENT_TRANSACTION_ID()
+		  (parent_template_guid, child_template_guid, ordinal, transaction_id)
+	select parent_template_guid, child_template_guid, ordinal, CURRENT_TRANSACTION_ID()
 	from deleted
 
 end
@@ -202,42 +202,42 @@ begin
 
 	-- In the case of a deletion, we need to determine what properties are not going to be covered. 
 	-- We can detect any relevant covered property as one who has a mask that isn't their own
-	--	and whose masking template_id becomes the child of the parent
+	--	and whose masking template_guid becomes the child of the parent
 	-- We'll do this in two steps.
 
-	declare @covering_before table (parent_template_id int, child_template_id int, child_property_id int)
-	declare @covering_after table  (parent_template_id int, child_template_id int, child_property_id int)
+	declare @covering_before table (parent_template_guid uniqueidentifier, child_template_guid uniqueidentifier, child_property_guid uniqueidentifier)
+	declare @covering_after table  (parent_template_guid uniqueidentifier, child_template_guid uniqueidentifier, child_property_guid uniqueidentifier)
 
-	declare	@template_ids identities
-		insert into @template_ids (id)
-		select distinct d.parent_template_id
+	declare	@template_guids identities
+		insert into @template_guids (guid)
+		select distinct d.parent_template_guid
 		from deleted as d
 
 	-- First, get the properties that are covered before the change
-	insert into @covering_before (parent_template_id, child_template_id, child_property_id)
-	select m.masked_template_id, m.current_template_id, m.current_property_id
-	from [orm_meta].[resolve_properties](@template_ids) as m
-	where m.masked_template_id <> m.current_template_id
+	insert into @covering_before (parent_template_guid, child_template_guid, child_property_guid)
+	select m.masked_template_guid, m.current_template_guid, m.current_property_guid
+	from [orm_meta].[resolve_properties](@template_guids) as m
+	where m.masked_template_guid <> m.current_template_guid
 	
 	-- Make the change...
 	delete i
 	from [orm_meta].[inheritance] as i
 		inner join deleted as d
-			on d.parent_template_id = i.parent_template_id
-			and d.child_template_id = i.child_template_id
+			on d.parent_template_guid = i.parent_template_guid
+			and d.child_template_guid = i.child_template_guid
 			and d.ordinal = i.ordinal
 	
-	-- Reset the template_ids so we can check from the children's point of view
-	delete @template_ids
+	-- Reset the template_guids so we can check from the children's point of view
+	delete @template_guids
 
-	insert into @template_ids (id)
-	select distinct d.child_template_id
+	insert into @template_guids (guid)
+	select distinct d.child_template_guid
 	from deleted as d
 
 	-- Now re-solve the property tree given the change
-	insert into @covering_after (parent_template_id, child_template_id, child_property_id)
-	select m.masked_template_id, m.current_template_id, m.current_property_id
-	from [orm_meta].[resolve_properties](@template_ids) as m
+	insert into @covering_after (parent_template_guid, child_template_guid, child_property_guid)
+	select m.masked_template_guid, m.current_template_guid, m.current_property_guid
+	from [orm_meta].[resolve_properties](@template_guids) as m
 
 	-- We can now check if any properties are uncovered.
 	-- Any property whose masking ID is was the parent, but is now the child
@@ -247,17 +247,17 @@ begin
 	delete p
 	from [orm_meta].[properties] as p
 		inner join @covering_after as ca
-			on p.property_id = ca.child_property_id
+			on p.property_guid = ca.child_property_guid
 		inner join @covering_before as cb
-			on ca.child_property_id = cb.child_property_id
+			on ca.child_property_guid = cb.child_property_guid
 		inner join deleted as d
-			on d.parent_template_id = cb.parent_template_id
-			and d.child_template_id = ca.parent_template_id
+			on d.parent_template_guid = cb.parent_template_guid
+			and d.child_template_guid = ca.parent_template_guid
 
 	-- Log the changes to history
 	insert into [orm_hist].[inheritance] 
-		  (parent_template_id, child_template_id, ordinal, transaction_id)
-	select parent_template_id, child_template_id, ordinal, CURRENT_TRANSACTION_ID()
+		  (parent_template_guid, child_template_guid, ordinal, transaction_id)
+	select parent_template_guid, child_template_guid, ordinal, CURRENT_TRANSACTION_ID()
 	from deleted
 end
 go

@@ -8,7 +8,7 @@ go
 
 
 create procedure [orm_meta].[generate_template_view_wide]
-	@template_id int
+	@template_guid uniqueidentifier
 as
 begin
 
@@ -23,43 +23,43 @@ begin
 		,	@pivot_sub_query nvarchar(max)
 		,	@query nvarchar(max)
 
-		,	@template_name varchar(250)
+		,	@template_name nvarchar(250)
 
-	set @template_name = (select top 1 name from [orm_meta].[templates] where template_id = @template_id)
+	set @template_name = (select name from [orm_meta].[templates] where template_guid = @template_guid)
 
 	set @string_columns =	(	select QUOTENAME(name) + ',' 
 								from [orm_meta].[properties] as p
-								where	p.datatype_id = 1 
+								where	p.datatype_guid = 0x00000000000000000000000000000001
 									and (p.is_extended is NULL or p.is_extended = 0) 
-									and p.template_id = @template_id 
+									and p.template_guid = @template_guid 
 								for xml path(''))
 
 	set @integer_columns =	(	select QUOTENAME(name) + ','
 								from [orm_meta].[properties] as p
-								where	p.datatype_id = 2 
+								where	p.datatype_guid = 0x00000000000000000000000000000002
 									and (p.is_extended is NULL or p.is_extended = 0) 
-									and p.template_id = @template_id 
+									and p.template_guid = @template_guid 
 								for xml path(''))
 
 	set @decimal_columns =	(	select QUOTENAME(name) + ','
 								from [orm_meta].[properties] as p
-								where	p.datatype_id = 3 
+								where	p.datatype_guid = 0x00000000000000000000000000000003 
 									and (p.is_extended is NULL or p.is_extended = 0) 
-									and p.template_id = @template_id 
+									and p.template_guid = @template_guid 
 								for xml path(''))
 
 	set @datetime_columns =	(	select QUOTENAME(name) + ','
 								from [orm_meta].[properties] as p
-								where	p.datatype_id = 4
+								where	p.datatype_guid = 0x00000000000000000000000000000004
 									and (p.is_extended is NULL or p.is_extended = 0) 
-									and p.template_id = @template_id 
+									and p.template_guid = @template_guid 
 								for xml path(''))
 
 	set @instance_columns =	(	select QUOTENAME(name) + ','
 								from [orm_meta].[properties] as p
-								where	not p.datatype_id in (1,2,3,4)
+								where   p.datatype_guid > 0x00000000000000000000000000000004
 									and (p.is_extended is NULL or p.is_extended = 0) 
-									and p.template_id = @template_id 
+									and p.template_guid = @template_guid 
 								for xml path(''))
 
 
@@ -74,24 +74,24 @@ begin
 
 	set @pivot_query_template = '
 		left join
-			( 	select	o.instance_id
+			( 	select	o.instance_guid
 					,	p.name as Property
 					,	v.value
 				from	[orm_meta].[instances] as o 
 					inner join [orm_meta].[properties] as p
-						on o.template_id = p.template_id
+						on o.template_guid = p.template_guid
 					inner join @@@META_VALUES_TABLE@@@ as v
-						on 	p.property_id = v.property_id
-						and	v.instance_id = o.instance_id
+						on 	p.property_guid = v.property_guid
+						and	v.instance_guid = o.instance_guid
 				where (p.is_extended is NULL or p.is_extended = 0)
-					and p.datatype_id = @@@DATATYPE_ID@@@ 
+					and p.datatype_guid = @@@DATATYPE_GUID@@@
 			) as src
 			pivot
 			(
 				max (value)
 				for Property in (@@@VALUES_COLUMNS@@@)
 			) as @@@META_VALUES_TABLE_SANITIZED@@@_pivot
-			on o.instance_id = @@@META_VALUES_TABLE_SANITIZED@@@_pivot.instance_id
+			on o.instance_guid = @@@META_VALUES_TABLE_SANITIZED@@@_pivot.instance_guid
 		'
 	set @pivot_sub_query = ''
 
@@ -105,7 +105,7 @@ begin
 		set @resolved_pivot_template = replace(@pivot_query_template, '@@@META_VALUES_TABLE@@@', '[orm_meta].[values_string]')
 		set @resolved_pivot_template = replace(@resolved_pivot_template, '@@@META_VALUES_TABLE_SANITIZED@@@', '_orm_meta___values_string_')
 		set @resolved_pivot_template = replace(@resolved_pivot_template, '@@@VALUES_COLUMNS@@@', @string_columns)
-		set @resolved_pivot_template = replace(@resolved_pivot_template, '@@@DATATYPE_ID@@@', convert(nvarchar(10), 1))
+		set @resolved_pivot_template = replace(@resolved_pivot_template, 'p.datatype_guid = @@@DATATYPE_GUID@@@', 'p.datatype_guid = 0x00000000000000000000000000000001')
 
 		set @pivot_sub_query = @pivot_sub_query + @resolved_pivot_template
 	end
@@ -121,7 +121,7 @@ begin
 		set @resolved_pivot_template = replace(@pivot_query_template, '@@@META_VALUES_TABLE@@@', '[orm_meta].[values_integer]')
 		set @resolved_pivot_template = replace(@resolved_pivot_template, '@@@META_VALUES_TABLE_SANITIZED@@@', '_orm_meta___values_integer_')
 		set @resolved_pivot_template = replace(@resolved_pivot_template, '@@@VALUES_COLUMNS@@@', @integer_columns)
-		set @resolved_pivot_template = replace(@resolved_pivot_template, '@@@DATATYPE_ID@@@', convert(nvarchar(10), 2))
+		set @resolved_pivot_template = replace(@resolved_pivot_template, 'p.datatype_guid = @@@DATATYPE_GUID@@@', 'p.datatype_guid = 0x00000000000000000000000000000002')
 
 		set @pivot_sub_query = @pivot_sub_query + @resolved_pivot_template
 	end
@@ -137,7 +137,7 @@ begin
 		set @resolved_pivot_template = replace(@pivot_query_template, '@@@META_VALUES_TABLE@@@', '[orm_meta].[values_decimal]')
 		set @resolved_pivot_template = replace(@resolved_pivot_template, '@@@META_VALUES_TABLE_SANITIZED@@@', '_orm_meta___values_decimal_')
 		set @resolved_pivot_template = replace(@resolved_pivot_template, '@@@VALUES_COLUMNS@@@', @decimal_columns)
-		set @resolved_pivot_template = replace(@resolved_pivot_template, '@@@DATATYPE_ID@@@', convert(nvarchar(10), 3))
+		set @resolved_pivot_template = replace(@resolved_pivot_template, 'p.datatype_guid = @@@DATATYPE_GUID@@@', 'p.datatype_guid = 0x00000000000000000000000000000003')
 
 		set @pivot_sub_query = @pivot_sub_query + @resolved_pivot_template
 	end
@@ -153,7 +153,7 @@ begin
 		set @resolved_pivot_template = replace(@pivot_query_template, '@@@META_VALUES_TABLE@@@', '[orm_meta].[values_datetime]')
 		set @resolved_pivot_template = replace(@resolved_pivot_template, '@@@META_VALUES_TABLE_SANITIZED@@@', '_orm_meta___values_datetime_')
 		set @resolved_pivot_template = replace(@resolved_pivot_template, '@@@VALUES_COLUMNS@@@', @datetime_columns)
-		set @resolved_pivot_template = replace(@resolved_pivot_template, '@@@DATATYPE_ID@@@', convert(nvarchar(10), 4))
+		set @resolved_pivot_template = replace(@resolved_pivot_template, 'p.datatype_guid = @@@DATATYPE_GUID@@@', 'p.datatype_guid = 0x00000000000000000000000000000004')
 
 		set @pivot_sub_query = @pivot_sub_query + @resolved_pivot_template
 	end
@@ -169,23 +169,23 @@ begin
 		set @resolved_pivot_template = replace(@pivot_query_template, '@@@META_VALUES_TABLE@@@', '[orm_meta].[values_instance]')
 		set @resolved_pivot_template = replace(@resolved_pivot_template, '@@@META_VALUES_TABLE_SANITIZED@@@', '_orm_meta___values_instance_')
 		set @resolved_pivot_template = replace(@resolved_pivot_template, '@@@VALUES_COLUMNS@@@', @instance_columns)
-		set @resolved_pivot_template = replace(@resolved_pivot_template, 'p.datatype_id = @@@DATATYPE_ID@@@', 'p.datatype_id > 4')
+		set @resolved_pivot_template = replace(@resolved_pivot_template, 'p.datatype_guid = @@@DATATYPE_GUID@@@', 'p.datatype_guid > 0x00000000000000000000000000000004')
 
 		set @pivot_sub_query = @pivot_sub_query + @resolved_pivot_template
 	end
 
 
-	set @query = @query + ' , o.Instance_id as Instance_id
+	set @query = @query + ' , o.Instance_guid as Instance_guid
 	from	[orm_meta].[instances] as o
-		inner join [orm_meta].[sub_templates](' + convert(nvarchar(100), @template_id) + ') as sub_templates
-			on o.template_id = sub_templates.template_id
+		inner join [orm_meta].[sub_templates](''' + convert(nvarchar(36), @template_guid) + ''') as sub_templates
+			on o.template_guid = sub_templates.template_guid
 	' + @pivot_sub_query
 
 	-- print @query
 
 	exec sp_executesql @query
 
-	exec [orm_meta].[generate_template_view_triggers] @template_id
+	exec [orm_meta].[generate_template_view_triggers] @template_guid
 
 end
 go

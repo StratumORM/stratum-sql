@@ -11,18 +11,18 @@ as
 		,	o.name as [instance]
 		,	p.name as [property]
 		,	v.value
-		--,	t.template_id
-		--,	o.instance_id
-		--,	p.property_id
+		--,	t.template_guid
+		--,	o.instance_guid
+		--,	p.property_guid
 	from [orm_meta].[values_string] as v
 		inner join [orm_meta].[instances] as o
-			on v.instance_id = o.instance_id
+			on v.instance_guid = o.instance_guid
 		inner join [orm_meta].[properties] as p
-			on v.property_id = p.property_id
+			on v.property_guid = p.property_guid
 		inner join [orm_meta].[templates] as t
-			on p.template_id = t.template_id
-	where p.datatype_id = 1
-	--order by t.template_id, o.name, p.name
+			on p.template_guid = t.template_guid
+	where p.datatype_guid = 0x00000000000000000000000000000001
+	--order by t.template_guid, o.name, p.name
 GO
 
 
@@ -36,18 +36,18 @@ as
 		,	o.name as [instance]
 		,	p.name as [property]
 		,	v.value
-		--,	t.template_id
-		--,	o.instance_id
-		--,	p.property_id
+		--,	t.template_guid
+		--,	o.instance_guid
+		--,	p.property_guid
 	from [orm_meta].[values_integer] as v
 		inner join [orm_meta].[instances] as o
-			on v.instance_id = o.instance_id
+			on v.instance_guid = o.instance_guid
 		inner join [orm_meta].[properties] as p
-			on v.property_id = p.property_id
+			on v.property_guid = p.property_guid
 		inner join [orm_meta].[templates] as t
-			on p.template_id = t.template_id
-	where p.datatype_id = 2
-	--order by t.template_id, o.name, p.name
+			on p.template_guid = t.template_guid
+	where p.datatype_guid = 0x00000000000000000000000000000002
+	--order by t.template_guid, o.name, p.name
 GO
 
 
@@ -61,18 +61,18 @@ as
 		,	o.name as [instance]
 		,	p.name as [property]
 		,	v.value
-		--,	t.template_id
-		--,	o.instance_id
-		--,	p.property_id
+		--,	t.template_guid
+		--,	o.instance_guid
+		--,	p.property_guid
 	from [orm_meta].[values_decimal] as v
 		inner join [orm_meta].[instances] as o
-			on v.instance_id = o.instance_id
+			on v.instance_guid = o.instance_guid
 		inner join [orm_meta].[properties] as p
-			on v.property_id = p.property_id
+			on v.property_guid = p.property_guid
 		inner join [orm_meta].[templates] as t
-			on p.template_id = t.template_id
-	where p.datatype_id = 3
-	--order by t.template_id, o.name, p.name
+			on p.template_guid = t.template_guid
+	where p.datatype_guid = 0x00000000000000000000000000000003
+	--order by t.template_guid, o.name, p.name
 GO
 
 
@@ -86,16 +86,16 @@ as
 		,	o.name as [instance]
 		,	p.name as [property]
 		,	v.value
-		--,	t.template_id
-		--,	o.instance_id
-		--,	p.property_id
+		--,	t.template_guid
+		--,	o.instance_guid
+		--,	p.property_guid
 	from [orm_meta].[values_datetime] as v
 		inner join [orm_meta].[instances] as o
-			on v.instance_id = o.instance_id
+			on v.instance_guid = o.instance_guid
 		inner join [orm_meta].[properties] as p
-			on v.property_id = p.property_id
+			on v.property_guid = p.property_guid
 		inner join [orm_meta].[templates] as t
-			on p.template_id = t.template_id
-	where p.datatype_id = 4
-	--order by t.template_id, o.name, p.name
+			on p.template_guid = t.template_guid
+	where p.datatype_guid = 0x00000000000000000000000000000004
+	--order by t.template_guid, o.name, p.name
 GO

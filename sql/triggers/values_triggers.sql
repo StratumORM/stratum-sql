@@ -14,8 +14,8 @@ begin
 
 	-- Log the changes to history
 	insert into [orm_hist].[values_string] 
-		  (instance_id, property_id, value, transaction_id)
-	select instance_id, property_id, value, CURRENT_TRANSACTION_ID()
+		  (instance_guid, property_guid, value, transaction_id)
+	select instance_guid, property_guid, value, CURRENT_TRANSACTION_ID()
 	from deleted
 
 end
@@ -34,8 +34,8 @@ begin
 
 	-- Log the changes to history
 	insert into [orm_hist].[values_integer] 
-		  (instance_id, property_id, value, transaction_id)
-	select instance_id, property_id, value, CURRENT_TRANSACTION_ID()
+		  (instance_guid, property_guid, value, transaction_id)
+	select instance_guid, property_guid, value, CURRENT_TRANSACTION_ID()
 	from deleted
 
 end
@@ -55,8 +55,8 @@ begin
 
 	-- Log the changes to history
 	insert into [orm_hist].[values_decimal] 
-		  (instance_id, property_id, value, transaction_id)
-	select instance_id, property_id, value, CURRENT_TRANSACTION_ID()
+		  (instance_guid, property_guid, value, transaction_id)
+	select instance_guid, property_guid, value, CURRENT_TRANSACTION_ID()
 	from deleted
 
 end
@@ -76,8 +76,8 @@ begin
 
 	-- Log the changes to history
 	insert into [orm_hist].[values_datetime] 
-		  (instance_id, property_id, value, transaction_id)
-	select instance_id, property_id, value, CURRENT_TRANSACTION_ID()
+		  (instance_guid, property_guid, value, transaction_id)
+	select instance_guid, property_guid, value, CURRENT_TRANSACTION_ID()
 	from deleted
 
 end
@@ -97,8 +97,8 @@ begin
 
 	-- Log the changes to history
 	insert into [orm_hist].[values_instance] 
-		  (instance_id, property_id, value, transaction_id)
-	select instance_id, property_id, value, CURRENT_TRANSACTION_ID()
+		  (instance_guid, property_guid, value, transaction_id)
+	select instance_guid, property_guid, value, CURRENT_TRANSACTION_ID()
 	from deleted
 
 end

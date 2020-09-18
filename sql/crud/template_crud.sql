@@ -45,12 +45,12 @@ go
 
 
 create procedure [orm_meta].[template_remove]
-	@template_id int
+	@template_guid uniqueidentifier
 as
 begin
 
 	delete [orm_meta].[templates]
-	where template_id = @template_id
+	where template_guid = @template_guid
 
 end
 go

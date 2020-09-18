@@ -14,8 +14,8 @@ begin
 
 	-- Log the changes to history
 	insert into [orm_hist].[instances] 
-		  (instance_id, template_id, name, signature, transaction_id)
-	select instance_id, template_id, name, signature, CURRENT_TRANSACTION_ID()
+		  (instance_id, instance_guid, template_guid, name, signature, transaction_id)
+	select instance_id, instance_guid, template_guid, name, signature, CURRENT_TRANSACTION_ID()
 	from deleted
 
 end

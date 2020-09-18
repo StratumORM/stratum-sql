@@ -12,8 +12,8 @@ go
 
 
 create procedure [orm_meta].[inherit_add]
-	@parent_template_id int
-,	@child_template_id int
+	@parent_template_guid uniqueidentifier
+,	@child_template_guid uniqueidentifier
 ,	@ordinal int = null 	
 as
 begin
@@ -21,22 +21,22 @@ begin
 	-- by default we'll tack the ordinal to the end, so get the largest value + 1
 	if @ordinal is null 	set @ordinal = (	select isnull(max(ordinal), 0) + 1
 												from [orm_meta].[inheritance] as i
-												where child_template_id = @child_template_id	)
+												where child_template_guid = @child_template_guid	)
 
 	-- Perform a merge in case the ordinal is merely changing
 	-- Triggers will take care of the resolution of the properties.
 	merge into [orm_meta].[inheritance] as d
-	using (	select	@parent_template_id as parent_template_id
-				,	@child_template_id as child_template_id
+	using (	select	@parent_template_guid as parent_template_guid
+				,	@child_template_guid as child_template_guid
 				,	@ordinal as ordinal) as s
-		on d.parent_template_id = s.parent_template_id
-		and d.child_template_id = s.child_template_id
+		on d.parent_template_guid = s.parent_template_guid
+		and d.child_template_guid = s.child_template_guid
 	when matched then
 		update
 		set d.ordinal = s.ordinal
 	when not matched then
-		insert (parent_template_id, child_template_id, ordinal)
-		values (s.parent_template_id, s.child_template_id, s.ordinal)
+		insert (  parent_template_guid,   child_template_guid,   ordinal)
+		values (s.parent_template_guid, s.child_template_guid, s.ordinal)
 	;
 
 end
@@ -51,11 +51,16 @@ as
 begin
 	
 	-- resolve the IDs so that the meta sproc can take care of the rest
-	declare @parent_template_id int, @child_template_id int
-		set @parent_template_id = (select top 1 template_id from [orm_meta].[templates] where name = @parent_template_name)
-		set @child_template_id = (select top 1 template_id from [orm_meta].[templates] where name = @child_template_name)
+	declare @parent_template_guid uniqueidentifier
+		, 	@child_template_guid uniqueidentifier
+		set @parent_template_guid = (select top 1 template_guid 
+									 from [orm_meta].[templates] 
+									 where name = @parent_template_name)
+		set @child_template_guid = (select top 1 template_guid 
+									from [orm_meta].[templates] 
+									where name = @child_template_name)
 
-	exec [orm_meta].[inherit_add] @parent_template_id, @child_template_id, @ordinal
+	exec [orm_meta].[inherit_add] @parent_template_guid, @child_template_guid, @ordinal
 
 end
 go
@@ -70,14 +75,14 @@ IF OBJECT_ID('[orm_meta].[inherit_remove]', 'P') IS NOT NULL
 go
 
 create procedure [orm_meta].[inherit_remove]
-	@parent_template_id int
-,	@child_template_id int
+	@parent_template_guid uniqueidentifier
+,	@child_template_guid uniqueidentifier
 as
 begin
 
 	delete [orm_meta].[inheritance]
-	where 	parent_template_id = @parent_template_id
-		and	child_template_id = @child_template_id
+	where 	parent_template_guid = @parent_template_guid
+		and	child_template_guid = @child_template_guid
 
 end
 go
@@ -90,11 +95,16 @@ as
 begin
 	
 	-- resolve the IDs so that the meta sproc can take care of the rest
-	declare @parent_template_id int, @child_template_id int
-		set @parent_template_id = (select top 1 template_id from [orm_meta].[templates] where name = @parent_template_name)
-		set @child_template_id = (select top 1 template_id from [orm_meta].[templates] where name = @child_template_name)
+	declare @parent_template_guid uniqueidentifier
+		, 	@child_template_guid uniqueidentifier
+		set @parent_template_guid = (select top 1 template_guid 
+									 from [orm_meta].[templates] 
+									 where name = @parent_template_name)
+		set @child_template_guid = (select top 1 template_guid 
+									from [orm_meta].[templates] 
+									where name = @child_template_name)
 
-	exec [orm_meta].[inherit_remove] @parent_template_id, @child_template_id
+	exec [orm_meta].[inherit_remove] @parent_template_guid, @child_template_guid
 
 end
 go

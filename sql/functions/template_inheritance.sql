@@ -9,7 +9,7 @@ go
 
 create function [orm_meta].[sub_templates]
 (	
-	@template_id int
+	@template_guid uniqueidentifier
 )
 RETURNS TABLE 
 AS
@@ -17,16 +17,16 @@ RETURN
 (
 	with included_templates as
 	(
-		select @template_id as template_id, 0 as echelon
+		select @template_guid as template_guid, 0 as echelon
 
 		union all
 
-		select i.child_template_id, echelon - 1
+		select i.child_template_guid, echelon - 1
 		from included_templates as it
 			inner join [orm_meta].[inheritance] as i
-				on it.template_id = i.parent_template_id
+				on it.template_guid = i.parent_template_guid
 	)
-	select template_id, echelon
+	select template_guid, echelon
 	from included_templates
 )
 GO
@@ -38,7 +38,7 @@ go
 
 create function [orm_meta].[super_templates]
 (	
-	@template_id int
+	@template_guid uniqueidentifier
 )
 RETURNS TABLE 
 AS
@@ -46,16 +46,16 @@ RETURN
 (
 	with included_templates as
 	(
-		select @template_id as template_id, 0 as echelon
+		select @template_guid as template_guid, 0 as echelon
 
 		union all
 
-		select i.parent_template_id, echelon + 1
+		select i.parent_template_guid, echelon + 1
 		from included_templates as it
 			inner join [orm_meta].[inheritance] as i
-				on it.template_id = i.child_template_id
+				on it.template_guid = i.child_template_guid
 	)
-	select template_id, echelon
+	select template_guid, echelon
 	from included_templates
 )
 GO
@@ -67,20 +67,20 @@ go
 
 create function [orm_meta].[template_tree]
 (	
-	@template_id int
+	@template_guid uniqueidentifier
 )
 RETURNS TABLE 
 AS
 RETURN 
 (
-	select template_id, echelon
-	from (	select template_id, echelon
-			from [orm_meta].[sub_templates](@template_id) as subs
+	select template_guid, echelon
+	from (	select template_guid, echelon
+			from [orm_meta].[sub_templates](@template_guid) as subs
 			
 			union
 			
-			select template_id, echelon
-			from [orm_meta].[super_templates](@template_id) as supers
+			select template_guid, echelon
+			from [orm_meta].[super_templates](@template_guid) as supers
 		) as structure			
 )
 GO

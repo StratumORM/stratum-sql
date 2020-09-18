@@ -11,15 +11,15 @@ IF TYPE_ID('[orm_meta].[identities]') IS NULL
 -- go
 
 	CREATE TYPE [orm_meta].[identities] AS TABLE(
-		[id] [int] NOT NULL,
-		PRIMARY KEY CLUSTERED (	[id] ASC )
+		guid uniqueidentifier NOT NULL,
+		PRIMARY KEY CLUSTERED (	[guid] ASC )
 			WITH (IGNORE_DUP_KEY = OFF)
 	)
 GO
 
 
 create procedure [orm_meta].[cascade_delete_property]
-	@property_ids identities READONLY
+	@property_guids identities READONLY
 as
 begin
 begin try
@@ -30,30 +30,30 @@ begin transaction cascaded_property_delete
 	-- Perform the cascading delete on the values tables 
 	delete v
 	from [orm_meta].[values_string] as v 
-		inner join @property_ids as dp 
-			on v.property_id = dp.id
+		inner join @property_guids as dp 
+			on v.property_guid = dp.guid
 
 	delete v
 	from [orm_meta].[values_integer] as v 
-		inner join @property_ids as dp 
-			on v.property_id = dp.id
+		inner join @property_guids as dp 
+			on v.property_guid = dp.guid
 		
 	delete v
 	from [orm_meta].[values_decimal] as v 
-		inner join @property_ids as dp 
-			on v.property_id = dp.id
+		inner join @property_guids as dp 
+			on v.property_guid = dp.guid
 		
 	delete v
 	from [orm_meta].[values_datetime] as v 
-		inner join @property_ids as dp 
-			on v.property_id = dp.id
+		inner join @property_guids as dp 
+			on v.property_guid = dp.guid
 		
 	delete v
 	from [orm_meta].[values_instance] as v 
-		inner join @property_ids as dp 
-			on v.property_id = dp.id
+		inner join @property_guids as dp 
+			on v.property_guid = dp.guid
 
-	commit transaction cascaded_property_delete
+commit transaction cascaded_property_delete
 
 end try
 begin catch

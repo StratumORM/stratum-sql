@@ -5,16 +5,34 @@ IF OBJECT_ID('[orm_meta].[values_string]', 'U') IS NOT NULL
 	drop table [orm_meta].[values_string]
 go
 
+/*
+--	Note that the GUID columns are clustered.
+--  This is generally considered poor practice, but note that there's
+--    no expectation of order or sequencing. There's not really
+--    any advantage of an integer column here, aside from a very minor
+--    size difference. 
+--  These tables effectively statically hold the current value for properties.
+--  As they change, their changes will be dumped to historical tables,
+--    and these _are_ clustered differently.
+--*/
 
 create table [orm_meta].[values_string]
-(	-- template_id = 1
-	instance_id int not null
-,	property_id int not null
+(	-- template_guid = 0x00000000000000000000000000000001
+	instance_guid uniqueidentifier not null
+,	property_guid uniqueidentifier not null
 ,	value nvarchar(max)
 
-,	constraint pk_orm_meta_values_string_instance_property primary key (instance_id, property_id)
-,	constraint fk_orm_meta_values_string_instance foreign key (instance_id) references [orm_meta].[instances] (instance_id) on delete cascade
-,	constraint fk_orm_meta_values_string_property foreign key (property_id) references [orm_meta].[properties] (property_id) on delete cascade
+,	constraint pk__orm_meta_values_string__instance_property 
+		  primary key 
+		  clustered (instance_guid, property_guid)
+,	constraint fk__orm_meta_values_string__instance 
+		  foreign key (instance_guid) 
+		  references [orm_meta].[instances] (instance_guid) 
+		  on delete cascade
+,	constraint fk__orm_meta_values_string__property 
+		  foreign key (property_guid) 
+		  references [orm_meta].[properties] (property_guid) 
+		  on delete cascade
 )
 go
 
@@ -24,14 +42,22 @@ IF OBJECT_ID('[orm_meta].[values_integer]', 'U') IS NOT NULL
 go
 
 create table [orm_meta].[values_integer]
-(	-- template_id = 2
-	instance_id int not null
-,	property_id int not null
+(	-- template_guid = 0x00000000000000000000000000000002
+	instance_guid uniqueidentifier not null
+,	property_guid uniqueidentifier not null
 ,	value bigint
 
-,	constraint pk_orm_meta_values_integer_instance_property primary key (instance_id, property_id)
-,	constraint fk_orm_meta_values_integer_instance foreign key (instance_id) references [orm_meta].[instances] (instance_id) on delete cascade
-,	constraint fk_orm_meta_values_integer_property foreign key (property_id) references [orm_meta].[properties] (property_id) on delete cascade
+,	constraint pk__orm_meta_values_integer__instance_property 
+		  primary key 
+		  clustered (instance_guid, property_guid)
+,	constraint fk__orm_meta_values_integer__instance 
+		  foreign key (instance_guid) 
+		  references [orm_meta].[instances] (instance_guid) 
+		  on delete cascade
+,	constraint fk__orm_meta_values_integer__property 
+		  foreign key (property_guid) 
+		  references [orm_meta].[properties] (property_guid) 
+		  on delete cascade
 )
 go
 
@@ -41,14 +67,22 @@ IF OBJECT_ID('[orm_meta].[values_decimal]', 'U') IS NOT NULL
 go
 
 create table [orm_meta].[values_decimal]
-(	-- template_id = 3
-	instance_id int not null
-,	property_id int not null
+(	-- template_guid = 0x00000000000000000000000000000003
+	instance_guid uniqueidentifier not null
+,	property_guid uniqueidentifier not null
 ,	value decimal(19,8)
 
-,	constraint pk_orm_meta_values_decimal_instance_property primary key (instance_id, property_id)
-,	constraint fk_orm_meta_values_decimal_instance foreign key (instance_id) references [orm_meta].[instances] (instance_id) on delete cascade
-,	constraint fk_orm_meta_values_decimal_property foreign key (property_id) references [orm_meta].[properties] (property_id) on delete cascade
+,	constraint pk__orm_meta_values_decimal__instance_property 
+		  primary key 
+		  clustered (instance_guid, property_guid)
+,	constraint fk__orm_meta_values_decimal__instance 
+		  foreign key (instance_guid) 
+		  references [orm_meta].[instances] (instance_guid) 
+		  on delete cascade
+,	constraint fk__orm_meta_values_decimal__property 
+		  foreign key (property_guid) 
+		  references [orm_meta].[properties] (property_guid) 
+		  on delete cascade
 )
 go
 
@@ -58,14 +92,22 @@ IF OBJECT_ID('[orm_meta].[values_datetime]', 'U') IS NOT NULL
 go
 
 create table [orm_meta].[values_datetime]
-(	-- template_id = 4
-	instance_id int not null
-,	property_id int not null
+(	-- template_guid = 0x00000000000000000000000000000004
+	instance_guid uniqueidentifier not null
+,	property_guid uniqueidentifier not null
 ,	value datetime
 
-,	constraint pk_orm_meta_values_datetime_instance_property primary key (instance_id, property_id)
-,	constraint fk_orm_meta_values_datetime_instance foreign key (instance_id) references [orm_meta].[instances] (instance_id) on delete cascade
-,	constraint fk_orm_meta_values_datetime_property foreign key (property_id) references [orm_meta].[properties] (property_id) on delete cascade
+,	constraint pk__orm_meta_values_datetime__instance_property 
+		  primary key 
+		  clustered (instance_guid, property_guid)
+,	constraint fk__orm_meta_values_datetime__instance 
+		  foreign key (instance_guid) 
+		  references [orm_meta].[instances] (instance_guid) 
+		  on delete cascade
+,	constraint fk__orm_meta_values_datetime__property 
+		  foreign key (property_guid) 
+		  references [orm_meta].[properties] (property_guid) 
+		  on delete cascade
 )
 go
 
@@ -75,14 +117,21 @@ IF OBJECT_ID('[orm_meta].[values_instance]', 'U') IS NOT NULL
 go
 
 create table [orm_meta].[values_instance]
-(	-- template_id >= 5
-	instance_id int not null
-,	property_id int not null
-,	value varchar(250)
+(	-- template_guid > 0x00000000000000000000000000000004
+	instance_guid uniqueidentifier not null
+,	property_guid uniqueidentifier not null
+,	value nvarchar(250)
 
-,	constraint pk_orm_meta_values_instances_instance_property_instance_name primary key (instance_id, property_id, value)
-,	constraint fk_orm_meta_values_instances_instance foreign key (instance_id) references [orm_meta].[instances] (instance_id) on delete cascade
-,	constraint fk_orm_meta_values_instances_property foreign key (property_id) references [orm_meta].[properties] (property_id) on delete cascade
+,	constraint pk__orm_meta_values_instances__instance_property_instance_name
+		  primary key 
+		  clustered (instance_guid, property_guid)
+,	constraint fk__orm_meta_values_instances__instance 
+		  foreign key (instance_guid) 
+		  references [orm_meta].[instances] (instance_guid) 
+		  on delete cascade
+,	constraint fk__orm_meta_values_instances__property 
+		  foreign key (property_guid) 
+		  references [orm_meta].[properties] (property_guid) 
+		  on delete cascade
 )
-create index ix_orm_meta_values_instances_instance_property on [orm_meta].[values_instance] (instance_id, property_id)
 go

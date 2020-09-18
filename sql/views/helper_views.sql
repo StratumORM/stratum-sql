@@ -15,9 +15,9 @@ as
 		,	d.name as [Datatype]
 	from [orm_meta].[instances] as o
 		inner join [orm_meta].[templates] as t
-			on o.template_id = t.template_id
+			on o.template_guid = t.template_guid
 		inner join [orm_meta].[properties] as p
-			on t.template_id = p.template_id
+			on t.template_guid = p.template_guid
 		inner join [orm_meta].[templates] as d
-			on p.datatype_id = d.template_id
+			on p.datatype_guid = d.template_guid
 go
