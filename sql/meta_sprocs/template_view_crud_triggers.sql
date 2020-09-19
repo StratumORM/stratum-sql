@@ -94,6 +94,11 @@ begin
 									and (p.is_extended is NULL or p.is_extended = 0) 
 									and p.template_guid = @template_guid 
 								for xml path(''))
+		
+		if len(@instance_columns) > 1
+			set @instance_columns = substring(@instance_columns,1, len(@instance_columns)-1)
+		else
+			set @instance_columns = ''
 
 
 	-- delete trigger
@@ -284,7 +289,7 @@ begin
 	if @instance_columns <> ''
 	begin
 
-		set @update_merge = replace(@update_merge_template,'@@@_BASE_TYPE_@@@', 'instances')
+		set @update_merge = replace(@update_merge_template,'@@@_BASE_TYPE_@@@', 'instance')
 		set @update_merge = replace(@update_merge,'@@@_TYPE_COLUMNS_@@@', @instance_columns)
 		set @update_merge = replace(@update_merge,'@@@_BASE_DATATYPE_GUID_FILTER_@@@', ' > 0x00000000000000000000000000000004')
 
@@ -452,7 +457,7 @@ begin
 	if @instance_columns <> ''
 	begin
 
-		set @insert_merge = replace(@insert_merge_template,'@@@_BASE_TYPE_@@@', 'instances')
+		set @insert_merge = replace(@insert_merge_template,'@@@_BASE_TYPE_@@@', 'instance')
 		set @insert_merge = replace(@insert_merge,'@@@_TYPE_COLUMNS_@@@', @instance_columns)
 		set @insert_merge = replace(@insert_merge,'@@@_BASE_DATATYPE_GUID_FILTER_@@@', ' > 0x00000000000000000000000000000004')
 
