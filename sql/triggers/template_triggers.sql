@@ -26,12 +26,12 @@ begin
 	-- 	end	
 
 	-- Make sure it doesn't already exist
-	select t.template_guid 
-	from [orm_meta].[templates] as t
-		inner join inserted as i
-			on t.name = i.name
-
-	if @@ROWCOUNT <> 0 
+	if (
+		select t.template_guid 
+		from [orm_meta].[templates] as t
+			inner join inserted as i
+				on t.name = i.name
+		) is not null
 		begin
 			rollback transaction		
 			raiserror('Template already exists.', 16, 1)

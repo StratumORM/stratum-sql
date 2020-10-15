@@ -20,12 +20,15 @@ begin
 							  where name = @template_name )
 	
 	-- Make sure the instance doesn't already exist
-	select instance_guid 
-	from [orm_meta].[instances] 
-	where name = @instance_name 
-	  and template_guid = @template_guid
-	
-	if @@ROWCOUNT <> 0 raiserror('instance already exists.', 16, 1)
+	if (
+		select instance_guid 
+		from [orm_meta].[instances] 
+		where name = @instance_name 
+		  and template_guid = @template_guid
+		) is not null
+	begin
+		raiserror('instance already exists.', 16, 1)
+	end
 	
 	insert [orm_meta].[instances] (template_guid, name)
 	values (@template_guid, @instance_name)	
