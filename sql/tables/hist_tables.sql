@@ -187,7 +187,7 @@ create table [orm_hist].[values_instance]
 	last_timestamp datetime default CURRENT_TIMESTAMP
 ,	instance_guid uniqueidentifier not null
 ,	property_guid uniqueidentifier not null
-,	value nvarchar(250)
+,	value  uniqueidentifier
 ,	transaction_id bigint not null
 
 ,	constraint pk__orm_hist_values_instance__instance_property

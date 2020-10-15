@@ -27,23 +27,23 @@ as
 			on o.template_guid = p.template_guid
 
 		left join [orm_meta].[values_integer]	as vi
-			on	o.instance_guid   = vi.instance_guid
+			on	o.instance_guid = vi.instance_guid
 			and	p.property_guid = vi.property_guid
 
 		left join [orm_meta].[values_decimal]	as vf
-			on	o.instance_guid   = vf.instance_guid
+			on	o.instance_guid = vf.instance_guid
 			and	p.property_guid = vf.property_guid
 
 		left join [orm_meta].[values_string]	as vs
-			on	o.instance_guid   = vs.instance_guid
+			on	o.instance_guid = vs.instance_guid
 			and	p.property_guid = vs.property_guid
 
 		left join [orm_meta].[values_datetime]	as vd
-			on	o.instance_guid   = vd.instance_guid
+			on	o.instance_guid = vd.instance_guid
 			and	p.property_guid = vd.property_guid
 
 		left join [orm_meta].[values_instance]	as vo
-			on	o.instance_guid   = vo.instance_guid
+			on	o.instance_guid = vo.instance_guid
 			and	p.property_guid = vo.property_guid			
 go
 

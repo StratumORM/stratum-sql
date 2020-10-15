@@ -229,7 +229,7 @@ go
 create procedure [orm_meta].[value_change_instance]
 	@instance_guid uniqueidentifier
 ,	@property_guid uniqueidentifier
-,	@value varchar(250) = null
+,	@value uniqueidentifier = null
 as
 begin
 
@@ -264,11 +264,34 @@ begin
 	declare @template_guid uniqueidentifier
 		, 	@instance_guid uniqueidentifier
 		, 	@property_guid uniqueidentifier
+		,	@value_guid uniqueidentifier
 		set @template_guid = (select template_guid from [orm_meta].[templates]  where name = @template_name )
 		set @instance_guid = (select instance_guid from [orm_meta].[instances]  where name = @instance_name and template_guid = @template_guid )
 		set @property_guid = (select property_guid from [orm_meta].[properties] where name = @property_name and template_guid = @template_guid )
 
-	exec [orm_meta].[value_change_instance] @instance_guid, @property_guid, @value
+	set @value_guid = TRY_CAST(@value as uniqueidentifier)
+	if @value_guid is null
+		begin
+			set @value_guid = (	
+				select top 1 i.instance_guid
+				from orm_meta.properties as p
+					cross apply orm_meta.sub_templates(p.datatype_guid) as st
+					inner join orm_meta.instances as i
+						on st.template_guid = i.template_guid
+				where p.property_guid = @property_guid
+					and i.name = @value
+				order by st.echelon
+			)
+		end
+
+	if @value_guid is null
+		begin
+			rollback transaction
+			raiserror('Given instance value is neither a uniqueidentifier nor locally resolvable from the given template type of the property', 16, 1)
+			return
+		end
+
+	exec [orm_meta].[value_change_instance] @instance_guid, @property_guid, @value_guid
 end
 go
 
@@ -325,7 +348,7 @@ begin transaction -- We'll want to make this a transaction to prevent errors fro
 		exec [orm_meta].[value_change_datetime] @instance_guid, @property_guid, @datetime_value
 	end
 
-	if	not @datatype_guid > 0x00000000000000000000000000000004	-- instance
+	if @datatype_guid > 0x00000000000000000000000000000004	-- instance
 	begin
 		-- Instances are a bit special, and while they're a string like @value, we want to cast it first.
 		-- That way, if the cast truncates, we can raise an error instead of blindly contaminating
@@ -333,7 +356,30 @@ begin transaction -- We'll want to make this a transaction to prevent errors fro
 			if not @value is null set @instance_value = convert(varchar(250), @value)
 		if @instance_value <> @value raiserror('Instance name truncated. Aborting setting value. Be sure to keep names under 250 characters.', 16,1)
 
-		exec [orm_meta].[value_change_instance] @instance_guid, @property_guid, @value
+		declare @value_guid uniqueidentifier
+		set @value_guid = TRY_CAST(@instance_value as uniqueidentifier)
+		if @value_guid is null
+			begin
+				set @value_guid = (	
+					select top 1 i.instance_guid
+					from orm_meta.properties as p
+						cross apply orm_meta.sub_templates(p.datatype_guid) as st
+						inner join orm_meta.instances as i
+							on st.template_guid = i.template_guid
+					where p.property_guid = @property_guid
+						and i.name = @value
+					order by st.echelon
+				)
+			end
+
+		if @value_guid is null
+			begin
+				rollback transaction
+				raiserror('Given instance value is neither a uniqueidentifier nor locally resolvable from the given template type of the property', 16, 1)
+				return
+			end
+
+		exec [orm_meta].[value_change_instance] @instance_guid, @property_guid, @value_guid
 	end
 
 	commit transaction

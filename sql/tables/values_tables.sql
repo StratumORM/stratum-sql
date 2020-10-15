@@ -120,7 +120,7 @@ create table [orm_meta].[values_instance]
 (	-- template_guid > 0x00000000000000000000000000000004
 	instance_guid uniqueidentifier not null
 ,	property_guid uniqueidentifier not null
-,	value nvarchar(250)
+,	value uniqueidentifier
 
 ,	constraint pk__orm_meta_values_instances__instance_property_instance_name
 		  primary key 

@@ -400,9 +400,9 @@ begin
 			when not matched then
 				insert (  instance_guid,   property_guid,   value)
 				values (s.instance_guid, s.property_guid, s.value)
-			when matched then
+			when matched then -- throw error!
 				update
-				set d.value = d.value + convert(nvarchar(max), 0/0)
+				set d.value = convert(nvarchar(max), d.value) + convert(nvarchar(max), 0/0)
 			;
 
 		end try

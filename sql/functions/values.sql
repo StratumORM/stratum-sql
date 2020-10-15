@@ -55,6 +55,7 @@ return
 		left join [orm_meta].[values_instance]	as vo
 			on	o.instance_guid = vo.instance_guid
 			and	p.property_guid = vo.property_guid
+
 	where t.name = @template_name
 )
 GO
@@ -94,31 +95,31 @@ return
 		inner join [orm_meta].[templates] as d
 			on p.datatype_guid = d.template_guid
 		inner join
-		(	select instance_guid, property_guid, convert(nvarchar(max),value) as value
-			from [orm_meta].[values_integer]
+		(	select instance_guid, property_guid, convert(nvarchar(max), vi.value) as value
+			from [orm_meta].[values_integer] as vi
 			
 			union
 
-			select instance_guid, property_guid, convert(nvarchar(max),value) as value
-			from [orm_meta].[values_decimal]
+			select instance_guid, property_guid, convert(nvarchar(max), vf.value) as value
+			from [orm_meta].[values_decimal] as vf
 
 			union
 
-			select instance_guid, property_guid, convert(nvarchar(max),value) as value
-			from [orm_meta].[values_string]
+			select instance_guid, property_guid, convert(nvarchar(max), vs.value) as value
+			from [orm_meta].[values_string] as vs
 
 			union
 						-- convert the datetime to ODBC canonical yyyy-mm-dd hh:mi:ss.mmm
-			select instance_guid, property_guid, convert(nvarchar(max),value, 121) as value
-			from [orm_meta].[values_datetime]
+			select instance_guid, property_guid, convert(nvarchar(max), vd.value, 121) as value
+			from [orm_meta].[values_datetime] as vd
 
 			union
 
-			select instance_guid, property_guid, convert(nvarchar(max),value) as value
-			from [orm_meta].[values_instance]
+			select instance_guid, property_guid, convert(nvarchar(max), vo.value) as value
+			from [orm_meta].[values_instance] as vo
 
 		) as v
-			on	o.instance_guid   = v.instance_guid
+			on	o.instance_guid = v.instance_guid
 			and	p.property_guid = v.property_guid
 	where t.name = @template_name
 )
