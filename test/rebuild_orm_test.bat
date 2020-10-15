@@ -68,6 +68,9 @@ ECHO --- properties
 ECHO --- values
 %SQL_COMMAND%\functions\values.sql >> %LOGFILE%
 
+ECHO --- instance chaining
+%SQL_COMMAND%\functions\instance_chaining.sql >> %LOGFILE%
+
 
 ECHO Define meta sprocs (sprocs that build sql)...
 ECHO --- gen template view wide
