@@ -12,6 +12,7 @@ create trigger [orm_meta].[templates_insert]
 	instead of insert
 as 
 begin
+	set nocount on;
 
 	-- Make sure the template_name is legal (since this will go into dynamic sql)
 	-- select i.name
@@ -79,6 +80,7 @@ create trigger [orm_meta].[templates_update]
 	instead of update
 as 
 begin
+	set nocount on;
 
 	-- Make sure the template_name is legal (since this will go into dynamic sql)
 	-- select i.name
@@ -147,6 +149,7 @@ create trigger [orm_meta].[templates_delete]
 	instead of delete
 as 
 begin
+	set nocount on;
 
 	-- We need to make sure that the base templates are never deleted. So we'll mask the special
 	--	deleted table like the properties trigger manipulates them

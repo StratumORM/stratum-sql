@@ -10,6 +10,8 @@ create procedure [orm_meta].[generate_template_view_listing]
 	@template_guid uniqueidentifier
 as
 begin
+	set nocount on;
+
 	-- Generate the tall view that's five columns wide, one for
 	-- (template, instance, property, value, datatype)
 

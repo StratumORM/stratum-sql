@@ -11,7 +11,7 @@ create procedure [orm].[instance_add]
 ,	@instance_name varchar(250)
 as
 begin
-	SET NOCOUNT ON;
+	set nocount on;
 
 	declare @template_guid uniqueidentifier
 		
@@ -44,7 +44,7 @@ create procedure [orm].[instance_remove]
 ,	@instance_name varchar(250)
 as
 begin
-	SET NOCOUNT ON;
+	set nocount on;
 
 	declare @template_guid uniqueidentifier
 		set @template_guid = (select template_guid

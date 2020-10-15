@@ -16,6 +16,7 @@ create procedure [orm_meta].[value_change_string]
 ,	@value nvarchar(max) = null
 as
 begin
+	set nocount on;
 
 	merge into [orm_meta].[values_string] as d
 	using ( select	@instance_guid as instance_guid
@@ -43,6 +44,7 @@ create procedure [orm].[value_change_string]
 ,	@value nvarchar(max) = null
 as
 begin
+	set nocount on;
 	
 	declare @template_guid uniqueidentifier
 		, 	@instance_guid uniqueidentifier
@@ -70,6 +72,7 @@ create procedure [orm_meta].[value_change_integer]
 ,	@value bigint = null
 as
 begin
+	set nocount on;
 
 	merge into [orm_meta].[values_integer] as d
 	using ( select	@instance_guid as instance_guid
@@ -97,6 +100,7 @@ create procedure [orm].[value_change_integer]
 ,	@value bigint = null
 as
 begin
+	set nocount on;
 	
 	declare @template_guid uniqueidentifier
 		, 	@instance_guid uniqueidentifier
@@ -124,6 +128,7 @@ create procedure [orm_meta].[value_change_decimal]
 ,	@value decimal(19,8) = null
 as
 begin
+	set nocount on;
 
 	merge into [orm_meta].[values_decimal] as d
 	using ( select	@instance_guid as instance_guid
@@ -151,6 +156,7 @@ create procedure [orm].[value_change_decimal]
 ,	@value decimal(19,8) = null
 as
 begin
+	set nocount on;
 	
 	declare @template_guid uniqueidentifier
 		, 	@instance_guid uniqueidentifier
@@ -178,6 +184,7 @@ create procedure [orm_meta].[value_change_datetime]
 ,	@value datetime = null
 as
 begin
+	set nocount on;
 
 	merge into [orm_meta].[values_datetime] as d
 	using ( select	@instance_guid as instance_guid
@@ -205,6 +212,7 @@ create procedure [orm].[value_change_datetime]
 ,	@value datetime = null
 as
 begin
+	set nocount on;
 	
 	declare @template_guid uniqueidentifier
 		, 	@instance_guid uniqueidentifier
@@ -232,6 +240,7 @@ create procedure [orm_meta].[value_change_instance]
 ,	@value uniqueidentifier = null
 as
 begin
+	set nocount on;
 
 	merge into [orm_meta].[values_instance] as d
 	using ( select	@instance_guid as instance_guid
@@ -260,6 +269,7 @@ create procedure [orm].[value_change_instance]
 ,	@value varchar(250) = null
 as
 begin
+	set nocount on;
 	
 	declare @template_guid uniqueidentifier
 		, 	@instance_guid uniqueidentifier
@@ -309,6 +319,7 @@ as
 begin
 begin try
 begin transaction -- We'll want to make this a transaction to prevent errors from breaking the update
+	set nocount on;
 
 	declare @template_guid uniqueidentifier
 		, 	@instance_guid uniqueidentifier
@@ -404,6 +415,7 @@ create procedure [orm].[value_read]
 ,	@instance_name varchar(250) = NULL
 as
 begin
+	set nocount on;
 
 	-- Helper sproc to get values for a template and/or instance
 	--	in the format similar to Ignition's historian
@@ -434,6 +446,7 @@ create procedure [orm].[value_read_listing]
 ,	@instance_name varchar(250) = NULL
 as
 begin
+	set nocount on;
 
 	-- Helper sproc to get values for a template and/or instance
 	--	in a handy stringly-typed format (good for looping over properties)

@@ -10,6 +10,8 @@ create procedure [orm_meta].[generate_template_view_tall]
 	@template_guid uniqueidentifier
 as
 begin
+	set nocount on;
+
 	-- Generate the tall view that looks like the Ignition historian data view.
 	-- (This is simply a filtered version of the all-values view.)
 	

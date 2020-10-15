@@ -12,7 +12,7 @@ create procedure [orm].[template_add]
 ,	@signature nvarchar(max) = NULL
 as
 begin
-	SET NOCOUNT ON;
+	set nocount on;
 
 	insert [orm_meta].[templates] (name, signature)
 	values (@new_template_name, @signature)
@@ -35,7 +35,7 @@ create procedure [orm].[template_remove]
 	@template_name varchar(250)
 as
 begin
-	SET NOCOUNT ON;
+	set nocount on;
 
 	delete [orm_meta].[templates]
 	where name = @template_name
@@ -48,6 +48,7 @@ create procedure [orm_meta].[template_remove]
 	@template_guid uniqueidentifier
 as
 begin
+	set nocount on;
 
 	delete [orm_meta].[templates]
 	where template_guid = @template_guid

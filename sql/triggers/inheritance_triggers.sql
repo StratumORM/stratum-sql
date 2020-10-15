@@ -11,6 +11,7 @@ create trigger [orm_meta].[inheritance_insert]
 	instead of insert
 as 
 begin
+	set nocount on;
 
 	-- First, bail on any grandfather paradoxes.
 	-- Make sure not to exclude mere ordinal changes
@@ -67,6 +68,7 @@ create trigger [orm_meta].[inheritance_update]
 	instead of update
 as 
 begin
+	set nocount on;
 	
 	-- The update problem is (naturally) a composite of the insert and delete problems.
 	-- For inheritance, we need to perform the same validity checks as the insert,
@@ -199,6 +201,7 @@ create trigger [orm_meta].[inheritance_delete]
 	instead of delete
 as 
 begin
+	set nocount on;
 
 	-- In the case of a deletion, we need to determine what properties are not going to be covered. 
 	-- We can detect any relevant covered property as one who has a mask that isn't their own

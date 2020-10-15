@@ -11,6 +11,7 @@ create trigger [orm_meta].[instance_update_delete]
 	after update, delete
 as 
 begin
+	set nocount on;
 
 	-- Log the changes to history
 	insert into [orm_hist].[instances] 

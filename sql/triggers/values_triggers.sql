@@ -11,6 +11,7 @@ create trigger [orm_meta].[values_string_update_delete]
 	after update, delete
 as 
 begin
+	set nocount on;
 
 	-- Log the changes to history
 	insert into [orm_hist].[values_string] 
@@ -31,6 +32,7 @@ create trigger [orm_meta].[values_integer_update_delete]
 	after update, delete
 as 
 begin
+	set nocount on;
 
 	-- Log the changes to history
 	insert into [orm_hist].[values_integer] 
@@ -52,6 +54,7 @@ create trigger [orm_meta].[values_decimal_update_delete]
 	after update, delete
 as 
 begin
+	set nocount on;
 
 	-- Log the changes to history
 	insert into [orm_hist].[values_decimal] 
@@ -73,6 +76,7 @@ create trigger [orm_meta].[values_datetime_update_delete]
 	after update, delete
 as 
 begin
+	set nocount on;
 
 	-- Log the changes to history
 	insert into [orm_hist].[values_datetime] 
@@ -94,6 +98,7 @@ create trigger [orm_meta].[values_instance_update_delete]
 	after update, delete
 as 
 begin
+	set nocount on;
 
 	-- Log the changes to history
 	insert into [orm_hist].[values_instance] 

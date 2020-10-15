@@ -13,7 +13,7 @@ create procedure [orm].[property_add]
 ,	@is_extended int = 0
 as
 begin
-	SET NOCOUNT ON;
+	set nocount on;
 	
 	declare @template_guid uniqueidentifier
 		, 	@datatype_guid uniqueidentifier
@@ -43,7 +43,7 @@ create procedure [orm].[property_remove]
 ,	@property_name varchar(250)
 as
 begin
-	SET NOCOUNT ON;
+	set nocount on;
 	
 	declare @template_guid uniqueidentifier
 
@@ -70,6 +70,7 @@ create procedure [orm].[property_rename]
 ,	@new_property_name varchar(250)
 as
 begin
+	set nocount on;
 
 	update p
 	set name = @new_property_name

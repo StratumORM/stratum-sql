@@ -17,6 +17,7 @@ create procedure [orm_meta].[inherit_add]
 ,	@ordinal int = null 	
 as
 begin
+	set nocount on;
 
 	-- by default we'll tack the ordinal to the end, so get the largest value + 1
 	if @ordinal is null 	set @ordinal = (	select isnull(max(ordinal), 0) + 1
@@ -49,6 +50,7 @@ create procedure [orm].[inherit_add]
 ,	@ordinal int = null 	
 as
 begin
+	set nocount on;
 	
 	-- resolve the IDs so that the meta sproc can take care of the rest
 	declare @parent_template_guid uniqueidentifier
@@ -79,6 +81,7 @@ create procedure [orm_meta].[inherit_remove]
 ,	@child_template_guid uniqueidentifier
 as
 begin
+	set nocount on;
 
 	delete [orm_meta].[inheritance]
 	where 	parent_template_guid = @parent_template_guid
@@ -93,6 +96,7 @@ create procedure [orm].[inherit_remove]
 ,	@child_template_name varchar(250)
 as
 begin
+	set nocount on;
 	
 	-- resolve the IDs so that the meta sproc can take care of the rest
 	declare @parent_template_guid uniqueidentifier

@@ -12,6 +12,7 @@ create trigger [orm_meta].[properties_insert]
 	instead of insert
 as 
 begin
+	set nocount on;
 
 	declare @template_guids identities
 		insert into @template_guids
@@ -178,6 +179,7 @@ create trigger [orm_meta].[properties_update]
 	instead of update
 as 
 begin
+	set nocount on;
 	
 	declare @inserted table ( property_guid uniqueidentifier
 							, template_guid uniqueidentifier
@@ -594,6 +596,7 @@ create trigger [orm_meta].[properties_delete]
 	instead of delete
 as 
 begin
+	set nocount on;
 
 	declare @template_guids identities
 		,	@deleted_properties identities

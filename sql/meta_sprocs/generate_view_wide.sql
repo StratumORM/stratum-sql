@@ -11,6 +11,7 @@ create procedure [orm_meta].[generate_template_view_wide]
 	@template_guid uniqueidentifier
 as
 begin
+	set nocount on;
 
 	declare @string_columns nvarchar(max)
 		,	@integer_columns nvarchar(max)

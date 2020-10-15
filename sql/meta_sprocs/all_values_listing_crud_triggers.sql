@@ -11,6 +11,7 @@ create trigger [orm_meta].[view_all_values_listing_delete]
 	instead of delete
 as 
 begin
+	set nocount on;
 	
 	declare @resolved_deleted table 
 	(	template_guid uniqueidentifier not null
@@ -90,6 +91,7 @@ create trigger [orm_meta].[view_all_values_listing_update]
 	instead of update
 as 
 begin
+	set nocount on;
 
 	declare @resolved_updated table 
 	(	template_guid uniqueidentifier not null
@@ -191,6 +193,7 @@ create trigger [orm_meta].[view_all_values_listing_insert]
 	instead of insert
 as 
 begin
+	set nocount on;
 
 	declare @resolved_inserted table 
 	(	template_guid uniqueidentifier not null
