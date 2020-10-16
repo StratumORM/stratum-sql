@@ -55,6 +55,12 @@ begin
 			on p.template_guid = i.child_template_guid
 			or p.template_guid = i.parent_template_guid
 
+
+	-- Log the end of missing entry to history
+	insert into [orm_hist].[inheritance] 
+		  (parent_template_guid, child_template_guid, ordinal, transaction_id)
+	select parent_template_guid, child_template_guid,    null, CURRENT_TRANSACTION_ID()
+	from inserted
 end
 go
 
@@ -182,7 +188,7 @@ begin
 			on p.template_guid = i.child_template_guid
 			or p.template_guid = i.parent_template_guid
 
-	-- Log the changes to history
+	-- Log the changes to history (any change at all must be logged)
 	insert into [orm_hist].[inheritance] 
 		  (parent_template_guid, child_template_guid, ordinal, transaction_id)
 	select parent_template_guid, child_template_guid, ordinal, CURRENT_TRANSACTION_ID()

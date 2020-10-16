@@ -13,9 +13,9 @@ exec orm.template_add 'Line'
 exec orm.template_add 'Workcenter'
 exec orm.template_add 'Workstation'
 
-exec orm.inherit_add 'MES Equipment', 'Line', 1
-exec orm.inherit_add 'MES Equipment', 'Workcenter', 2
-exec orm.inherit_add 'MES Equipment', 'Workstation', 3
+exec orm.inherit_add 'MES Equipment', 'Line'
+exec orm.inherit_add 'MES Equipment', 'Workcenter'
+exec orm.inherit_add 'MES Equipment', 'Workstation'
 
 exec orm.instance_add 'Line', 'Line 1'
 exec orm.value_change 'Line', 'Line 1', 'label', 'Line 1'

@@ -165,6 +165,13 @@ begin
 	close template_guid_cursor 
 	deallocate template_guid_cursor
 
+
+	-- Log the end of missing entry to history
+	insert into [orm_hist].[properties] 
+		  (property_id, property_guid, template_guid, name, datatype_guid, is_extended, signature, transaction_id)
+	select property_id, property_guid,          null, null,          null,        null,      null, CURRENT_TRANSACTION_ID()
+	from inserted
+	
 end
 go
 
@@ -579,9 +586,23 @@ begin
 
 	-- Log the changes to history
 	insert into [orm_hist].[properties] 
-		  (property_id, property_guid, template_guid, name, datatype_guid, is_extended, signature, transaction_id)
-	select property_id, property_guid, template_guid, name, datatype_guid, is_extended, signature, CURRENT_TRANSACTION_ID()
-	from deleted
+		  (  property_id,   property_guid,   template_guid,   name,   datatype_guid,   is_extended,   signature, transaction_id)
+	select d.property_id, d.property_guid, d.template_guid, d.name, d.datatype_guid, d.is_extended, d.signature, CURRENT_TRANSACTION_ID()
+	from deleted as d
+		inner join inserted as i 
+			on d.property_guid = i.property_guid
+	where ( (d.name <> i.name) -- only log changes
+		 or (d.name is null and i.name is not null)
+		 or (d.name is not null and i.name is null) )
+	   or ( (d.datatype_guid <> i.datatype_guid) 
+		 or (d.datatype_guid is null and i.datatype_guid is not null)
+		 or (d.datatype_guid is not null and i.datatype_guid is null) )
+	   or ( (d.is_extended <> i.is_extended) 
+		 or (d.is_extended is null and i.is_extended is not null)
+		 or (d.is_extended is not null and i.is_extended is null) )
+	   or ( (d.signature <> i.signature) 
+		 or (d.signature is null and i.signature is not null)
+		 or (d.signature is not null and i.signature is null) )
 
 end
 go

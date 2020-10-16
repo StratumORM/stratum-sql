@@ -67,6 +67,12 @@ begin
 	close template_guid_cursor 
 	deallocate template_guid_cursor
 
+	-- Log the end of missing entry to history
+	insert into [orm_hist].[templates] 
+		  (template_id, template_guid, name, signature, transaction_id)
+	select template_id, template_guid, null,      null, CURRENT_TRANSACTION_ID()
+	from inserted
+
 end
 go
 
@@ -132,10 +138,17 @@ begin
 
 	-- Log the changes to history
 	insert into [orm_hist].[templates] 
-		  (template_id, template_guid, name, signature, transaction_id)
-	select template_id, template_guid, name, signature, CURRENT_TRANSACTION_ID()
-	from deleted
-
+		  (  template_id,   template_guid,   name,   signature, transaction_id)
+	select d.template_id, d.template_guid, d.name, d.signature, CURRENT_TRANSACTION_ID()
+	from deleted as d
+		inner join inserted as i 
+			on d.template_guid = i.template_guid
+	where ( (d.name <> i.name) -- only log changes
+		 or (d.name is null and i.name is not null)
+		 or (d.name is not null and i.name is null) )
+	   or ( (d.signature <> i.signature) 
+		 or (d.signature is null and i.signature is not null)
+		 or (d.signature is not null and i.signature is null) )
 end
 go
 

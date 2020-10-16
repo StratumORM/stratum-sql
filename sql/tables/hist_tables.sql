@@ -13,7 +13,7 @@ create table [orm_hist].[templates]
 	last_timestamp datetime default CURRENT_TIMESTAMP
 ,	template_id int not null
 ,	template_guid uniqueidentifier not null
-,	name nvarchar(250) not null
+,	name nvarchar(250)
 ,	signature nvarchar(max)
 ,	transaction_id bigint not null
 
@@ -38,9 +38,9 @@ create table [orm_hist].[properties]
 	last_timestamp datetime default CURRENT_TIMESTAMP
 ,	property_id int not null
 ,	property_guid uniqueidentifier not null
-,	template_guid uniqueidentifier not null
-,	name nvarchar(250) not null
-,	datatype_guid uniqueidentifier not null
+,	template_guid uniqueidentifier
+,	name nvarchar(250)
+,	datatype_guid uniqueidentifier
 ,	is_extended int
 ,	signature nvarchar(max)
 ,	transaction_id bigint not null
@@ -66,8 +66,8 @@ create table [orm_hist].[instances]
 	last_timestamp datetime default CURRENT_TIMESTAMP
 ,	instance_id int not null
 ,	instance_guid uniqueidentifier not null
-,	template_guid uniqueidentifier not null
-,	name nvarchar(250) not null
+,	template_guid uniqueidentifier
+,	name nvarchar(250)
 ,	signature nvarchar(max)
 ,	transaction_id bigint not null
 
@@ -212,12 +212,12 @@ create table [orm_hist].[inheritance]
 	last_timestamp datetime default CURRENT_TIMESTAMP
 ,	parent_template_guid uniqueidentifier not null
 ,	child_template_guid uniqueidentifier not null
-,	ordinal int not null
+,	ordinal int
 ,	transaction_id bigint not null
 
 ,	constraint pk__orm_hist_inheritance__parent_child_ordinal
 		  primary key 
-		  clustered (last_timestamp, parent_template_guid, child_template_guid, ordinal)
+		  clustered (last_timestamp, parent_template_guid, child_template_guid)
 )
 create nonclustered index ix__orm_hist_inheritance__parent_child_inc
 		  on [orm_hist].[inheritance] (parent_template_guid, child_template_guid) 
