@@ -54,3 +54,16 @@ exec orm.instance_add 'Workstation', 'Line 3/Workcenter 2/Workstation X'
 exec orm.value_change 'Workstation', 'Line 3/Workcenter 2/Workstation X', 'label', 'Workstation X'
 exec orm.value_change 'Workstation', 'Line 3/Workcenter 2/Workstation X', 'parent', 'Line 3/Workcenter 2'
 
+/*
+-- do these in some interesting order, and repeat one to make sure it dedupes correctly
+exec orm.value_change 'Line', 'Line 1', 'state', '1'
+
+exec orm.value_change 'Line', 'Line 1', 'state', '2'
+
+exec orm.value_change 'Line', 'Line 1', 'state', '4'
+
+exec orm.value_change 'Line', 'Line 1', 'state', '8'
+*/
+
+
+
