@@ -20,13 +20,13 @@ RETURN
 	(	-- get all properties that if the same (or sub) 
 		-- of the given property's datatype
 		select sp.property_guid
-		from orm_meta.properties as p
-			inner join orm_meta.templates as t
+		from [orm_meta].[properties] as p
+			inner join [orm_meta].[templates] as t
 				on p.template_guid = t.template_guid
-			inner join orm_meta.instances as i
+			inner join [orm_meta].[instances] as i
 				on i.template_guid = t.template_guid
-			cross apply orm_meta.sub_templates(p.datatype_guid) as sdt
-			inner join orm_meta.properties as sp
+			cross apply [orm_meta].[sub_templates](p.datatype_guid) as sdt
+			inner join [orm_meta].[properties] as sp
 				on sp.datatype_guid = sdt.template_guid
 		where i.instance_guid = @root_object_guid
 			and p.name = @by_property_name
@@ -40,7 +40,7 @@ RETURN
 
 		--select vi.value as instance_guid, tree.echelon + 1 as echelon
 		select vi.instance_guid, tree.echelon - 1 as echelon
-		from orm_meta.values_instance as vi
+		from [orm_meta].[values_instance] as vi
 			inner join children as tree
 			--	on vi.instance_guid = tree.instance_guid
 				on vi.value = tree.instance_guid
@@ -49,7 +49,7 @@ RETURN
 	)
 	select tree.instance_guid, tree.echelon --, i.name
 	from children as tree
-		inner join orm_meta.instances as i
+		inner join [orm_meta].[instances] as i
 			on tree.instance_guid = i.instance_guid
 )
 GO
@@ -72,13 +72,13 @@ RETURN
 	(	-- get all properties that if the same (or sub) 
 		-- of the given property's datatype
 		select sp.property_guid
-		from orm_meta.properties as p
-			inner join orm_meta.templates as t
+		from [orm_meta].[properties] as p
+			inner join [orm_meta].[templates] as t
 				on p.template_guid = t.template_guid
-			inner join orm_meta.instances as i
+			inner join [orm_meta].[instances] as i
 				on i.template_guid = t.template_guid
-			cross apply orm_meta.sub_templates(p.datatype_guid) as sdt
-			inner join orm_meta.properties as sp
+			cross apply [orm_meta].[sub_templates](p.datatype_guid) as sdt
+			inner join [orm_meta].[properties] as sp
 				on sp.datatype_guid = sdt.template_guid
 		where i.instance_guid = @root_object_guid
 			and p.name = @by_property_name
@@ -91,7 +91,7 @@ RETURN
 		union all
 
 		select vi.value as instance_guid, tree.echelon + 1 as echelon
-		from orm_meta.values_instance as vi
+		from [orm_meta].[values_instance] as vi
 			inner join parents as tree
 				on vi.instance_guid = tree.instance_guid
 			inner join related_properties as p
@@ -99,7 +99,7 @@ RETURN
 	)
 	select tree.instance_guid, tree.echelon --, i.name
 	from parents as tree
-		inner join orm_meta.instances as i
+		inner join [orm_meta].[instances] as i
 			on tree.instance_guid = i.instance_guid
 )
 GO

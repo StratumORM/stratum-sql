@@ -3,13 +3,12 @@ Generating history value functions...'
 
 
 
-if object_id('[orm].[history_values_string]', 'IF') is not null
-	drop function [orm].[history_values_string]
+if object_id('[orm_meta].[history_values_string]', 'IF') is not null
+	drop function [orm_meta].[history_values_string]
 go
 
 
-
-create function [orm].[history_values_string]
+create function [orm_meta].[history_values_string]
 (
 	@instance_guid uniqueidentifier
 ,	@property_guid uniqueidentifier
@@ -30,16 +29,41 @@ return
 	where v.property_guid = @property_guid
 		and v.instance_guid = @instance_guid
 )
-
-
-
-if object_id('[orm].[history_values_integer]', 'IF') is not null
-	drop function [orm].[history_values_integer]
 go
 
 
 
-create function [orm].[history_values_integer]
+if object_id('[orm].[history_values_string]', 'IF') is not null
+	drop function [orm].[history_values_string]
+go
+
+
+create function [orm].[history_values_string]
+(
+	@template_name varchar(250)
+,	@instance_name varchar(250)
+,	@property_name varchar(250)
+)
+returns table
+as
+return
+(
+	select hv.value, hv.dt 
+	from [orm_meta].[history_values_string](
+			[orm_meta].[resolve_instance_guid](@template_name, @instance_name)
+		,	[orm_meta].[resolve_property_guid](@template_name, @property_name)
+		) as hv
+)
+go
+
+
+
+if object_id('[orm_meta].[history_values_integer]', 'IF') is not null
+	drop function [orm_meta].[history_values_integer]
+go
+
+
+create function [orm_meta].[history_values_integer]
 (
 	@instance_guid uniqueidentifier
 ,	@property_guid uniqueidentifier
@@ -60,16 +84,41 @@ return
 	where v.property_guid = @property_guid
 		and v.instance_guid = @instance_guid
 )
-
-
-
-if object_id('[orm].[history_values_decimal]', 'IF') is not null
-	drop function [orm].[history_values_decimal]
 go
 
 
 
-create function [orm].[history_values_decimal]
+if object_id('[orm].[history_values_integer]', 'IF') is not null
+	drop function [orm].[history_values_integer]
+go
+
+
+create function [orm].[history_values_integer]
+(
+	@template_name varchar(250)
+,	@instance_name varchar(250)
+,	@property_name varchar(250)
+)
+returns table
+as
+return
+(
+	select hv.value, hv.dt 
+	from [orm_meta].[history_values_integer](
+			[orm_meta].[resolve_instance_guid](@template_name, @instance_name)
+		,	[orm_meta].[resolve_property_guid](@template_name, @property_name)
+		) as hv
+)
+go
+
+
+
+if object_id('[orm_meta].[history_values_decimal]', 'IF') is not null
+	drop function [orm_meta].[history_values_decimal]
+go
+
+
+create function [orm_meta].[history_values_decimal]
 (
 	@instance_guid uniqueidentifier
 ,	@property_guid uniqueidentifier
@@ -90,16 +139,40 @@ return
 	where v.property_guid = @property_guid
 		and v.instance_guid = @instance_guid
 )
-
-
-
-if object_id('[orm].[history_values_datetime]', 'IF') is not null
-	drop function [orm].[history_values_datetime]
 go
 
 
 
-create function [orm].[history_values_datetime]
+if object_id('[orm].[history_values_decimal]', 'IF') is not null
+	drop function [orm].[history_values_decimal]
+go
+
+
+create function [orm].[history_values_decimal]
+(
+	@template_name varchar(250)
+,	@instance_name varchar(250)
+,	@property_name varchar(250)
+)
+returns table
+as
+return
+(
+	select hv.value, hv.dt 
+	from [orm_meta].[history_values_decimal](
+			[orm_meta].[resolve_instance_guid](@template_name, @instance_name)
+		,	[orm_meta].[resolve_property_guid](@template_name, @property_name)
+		) as hv
+)
+go
+
+
+if object_id('[orm_meta].[history_values_datetime]', 'IF') is not null
+	drop function [orm_meta].[history_values_datetime]
+go
+
+
+create function [orm_meta].[history_values_datetime]
 (
 	@instance_guid uniqueidentifier
 ,	@property_guid uniqueidentifier
@@ -120,16 +193,41 @@ return
 	where v.property_guid = @property_guid
 		and v.instance_guid = @instance_guid
 )
-
-
-
-if object_id('[orm].[history_values_instance]', 'IF') is not null
-	drop function [orm].[history_values_instance]
 go
 
 
 
-create function [orm].[history_values_instance]
+if object_id('[orm].[history_values_datetime]', 'IF') is not null
+	drop function [orm].[history_values_datetime]
+go
+
+
+create function [orm].[history_values_datetime]
+(
+	@template_name varchar(250)
+,	@instance_name varchar(250)
+,	@property_name varchar(250)
+)
+returns table
+as
+return
+(
+	select hv.value, hv.dt 
+	from [orm_meta].[history_values_datetime](
+			[orm_meta].[resolve_instance_guid](@template_name, @instance_name)
+		,	[orm_meta].[resolve_property_guid](@template_name, @property_name)
+		) as hv
+)
+go
+
+
+
+if object_id('[orm_meta].[history_values_instance]', 'IF') is not null
+	drop function [orm_meta].[history_values_instance]
+go
+
+
+create function [orm_meta].[history_values_instance]
 (
 	@instance_guid uniqueidentifier
 ,	@property_guid uniqueidentifier
@@ -150,3 +248,29 @@ return
 	where v.property_guid = @property_guid
 		and v.instance_guid = @instance_guid
 )
+go
+
+
+
+if object_id('[orm].[history_values_instance]', 'IF') is not null
+	drop function [orm].[history_values_instance]
+go
+
+
+create function [orm].[history_values_instance]
+(
+	@template_name varchar(250)
+,	@instance_name varchar(250)
+,	@property_name varchar(250)
+)
+returns table
+as
+return
+(
+	select hv.value, hv.dt 
+	from [orm_meta].[history_values_instance](
+			[orm_meta].[resolve_instance_guid](@template_name, @instance_name)
+		,	[orm_meta].[resolve_property_guid](@template_name, @property_name)
+		) as hv
+)
+go

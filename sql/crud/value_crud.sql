@@ -284,9 +284,9 @@ begin
 		begin
 			set @value_guid = (	
 				select top 1 i.instance_guid
-				from orm_meta.properties as p
-					cross apply orm_meta.sub_templates(p.datatype_guid) as st
-					inner join orm_meta.instances as i
+				from [orm_meta].[properties] as p
+					cross apply [orm_meta].[sub_templates](p.datatype_guid) as st
+					inner join [orm_meta].[instances] as i
 						on st.template_guid = i.template_guid
 				where p.property_guid = @property_guid
 					and i.name = @value
@@ -373,9 +373,9 @@ begin transaction -- We'll want to make this a transaction to prevent errors fro
 			begin
 				set @value_guid = (	
 					select top 1 i.instance_guid
-					from orm_meta.properties as p
-						cross apply orm_meta.sub_templates(p.datatype_guid) as st
-						inner join orm_meta.instances as i
+					from [orm_meta].[properties] as p
+						cross apply [orm_meta].[sub_templates](p.datatype_guid) as st
+						inner join [orm_meta].[instances] as i
 							on st.template_guid = i.template_guid
 					where p.property_guid = @property_guid
 						and i.name = @value
