@@ -181,7 +181,7 @@ go
 create procedure [orm_meta].[value_change_datetime]
 	@instance_guid uniqueidentifier
 ,	@property_guid uniqueidentifier
-,	@value datetime = null
+,	@value datetime2 = null
 as
 begin
 	set nocount on;
@@ -209,7 +209,7 @@ create procedure [orm].[value_change_datetime]
 	@template_name varchar(250)
 ,	@instance_name varchar(250)
 ,	@property_name varchar(250)
-,	@value datetime = null
+,	@value datetime2 = null
 as
 begin
 	set nocount on;
@@ -354,8 +354,8 @@ begin transaction -- We'll want to make this a transaction to prevent errors fro
 
 	if	@datatype_guid = 0x00000000000000000000000000000004 -- datetime
 	begin
-		declare @datetime_value datetime
-			if not @value is null set @datetime_value = convert(datetime, @value, 121) -- ODBC canonical
+		declare @datetime_value datetime2
+			if not @value is null set @datetime_value = convert(datetime2, @value, 121) -- ODBC canonical
 		exec [orm_meta].[value_change_datetime] @instance_guid, @property_guid, @datetime_value
 	end
 

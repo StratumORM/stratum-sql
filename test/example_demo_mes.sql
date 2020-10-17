@@ -54,16 +54,19 @@ exec orm.instance_add 'Workstation', 'Line 3/Workcenter 2/Workstation X'
 exec orm.value_change 'Workstation', 'Line 3/Workcenter 2/Workstation X', 'label', 'Workstation X'
 exec orm.value_change 'Workstation', 'Line 3/Workcenter 2/Workstation X', 'parent', 'Line 3/Workcenter 2'
 
-/*
+
 -- do these in some interesting order, and repeat one to make sure it dedupes correctly
 exec orm.value_change 'Line', 'Line 1', 'state', '1'
-
+waitfor delay '00:00:05'
 exec orm.value_change 'Line', 'Line 1', 'state', '2'
-
+waitfor delay '00:00:25'
+exec orm.value_change 'Line', 'Line 1', 'state', '1'
+waitfor delay '00:01:35'
 exec orm.value_change 'Line', 'Line 1', 'state', '4'
-
+waitfor delay '00:01:12'
 exec orm.value_change 'Line', 'Line 1', 'state', '8'
-*/
+waitfor delay '00:00:20'
+exec orm.value_change 'Line', 'Line 1', 'state', '1'
 
 
 

@@ -1,10 +1,6 @@
 print '
 Generating value tables...'
 
-IF OBJECT_ID('[orm_meta].[values_string]', 'U') IS NOT NULL
-	drop table [orm_meta].[values_string]
-go
-
 /*
 --	Note that the GUID columns are clustered.
 --  This is generally considered poor practice, but note that there's
@@ -15,6 +11,12 @@ go
 --  As they change, their changes will be dumped to historical tables,
 --    and these _are_ clustered differently.
 --*/
+
+
+IF OBJECT_ID('[orm_meta].[values_string]', 'U') IS NOT NULL
+	drop table [orm_meta].[values_string]
+go
+
 
 create table [orm_meta].[values_string]
 (	-- template_guid = 0x00000000000000000000000000000001
@@ -95,7 +97,7 @@ create table [orm_meta].[values_datetime]
 (	-- template_guid = 0x00000000000000000000000000000004
 	instance_guid uniqueidentifier not null
 ,	property_guid uniqueidentifier not null
-,	value datetime
+,	value datetime2
 
 ,	constraint pk__orm_meta_values_datetime__instance_property 
 		  primary key 

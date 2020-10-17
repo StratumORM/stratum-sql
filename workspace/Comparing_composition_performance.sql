@@ -21,13 +21,13 @@ declare @property_guid uniqueidentifier
 	set @property_guid = orm_meta.resolve_property_guid('Line', 'state')
 
 select hvi.*
-from orm.history_values_integer(@instance_guid, @property_guid) as hvi
+from orm_meta.history_values_integer(@instance_guid, @property_guid) as hvi
 
 go
 
 
 select hvi.*
-from orm.history_values_integer(
+from orm_meta.history_values_integer(
 			orm_meta.resolve_instance_guid('Line', 'Line 1')
 		,	orm_meta.resolve_property_guid('Line', 'state')
 		) as hvi
@@ -41,7 +41,7 @@ from orm_meta.templates as t
 		on t.template_guid = i.template_guid
 	inner join orm_meta.properties as p
 		on t.template_guid = p.template_guid
-	cross apply orm.history_values_integer(i.instance_guid, p.property_guid) as hvi
+	cross apply orm_meta.history_values_integer(i.instance_guid, p.property_guid) as hvi
 where t.name = 'Line'
 	and i.name = 'Line 1'
 	and p.name = 'state'

@@ -74,7 +74,7 @@ ECHO --- instance chaining
 ECHO --- resolvers
 %SQL_COMMAND%\functions\resolvers.sql >> %LOGFILE%
 
-ECHO --- resolvers
+ECHO --- history values
 %SQL_COMMAND%\functions\history_values.sql >> %LOGFILE%
 
 
