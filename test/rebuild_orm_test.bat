@@ -77,6 +77,9 @@ ECHO --- resolvers
 ECHO --- history values
 %SQL_COMMAND%\functions\history_values.sql >> %LOGFILE%
 
+ECHO --- history spans
+%SQL_COMMAND%\functions\history_spans.sql >> %LOGFILE%
+
 
 ECHO Define meta sprocs (sprocs that build sql)...
 ECHO --- gen template view wide
