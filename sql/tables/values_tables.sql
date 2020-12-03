@@ -97,7 +97,7 @@ create table [orm_meta].[values_datetime]
 (	-- template_guid = 0x00000000000000000000000000000004
 	instance_guid uniqueidentifier not null
 ,	property_guid uniqueidentifier not null
-,	value datetime2
+,	value datetimeoffset(7)
 
 ,	constraint pk__orm_meta_values_datetime__instance_property 
 		  primary key 

@@ -24,7 +24,7 @@ create procedure orm.test_init_object
 as
 begin
 	declare @num int, @object_name varchar(250), @prop_name varchar(250)
-	declare @int bigint, @str nvarchar(max), @dt datetime2, @dec decimal(19,8)
+	declare @int bigint, @str nvarchar(max), @dt datetimeoffset(7), @dec decimal(19,8)
 	declare @multiplier bigint
 	
 	print 'add a new template: ' + @template_name

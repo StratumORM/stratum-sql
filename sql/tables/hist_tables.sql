@@ -10,7 +10,7 @@ go
 
 create table [orm_hist].[templates]
 (
-	last_timestamp datetime2 default CURRENT_TIMESTAMP
+	last_timestamp datetimeoffset(7) default CURRENT_TIMESTAMP
 ,	template_id int not null
 ,	template_guid uniqueidentifier not null
 ,	name nvarchar(250)
@@ -35,7 +35,7 @@ go
 
 create table [orm_hist].[properties]
 (
-	last_timestamp datetime2 default CURRENT_TIMESTAMP
+	last_timestamp datetimeoffset(7) default CURRENT_TIMESTAMP
 ,	property_id int not null
 ,	property_guid uniqueidentifier not null
 ,	template_guid uniqueidentifier
@@ -63,7 +63,7 @@ go
 
 create table [orm_hist].[instances]
 (
-	last_timestamp datetime2 default CURRENT_TIMESTAMP
+	last_timestamp datetimeoffset(7) default CURRENT_TIMESTAMP
 ,	instance_id int not null
 ,	instance_guid uniqueidentifier not null
 ,	template_guid uniqueidentifier
@@ -92,7 +92,7 @@ go
 
 create table [orm_hist].[values_string]
 (	-- template 1 or 0x00000000000000000000000000000001
-	last_timestamp datetime2 default CURRENT_TIMESTAMP
+	last_timestamp datetimeoffset(7) default CURRENT_TIMESTAMP
 ,	instance_guid uniqueidentifier not null
 ,	property_guid uniqueidentifier not null
 ,	value nvarchar(max)
@@ -115,7 +115,7 @@ go
 
 create table [orm_hist].[values_integer]
 (	-- template 2 or 0x00000000000000000000000000000002
-	last_timestamp datetime2 default CURRENT_TIMESTAMP
+	last_timestamp datetimeoffset(7) default CURRENT_TIMESTAMP
 ,	instance_guid uniqueidentifier not null
 ,	property_guid uniqueidentifier not null
 ,	value bigint
@@ -138,7 +138,7 @@ go
 
 create table [orm_hist].[values_decimal]
 (	-- template 3 or 0x00000000000000000000000000000003
-	last_timestamp datetime2 default CURRENT_TIMESTAMP
+	last_timestamp datetimeoffset(7) default CURRENT_TIMESTAMP
 ,	instance_guid uniqueidentifier not null
 ,	property_guid uniqueidentifier not null
 ,	value decimal(19,8)
@@ -161,10 +161,10 @@ go
 
 create table [orm_hist].[values_datetime]
 (	-- template 4 or 0x00000000000000000000000000000004
-	last_timestamp datetime2 default CURRENT_TIMESTAMP
+	last_timestamp datetimeoffset(7) default CURRENT_TIMESTAMP
 ,	instance_guid uniqueidentifier not null
 ,	property_guid uniqueidentifier not null
-,	value datetime2
+,	value datetimeoffset(7)
 ,	transaction_id bigint not null
 
 ,	constraint pk__orm_hist_values_datetime__instance_property
@@ -184,7 +184,7 @@ go
 
 create table [orm_hist].[values_instance]
 (	-- template_guid >= 0x00000000000000000000000000000005
-	last_timestamp datetime2 default CURRENT_TIMESTAMP
+	last_timestamp datetimeoffset(7) default CURRENT_TIMESTAMP
 ,	instance_guid uniqueidentifier not null
 ,	property_guid uniqueidentifier not null
 ,	value  uniqueidentifier
@@ -209,7 +209,7 @@ go
 
 create table [orm_hist].[inheritance]
 (
-	last_timestamp datetime2 default CURRENT_TIMESTAMP
+	last_timestamp datetimeoffset(7) default CURRENT_TIMESTAMP
 ,	parent_template_guid uniqueidentifier not null
 ,	child_template_guid uniqueidentifier not null
 ,	ordinal int

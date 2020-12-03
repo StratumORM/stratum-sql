@@ -7,7 +7,7 @@ Generating history spanning functions...'
 	This matters if the spans will be used to bucket or group ranges.
 
 	The spans are returned in [beginning, ending) format, where the
-	  ending is offset back by the datetime2 epsilon of 100 nanoseconds.
+	  ending is offset back by the datetimeoffset(7) epsilon of 100 nanoseconds.
 
 	If you want clamping, this works:
 
@@ -33,8 +33,8 @@ create function [orm_meta].[history_spans_string]
 (
 	@instance_guid uniqueidentifier
 ,	@property_guid uniqueidentifier
-,	@beginning datetime2
-,	@ending datetime2
+,	@beginning datetimeoffset(7)
+,	@ending datetimeoffset(7)
 )
 returns table
 as
@@ -69,8 +69,8 @@ create function [orm].[history_spans_string]
 	@template_name varchar(250)
 ,	@instance_name varchar(250)
 ,	@property_name varchar(250)
-,	@beginning datetime2
-,	@ending datetime2
+,	@beginning datetimeoffset(7)
+,	@ending datetimeoffset(7)
 )
 returns table
 as
@@ -99,8 +99,8 @@ create function [orm_meta].[history_spans_integer]
 (
 	@instance_guid uniqueidentifier
 ,	@property_guid uniqueidentifier
-,	@beginning datetime2
-,	@ending datetime2
+,	@beginning datetimeoffset(7)
+,	@ending datetimeoffset(7)
 )
 returns table
 as
@@ -135,8 +135,8 @@ create function [orm].[history_spans_integer]
 	@template_name varchar(250)
 ,	@instance_name varchar(250)
 ,	@property_name varchar(250)
-,	@beginning datetime2
-,	@ending datetime2
+,	@beginning datetimeoffset(7)
+,	@ending datetimeoffset(7)
 )
 returns table
 as
@@ -165,8 +165,8 @@ create function [orm_meta].[history_spans_decimal]
 (
 	@instance_guid uniqueidentifier
 ,	@property_guid uniqueidentifier
-,	@beginning datetime2
-,	@ending datetime2
+,	@beginning datetimeoffset(7)
+,	@ending datetimeoffset(7)
 )
 returns table
 as
@@ -201,8 +201,8 @@ create function [orm].[history_spans_decimal]
 	@template_name varchar(250)
 ,	@instance_name varchar(250)
 ,	@property_name varchar(250)
-,	@beginning datetime2
-,	@ending datetime2
+,	@beginning datetimeoffset(7)
+,	@ending datetimeoffset(7)
 )
 returns table
 as
@@ -231,8 +231,8 @@ create function [orm_meta].[history_spans_datetime]
 (
 	@instance_guid uniqueidentifier
 ,	@property_guid uniqueidentifier
-,	@beginning datetime2
-,	@ending datetime2
+,	@beginning datetimeoffset(7)
+,	@ending datetimeoffset(7)
 )
 returns table
 as
@@ -267,8 +267,8 @@ create function [orm].[history_spans_datetime]
 	@template_name varchar(250)
 ,	@instance_name varchar(250)
 ,	@property_name varchar(250)
-,	@beginning datetime2
-,	@ending datetime2
+,	@beginning datetimeoffset(7)
+,	@ending datetimeoffset(7)
 )
 returns table
 as
@@ -297,8 +297,8 @@ create function [orm_meta].[history_spans_instance]
 (
 	@instance_guid uniqueidentifier
 ,	@property_guid uniqueidentifier
-,	@beginning datetime2
-,	@ending datetime2
+,	@beginning datetimeoffset(7)
+,	@ending datetimeoffset(7)
 )
 returns table
 as
@@ -333,8 +333,8 @@ create function [orm].[history_spans_instance]
 	@template_name varchar(250)
 ,	@instance_name varchar(250)
 ,	@property_name varchar(250)
-,	@beginning datetime2
-,	@ending datetime2
+,	@beginning datetimeoffset(7)
+,	@ending datetimeoffset(7)
 )
 returns table
 as
