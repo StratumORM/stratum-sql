@@ -43,6 +43,9 @@ ECHO --- inheritance tables
 ECHO --- hist tables
 %SQL_COMMAND%\tables\hist_tables.sql >> %LOGFILE%
 
+ECHO --- meta context
+%SQL_COMMAND%\meta_sprocs\context.sql >> %LOGFILE%
+
 
 ECHO Building views onto the tables...
 ECHO --- values views
@@ -136,6 +139,10 @@ ECHO --- property
 
 ECHO --- inheritance
 %SQL_COMMAND%\triggers\inheritance_triggers.sql >> %LOGFILE%
+
+
+ECHO Configuring extension support...
+%SQL_COMMAND%\tables\extensions.sql >> %LOGFILE%
 
 
 ECHO ------------------------
