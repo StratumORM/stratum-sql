@@ -1,6 +1,8 @@
 ECHO OFF
 REM A simple Windows batch that rebuilds the datbase
 
+cd %~dp0
+
 cls
 
 ECHO Rebuilding the test ORM database from scratch.

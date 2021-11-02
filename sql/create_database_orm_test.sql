@@ -63,16 +63,37 @@ if exists ( select name
      drop login [orm_test_user]
 go
 
+
+if exists ( select name  
+            from master.sys.server_principals
+            where name = 'orm_test_maintainer')
+     drop login [orm_test_user]
+go
+
+
 create login [orm_test_user] with password=N'password', default_database=[orm_test], default_language=[us_english], check_expiration=off, check_policy=off
 go
+create login [orm_test_maintainer] with password=N'Capital pea no-S sassword 1', default_database=[orm_test], default_language=[us_english], check_expiration=off, check_policy=off
+go
+
 
 use [orm_test]
 go
 
 create user [orm_test_user] for login [orm_test_user] with default_schema=[dbo]
 go
+create user [orm_test_maintainer] for login [orm_test_maintainer] with default_schema=[dbo]
+go
+
+-- ensure it's connected to the new database
+alter user [orm_test_user] with Login = [orm_test_user];
+go
+alter user [orm_test_maintainer] with Login = [orm_test_maintainer];
+go
 
 alter role db_owner add member orm_test_user
+go
+alter role db_owner add member orm_test_maintainer
 go
 
 create schema orm 
@@ -80,4 +101,6 @@ go
 create schema orm_meta
 go
 create schema orm_hist
+go
+create schema orm_temp
 go
