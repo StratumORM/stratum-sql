@@ -9,13 +9,14 @@ go
 
 create procedure [orm].[template_add]
 	@new_template_name varchar(250)
+,	@no_auto_view int = NULL
 ,	@signature nvarchar(max) = NULL
 as
 begin
 	set nocount on;
 
-	insert [orm_meta].[templates] (name, signature)
-	values (@new_template_name, @signature)
+	insert [orm_meta].[templates] (name, no_auto_view, signature)
+	values (@new_template_name, @no_auto_view, @signature)
 
     return @@identity
 end

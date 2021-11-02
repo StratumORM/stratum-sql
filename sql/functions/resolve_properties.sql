@@ -42,6 +42,7 @@ RETURN
 			,	p.name as property_name
 			,	p.datatype_guid as datatype_guid
 			,	p.is_extended
+			,	p.no_history
 			,	p.signature
 		from scoped_templates as s
 			inner join [orm_meta].[properties] as p
@@ -72,6 +73,7 @@ RETURN
 			,	p.name as masked_name
 			,	p.datatype_guid as masked_datatype_guid
 			,	p.is_extended as masked_is_extended
+			,	p.no_history as masked_no_history
 			,	p.signature as masked_signature
 		
 			,	case when isnull(p.is_extended,0) = 0 then 1
@@ -120,6 +122,7 @@ RETURN
 			,	aip.masked_name
 			,	aip.masked_datatype_guid
 			,	aip.masked_is_extended
+			,	aip.masked_no_history
 			,	aip.masked_signature
 		from all_inherited_properties as aip
 			inner join (select top_most_in_scope_guid, top_most_property_name, top_most_inherit_rank 
@@ -144,6 +147,7 @@ RETURN
 		,	fsm.masked_name
 		,	fsm.masked_datatype_guid
 		,	fsm.masked_is_extended
+		,	fsm.masked_no_history
 		,	fsm.masked_signature
 
 		,	p.property_guid as current_property_guid
@@ -151,6 +155,7 @@ RETURN
 		,	p.name as current_name
 		,	p.datatype_guid as current_datatype_guid
 		,	p.is_extended as current_is_extended
+		,	p.no_history as current_no_history
 		,	p.signature as current_signature	
 	from fully_scoped_mask as fsm
 		left join [orm_meta].[properties] as p

@@ -11,6 +11,7 @@ create procedure [orm].[property_add]
 ,	@new_property_name varchar(250)
 ,	@data_type varchar(250)
 ,	@is_extended int = 0
+,	@no_history int = 0
 as
 begin
 	set nocount on;
@@ -27,8 +28,8 @@ begin
 		where name = @data_type
 	
 	insert [orm_meta].[properties] 
-		   ( template_guid,               name,  datatype_guid,  is_extended)
-	values (@template_guid, @new_property_name, @datatype_guid, @is_extended)
+		   ( template_guid,               name,  datatype_guid,  is_extended,  no_history)
+	values (@template_guid, @new_property_name, @datatype_guid, @is_extended, @no_history)
 
 	return @@identity
 end

@@ -10,6 +10,7 @@ create table [orm_meta].[templates]
 	template_id int identity(1,1) not null
 ,	template_guid uniqueidentifier not null default (newsequentialid())
 ,	name nvarchar(250) not null
+,	no_auto_view int -- signal not to make the views for this template by default (to cut down on clutter)
 ,	signature nvarchar(max)
 ,	constraint pk__orm_meta_templates__guid 
 		  primary key 
@@ -26,11 +27,12 @@ go
 
 set identity_insert [orm_meta].[templates] on
   -- We're co-opting the name as the datatype here for convenience
-insert [orm_meta].[templates] (name, template_id, template_guid) 
-values	('string',   1, convert(uniqueidentifier, '00000000-0000-0000-0000-000000000001'))
-	,	('integer',  2, convert(uniqueidentifier, '00000000-0000-0000-0000-000000000002'))
-	,	('decimal',  3, convert(uniqueidentifier, '00000000-0000-0000-0000-000000000003'))
-	,	('datetime', 4, convert(uniqueidentifier, '00000000-0000-0000-0000-000000000004'))
+insert [orm_meta].[templates] (name, template_id, template_guid, no_auto_view, signature) 
+values	
+		('string',   1, convert(uniqueidentifier, '00000000-0000-0000-0000-000000000001'), 1, 'Base type - nvarchar(max)')
+	,	('integer',  2, convert(uniqueidentifier, '00000000-0000-0000-0000-000000000002'), 1, 'Base type - bigint')
+	,	('decimal',  3, convert(uniqueidentifier, '00000000-0000-0000-0000-000000000003'), 1, 'Base type - decimal(19,8)')
+	,	('datetime', 4, convert(uniqueidentifier, '00000000-0000-0000-0000-000000000004'), 1, 'Base type - datetimeoffset(7)')
 set identity_insert [orm_meta].[templates] off
 
 
@@ -46,6 +48,7 @@ create table [orm_meta].[properties]
 ,	name nvarchar(250) not null
 ,	datatype_guid uniqueidentifier not null
 ,	is_extended int -- 0 and NULL imply it's a base property. Using int for future polymorphism
+,	no_history int -- signal that changes to this do _not_ get inserted automatically into the history tables
 ,	signature nvarchar(max)
 																							-- can't use cascade here due to the instead of trigger
 --,	constraint fk_orm_meta_properties_template foreign key (template_guid) references [orm_meta].[templates] (template_id) --on delete cascade 

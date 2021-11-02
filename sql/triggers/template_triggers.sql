@@ -39,38 +39,66 @@ begin
 		end	
 
 	-- Now insert it into the templates table
-	insert into [orm_meta].[templates] (name, signature)
-	select i.name, i.signature
-	from inserted as i
+	set identity_insert [orm_meta].[templates] on -- merge statement manages id
+
+	merge into [orm_meta].[templates] as d 
+		using (	select 	ident_current('[orm_meta].[templates]') 
+			            + row_number() over (order by template_guid) 
+			            as template_id
+					,	template_guid
+					,	name
+					,	no_auto_view
+					,	signature
+				from inserted 
+				-- where template_id = 0
+			) as s 
+		on d.template_guid = s.template_guid
+	when not matched then
+		insert (  template_id, template_guid,   name,   no_auto_view,   signature)
+		values (s.template_id, template_guid, s.name, s.no_auto_view, s.signature)
+	when matched then
+		update set 
+		--	template_id = s.template_id -- this can't be updated since it's the table's PK
+			name = s.name
+		,	no_auto_view = s.no_auto_view
+		,	signature = s.signature
+	;
+
+	set identity_insert [orm_meta].[templates] off
 
 	-- Loop over all the template names that were affected by the insert
 	declare @template_guid uniqueidentifier
+		,	@no_auto_view int
 
 	declare template_guid_cursor cursor
 	  LOCAL STATIC READ_ONLY FORWARD_ONLY
 	for
-		select distinct t.template_guid
+		select distinct i.template_guid, i.no_auto_view
 		from inserted as i
 			inner join [orm_meta].[templates] as t
 				on t.name = i.name
 	
 	open template_guid_cursor
 
-	fetch next from template_guid_cursor into @template_guid
+	fetch next from template_guid_cursor into @template_guid, @no_auto_view
 	
 	while @@FETCH_STATUS = 0
 	begin
-		exec [orm_meta].[generate_template_view_wide] @template_guid
+		if coalesce(@no_auto_view,0) <> 1
+		begin
+			print convert(nvarchar(250), @template_guid) + ' ' + convert(nvarchar(10), @no_auto_view)
+			exec [orm_meta].[generate_template_view_wide] @template_guid
+		end
 
-		fetch next from template_guid_cursor into @template_guid
+		fetch next from template_guid_cursor into @template_guid, @no_auto_view
 	end
 	close template_guid_cursor 
 	deallocate template_guid_cursor
 
 	-- Log the end of missing entry to history
 	insert into [orm_hist].[templates] 
-		  (template_id, template_guid, name, signature, transaction_id)
-	select template_id, template_guid, null,      null, CURRENT_TRANSACTION_ID()
+		  (template_id, template_guid, name, no_auto_view, signature, transaction_id)
+	select template_id, template_guid, null,         null,      null, CURRENT_TRANSACTION_ID()
 	from inserted
 
 end
@@ -108,12 +136,15 @@ begin
 			on t.template_guid = i.template_guid
 
 	-- Loop over all the template names that were affected by the update
-	declare @template_name nvarchar(250), @template_guid uniqueidentifier, @drop_query nvarchar(max)
+	declare @template_name nvarchar(250)
+		, 	@template_guid uniqueidentifier
+		,	@no_auto_view int
+		,	@drop_query nvarchar(max)
 
 	declare template_cursor cursor
 	  LOCAL STATIC READ_ONLY FORWARD_ONLY
 	for
-		select distinct d.name, i.template_guid
+		select distinct d.name, i.template_guid, i.no_auto_view
 		from deleted as d
 			inner join inserted as i
 				on d.template_guid = i.template_guid
@@ -121,31 +152,41 @@ begin
 	
 	open template_cursor
 
-	fetch next from template_cursor into @template_name, @template_guid
+	fetch next from template_cursor into @template_name, @template_guid, @no_auto_view
 	
 	while @@FETCH_STATUS = 0
 	begin
 
-		set @drop_query = 'drop view ' + QUOTENAME(@template_name)
-		exec sp_executesql @drop_query
+		if object_id(@template_name,'v') is not null
+		begin
+			set @drop_query = 'drop view ' + QUOTENAME(@template_name)
+			exec sp_executesql @drop_query
+		end
 
-		exec [orm_meta].[generate_template_view_wide] @template_guid
+		if coalesce(@no_auto_view,0) <> 1
+		begin
+			print convert(nvarchar(250), @template_guid) + ' ' + convert(nvarchar(10), @no_auto_view)
+			exec [orm_meta].[generate_template_view_wide] @template_guid
+		end
 
-		fetch next from template_cursor into @template_name, @template_guid
+		fetch next from template_cursor into @template_name, @template_guid, @no_auto_view
 	end
 	close template_cursor 
 	deallocate template_cursor
 
 	-- Log the changes to history
 	insert into [orm_hist].[templates] 
-		  (  template_id,   template_guid,   name,   signature, transaction_id)
-	select d.template_id, d.template_guid, d.name, d.signature, CURRENT_TRANSACTION_ID()
+		  (  template_id,   template_guid,   name,   no_auto_view,   signature, transaction_id)
+	select d.template_id, d.template_guid, d.name, d.no_auto_view, d.signature, CURRENT_TRANSACTION_ID()
 	from deleted as d
 		inner join inserted as i 
 			on d.template_guid = i.template_guid
 	where ( (d.name <> i.name) -- only log changes
 		 or (d.name is null and i.name is not null)
 		 or (d.name is not null and i.name is null) )
+	   or ( (d.no_auto_view <> i.no_auto_view) 
+		 or (d.no_auto_view is null and i.no_auto_view is not null)
+		 or (d.no_auto_view is not null and i.no_auto_view is null) )
 	   or ( (d.signature <> i.signature) 
 		 or (d.signature is null and i.signature is not null)
 		 or (d.signature is not null and i.signature is null) )
@@ -355,8 +396,11 @@ begin
 	while @@FETCH_STATUS = 0
 	begin
 
-		set @drop_query = 'drop view ' + QUOTENAME(@template_name)
-		exec sp_executesql @drop_query
+		if object_id(@template_name,'v') is not null
+		begin
+			set @drop_query = 'drop view ' + QUOTENAME(@template_name)
+			exec sp_executesql @drop_query
+		end
 
 		fetch next from template_name_cursor into @template_name
 	end
@@ -365,8 +409,8 @@ begin
 
 	-- Log the changes to history
 	insert into [orm_hist].[templates] 
-		  (template_id, template_guid, name, signature, transaction_id)
-	select template_id, template_guid, name, signature, CURRENT_TRANSACTION_ID()
+		  (template_id, template_guid, name, no_auto_view, signature, transaction_id)
+	select template_id, template_guid, name, no_auto_view, signature, CURRENT_TRANSACTION_ID()
 	from deleted
 
 end

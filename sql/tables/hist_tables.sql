@@ -14,6 +14,7 @@ create table [orm_hist].[templates]
 ,	template_id int not null
 ,	template_guid uniqueidentifier not null
 ,	name nvarchar(250)
+,	no_auto_view int
 ,	signature nvarchar(max)
 ,	transaction_id bigint not null
 
@@ -22,7 +23,7 @@ create table [orm_hist].[templates]
 		  nonclustered (last_timestamp, template_guid)
 )
 create unique clustered index cx__orm_hist_templates__id 
-		  on [orm_hist].[templates] (last_timestamp, template_id)
+		  on [orm_hist].[templates] (last_timestamp, template_guid)
 create nonclustered index ix__orm_hist_templates__tx_guid
 		  on [orm_hist].[templates] (transaction_id, template_guid) 
 		  include (name, last_timestamp)
@@ -42,6 +43,7 @@ create table [orm_hist].[properties]
 ,	name nvarchar(250)
 ,	datatype_guid uniqueidentifier
 ,	is_extended int
+,	no_history int
 ,	signature nvarchar(max)
 ,	transaction_id bigint not null
 
@@ -50,7 +52,7 @@ create table [orm_hist].[properties]
 		  nonclustered (last_timestamp, property_guid)
 )
 create unique clustered index cx__orm_hist_properties__id 
-		  on [orm_hist].[properties] (last_timestamp, property_id)
+		  on [orm_hist].[properties] (last_timestamp, property_guid)
 create nonclustered index ix__orm_hist_properties__tx_guid_inc
 		  on [orm_hist].[properties] (transaction_id, property_guid)
 		  include (name, template_guid, last_timestamp)
@@ -76,7 +78,7 @@ create table [orm_hist].[instances]
 		  nonclustered (last_timestamp, instance_guid)
 )
 create unique clustered index cx__orm_hist_instances__id 
-		  on [orm_hist].[instances] (last_timestamp, instance_id)
+		  on [orm_hist].[instances] (last_timestamp, instance_guid)
 create nonclustered index ix__orm_hist_instances__tx_guid_inc
 		  on [orm_hist].[instances] (transaction_id, instance_guid)
 		  include (name, template_guid, last_timestamp)

@@ -66,6 +66,37 @@ begin
 	-- 		return
 	-- 	end
 
+	-- Insert the rows
+	set identity_insert [orm_meta].[properties] on -- insert statement manages id
+
+	merge into [orm_meta].[properties] as d
+		using (	select ident_current('[orm_meta].[properties]') 
+					   + row_number() over (order by property_guid)
+					   as property_id
+					, property_guid
+					, template_guid
+					, name
+					, datatype_guid
+					, is_extended
+					, no_history
+					, signature
+				from inserted
+				-- where property_id = 0
+			) as s
+		on d.property_guid = s.property_guid
+	when not matched then
+		insert (  property_id,   property_guid,   template_guid,   name,   datatype_guid,   is_extended,   no_history,   signature)
+		values (s.property_id, s.property_guid, s.template_guid, s.name, s.datatype_guid, s.is_extended, s.no_history, s.signature)
+	when matched then
+		update set
+			name = s.name
+		,	is_extended = s.is_extended
+		,	no_history = s.no_history
+		,	signature = s.signature
+	;
+
+	set identity_insert [orm_meta].[properties] off
+
 	-- To further simplify things, this procedure will use a table variable so we can more easily reference
 	--	and massage the masked property data.
 	declare @masking table (scoped_template_guid uniqueidentifier
@@ -75,6 +106,7 @@ begin
 						,	masking_name nvarchar(250)
 						,	masking_datatype_guid uniqueidentifier
 						,	masking_is_extended int
+						,	masking_no_history int
 						,	masking_signature nvarchar(max)
 
 						,	current_property_guid uniqueidentifier
@@ -82,21 +114,17 @@ begin
 						,	current_name nvarchar(250)
 						,	current_datatype_guid uniqueidentifier
 						,	current_is_extended int
+						,	current_no_history int
 						,	current_signature nvarchar(max) )
 
-	-- Insert the rows
-	insert into [orm_meta].[properties] 
-		  (template_guid, name, datatype_guid, is_extended, signature)
-	select template_guid, name, datatype_guid, is_extended, signature
-	from inserted as i
 
 	-- Now that we have new properties, we need to make sure that these are inherited properly.
 	-- First, we resolve how the affected template's properties are masked.
 	
 	-- Get the current masked properties
 	insert into @masking (	scoped_template_guid,
-							masking_property_guid, masking_template_guid, masking_name, masking_datatype_guid, masking_is_extended, masking_signature,
-							current_property_guid, current_template_guid, current_name, current_datatype_guid, current_is_extended, current_signature)
+							masking_property_guid, masking_template_guid, masking_name, masking_datatype_guid, masking_is_extended, masking_no_history, masking_signature,
+							current_property_guid, current_template_guid, current_name, current_datatype_guid, current_is_extended, current_no_history, current_signature)
 	select	
 			p.scoped_template_guid
 		,	p.masked_property_guid
@@ -104,6 +132,7 @@ begin
 		,	p.masked_name
 		,	p.masked_datatype_guid
 		,	p.masked_is_extended
+		,	p.masked_no_history
 		,	p.masked_signature
 
 		,	p.current_property_guid
@@ -111,6 +140,7 @@ begin
 		,	p.current_name
 		,	p.current_datatype_guid
 		,	p.current_is_extended
+		,	p.current_no_history
 		,	p.current_signature	
 	from [orm_meta].[resolve_properties](@template_guids) as p
 
@@ -133,34 +163,42 @@ begin
 				,	m.masking_name as name
 				,	m.masking_datatype_guid as datatype_guid
 				,	m.masking_is_extended as is_extended
+				,	m.masking_no_history as no_history
 				,	m.masking_signature as [signature]
 			from @masking as m
 			where isnull(m.masking_is_extended, 0) = 0) as s 
 		on d.property_guid = s.property_guid
 	when not matched then
-		insert (  template_guid,   name,   datatype_guid,   is_extended,   signature)
-		values (s.template_guid, s.name, s.datatype_guid, s.is_extended, s.signature)
+		insert (  template_guid,   name,   datatype_guid,   is_extended,   no_history,   signature)
+		values (s.template_guid, s.name, s.datatype_guid, s.is_extended, s.no_history, s.signature)
 	;
 
 	-- Finally, loop over all the template_guids that were affected by the insert/delete
 	declare @template_guid uniqueidentifier
+		,	@no_auto_view int
 
 	-- from http://stackoverflow.com/a/18514133
 	declare template_guid_cursor cursor
 	  LOCAL STATIC READ_ONLY FORWARD_ONLY
 	for
-		select distinct guid
-		from @template_guids as t
+		select distinct t.template_guid, t.no_auto_view
+		from @template_guids as tg
+			inner join orm_meta.templates as t 
+				on tg.guid = t.template_guid
 	
 	open template_guid_cursor
 
-	fetch next from template_guid_cursor into @template_guid
+	fetch next from template_guid_cursor into @template_guid, @no_auto_view
 	
 	while @@FETCH_STATUS = 0
 	begin
-		exec [orm_meta].[generate_template_view_wide] @template_guid
+		if coalesce(@no_auto_view,0) <> 1
+		begin
+			print convert(nvarchar(250), @template_guid) + ' ' + convert(nvarchar(10), @no_auto_view)
+			exec [orm_meta].[generate_template_view_wide] @template_guid
+		end
 
-		fetch next from template_guid_cursor into @template_guid
+		fetch next from template_guid_cursor into @template_guid, @no_auto_view
 	end
 	close template_guid_cursor 
 	deallocate template_guid_cursor
@@ -168,8 +206,8 @@ begin
 
 	-- Log the end of missing entry to history
 	insert into [orm_hist].[properties] 
-		  (property_id, property_guid, template_guid, name, datatype_guid, is_extended, signature, transaction_id)
-	select property_id, property_guid,          null, null,          null,        null,      null, CURRENT_TRANSACTION_ID()
+		  (property_id, property_guid, template_guid, name, datatype_guid, is_extended, no_history, signature, transaction_id)
+	select property_id, property_guid,          null, null,          null,        null,       null,      null, CURRENT_TRANSACTION_ID()
 	from inserted
 	
 end
@@ -193,6 +231,7 @@ begin
 							, name nvarchar(250)
 							, datatype_guid uniqueidentifier
 							, is_extended int
+							, no_history int
 							, signature nvarchar(max)
 							, primary key (property_guid) )
 	declare @deleted table  ( property_guid uniqueidentifier
@@ -200,17 +239,18 @@ begin
 							, name nvarchar(250)
 							, datatype_guid uniqueidentifier
 							, is_extended int
+							, no_history int
 							, signature nvarchar(max)
 							, primary key (property_guid) )
 
 		insert @inserted 
-			  (property_guid, template_guid, name, datatype_guid, is_extended, signature)
-		select property_guid, template_guid, name, datatype_guid, is_extended, signature
+			  (property_guid, template_guid, name, datatype_guid, is_extended, no_history, signature)
+		select property_guid, template_guid, name, datatype_guid, is_extended, no_history, signature
 		from inserted
 
 		insert @deleted 
-			  (property_guid, template_guid, name, datatype_guid, is_extended, signature)
-		select property_guid, template_guid, name, datatype_guid, is_extended, signature
+			  (property_guid, template_guid, name, datatype_guid, is_extended, no_history, signature)
+		select property_guid, template_guid, name, datatype_guid, is_extended, no_history, signature
 		from deleted
 
 	-- Referential integrity checks (needed instead of foreign keys due to constraint checks coming before triggers)
@@ -286,6 +326,7 @@ begin
 						,	masking_name nvarchar(250)
 						,	masking_datatype_guid uniqueidentifier
 						,	masking_is_extended int
+						,	masking_no_history int
 						,	masking_signature nvarchar(max)
 
 						,	current_property_guid uniqueidentifier
@@ -293,12 +334,13 @@ begin
 						,	current_name nvarchar(250)
 						,	current_datatype_guid uniqueidentifier
 						,	current_is_extended int
+						,	current_no_history int
 						,	current_signature nvarchar(max) )
 
 	-- Get the current masked properties
 	insert into @masking (	scoped_template_guid,
-							masking_property_guid, masking_template_guid, masking_name, masking_datatype_guid, masking_is_extended, masking_signature,
-							current_property_guid, current_template_guid, current_name, current_datatype_guid, current_is_extended, current_signature)
+							masking_property_guid, masking_template_guid, masking_name, masking_datatype_guid, masking_is_extended, masking_no_history, masking_signature,
+							current_property_guid, current_template_guid, current_name, current_datatype_guid, current_is_extended, current_no_history, current_signature)
 	select	
 			p.scoped_template_guid
 		,	p.masked_property_guid
@@ -306,6 +348,7 @@ begin
 		,	p.masked_name
 		,	p.masked_datatype_guid
 		,	p.masked_is_extended
+		,	p.masked_no_history
 		,	p.masked_signature
 
 		,	p.current_property_guid
@@ -313,6 +356,7 @@ begin
 		,	p.current_name
 		,	p.current_datatype_guid
 		,	p.current_is_extended
+		,	p.current_no_history
 		,	p.current_signature	
 	from [orm_meta].[resolve_properties](@template_guids) as p
 
@@ -367,6 +411,7 @@ begin
 				,	i.name
 				,	i.datatype_guid
 				,	i.is_extended
+				,	i.no_history
 				,	i.signature
 			from @inserted as i ) as s
 		on d.masking_property_guid = s.property_guid
@@ -386,6 +431,7 @@ begin
 						-- otherwise just accept the value
 						else	isNull(s.is_extended, 0)
 					end)
+			,	d.masking_no_history = s.no_history
 			,	d.masking_signature = s.signature
 	when not matched then
 		insert	(	scoped_template_guid	
@@ -394,6 +440,7 @@ begin
 				,	masking_name
 				,	masking_datatype_guid
 				,	masking_is_extended
+				,	masking_no_history
 				,	masking_signature	)
 		values	(	s.template_guid		--	this is necessarily the same as s.template_guid
 				,	s.property_guid	--	since we got the in_scope_guids from here!
@@ -401,6 +448,7 @@ begin
 				,	s.name
 				,	s.datatype_guid
 				,	s.is_extended
+				,	s.no_history
 				,	s.signature	)
 	;
 
@@ -459,12 +507,15 @@ begin
 				,	masking_name
 				,	masking_datatype_guid
 				,	masking_is_extended
+				,	masking_no_history
 				,	masking_signature
+
 				,	current_property_guid
 				,	current_template_guid
 				,	current_name
 				,	current_datatype_guid
 				,	current_is_extended
+				,	current_no_history
 				,	current_signature
 			from @masking as m	) as s 
 		on d.property_guid = s.current_property_guid
@@ -481,17 +532,20 @@ begin
 						then	0
 						else	isnull(s.current_is_extended, 0)
 					end)
+			,	d.no_history = s.current_no_history
 			,	d.signature = s.current_signature
 	when not matched then
 		insert	(	template_guid
 				,	name
 				,	datatype_guid
 				,	is_extended
+				,	no_history
 				,	signature	)
 		values	(	scoped_template_guid
 				,	masking_name
 				,	masking_datatype_guid
 				,	masking_is_extended
+				,	masking_no_history
 				,	masking_signature	)
 	;
 
@@ -500,8 +554,8 @@ begin
 
 	-- Get the current masked properties so we can double check the base properties are masked correctly.
 	insert into @masking (	scoped_template_guid,
-							masking_property_guid, masking_template_guid, masking_name, masking_datatype_guid, masking_is_extended, masking_signature,
-							current_property_guid, current_template_guid, current_name, current_datatype_guid, current_is_extended, current_signature)
+							masking_property_guid, masking_template_guid, masking_name, masking_datatype_guid, masking_is_extended, masking_no_history, masking_signature,
+							current_property_guid, current_template_guid, current_name, current_datatype_guid, current_is_extended, current_no_history, current_signature)
 	select	
 			p.scoped_template_guid
 		,	p.masked_property_guid
@@ -509,6 +563,7 @@ begin
 		,	p.masked_name
 		,	p.masked_datatype_guid
 		,	p.masked_is_extended
+		,	p.masked_no_history
 		,	p.masked_signature
 
 		,	p.current_property_guid
@@ -516,6 +571,7 @@ begin
 		,	p.current_name
 		,	p.current_datatype_guid
 		,	p.current_is_extended
+		,	p.current_no_history
 		,	p.current_signature	
 	from [orm_meta].[resolve_properties](@template_guids) as p
 
@@ -531,12 +587,15 @@ begin
 				,	masking_name
 				,	masking_datatype_guid
 				,	masking_is_extended
+				,	masking_no_history
 				,	masking_signature
+
 				,	current_property_guid
 				,	current_template_guid
 				,	current_name
 				,	current_datatype_guid
 				,	current_is_extended
+				,	current_no_history
 				,	current_signature
 			from @masking as m	) as s 
 		on d.property_guid = s.current_property_guid
@@ -553,41 +612,50 @@ begin
 				,	name
 				,	datatype_guid
 				,	is_extended
+				,	no_history
 				,	signature	)
 		values	(	scoped_template_guid
 				,	masking_name
 				,	masking_datatype_guid
 				,	masking_is_extended
+				,	masking_no_history
 				,	masking_signature	)
 	;
 
 	-- Finally, loop over all the template_guids that were affected by the insert/delete
 	declare @template_guid uniqueidentifier
+		,	@no_auto_view int
 
 	-- from http://stackoverflow.com/a/18514133
 	declare template_guid_cursor cursor
 	  LOCAL STATIC READ_ONLY FORWARD_ONLY
 	for
-		select distinct guid
-		from @scoped_guids as t
-	
+		select distinct t.template_guid, t.no_auto_view
+		from @scoped_guids as tg
+			inner join orm_meta.templates as t 
+				on tg.guid = t.template_guid
+
 	open template_guid_cursor
 
-	fetch next from template_guid_cursor into @template_guid
+	fetch next from template_guid_cursor into @template_guid, @no_auto_view
 	
 	while @@FETCH_STATUS = 0
 	begin
-		exec [orm_meta].[generate_template_view_wide] @template_guid
+		if coalesce(@no_auto_view,0) <> 1
+		begin
+			print convert(nvarchar(250), @template_guid) + ' ' + convert(nvarchar(10), @no_auto_view)
+			exec [orm_meta].[generate_template_view_wide] @template_guid
+		end
 
-		fetch next from template_guid_cursor into @template_guid
+		fetch next from template_guid_cursor into @template_guid, @no_auto_view
 	end
 	close template_guid_cursor 
 	deallocate template_guid_cursor
 
 	-- Log the changes to history
 	insert into [orm_hist].[properties] 
-		  (  property_id,   property_guid,   template_guid,   name,   datatype_guid,   is_extended,   signature, transaction_id)
-	select d.property_id, d.property_guid, d.template_guid, d.name, d.datatype_guid, d.is_extended, d.signature, CURRENT_TRANSACTION_ID()
+		  (  property_id,   property_guid,   template_guid,   name,   datatype_guid,   is_extended,   no_history,   signature, transaction_id)
+	select d.property_id, d.property_guid, d.template_guid, d.name, d.datatype_guid, d.is_extended, d.no_history, d.signature, CURRENT_TRANSACTION_ID()
 	from deleted as d
 		inner join inserted as i 
 			on d.property_guid = i.property_guid
@@ -600,6 +668,9 @@ begin
 	   or ( (d.is_extended <> i.is_extended) 
 		 or (d.is_extended is null and i.is_extended is not null)
 		 or (d.is_extended is not null and i.is_extended is null) )
+	   or ( (d.no_history <> i.no_history) 
+		 or (d.no_history is null and i.no_history is not null)
+		 or (d.no_history is not null and i.no_history is null) )
 	   or ( (d.signature <> i.signature) 
 		 or (d.signature is null and i.signature is not null)
 		 or (d.signature is not null and i.signature is null) )
@@ -654,31 +725,38 @@ begin
 
 	-- Finally, loop over all the template_guids that were affected by the insert/delete
 	declare @template_guid uniqueidentifier
+		,	@no_auto_view int
 
 	-- from http://stackoverflow.com/a/18514133
 	declare template_guid_cursor cursor
 	  LOCAL STATIC READ_ONLY FORWARD_ONLY
 	for
-		select distinct guid
-		from @template_guids as t
+		select distinct t.template_guid, t.no_auto_view
+		from @template_guids as tg
+			inner join orm_meta.templates as t 
+				on tg.guid = t.template_guid
 	
 	open template_guid_cursor
 
-	fetch next from template_guid_cursor into @template_guid
+	fetch next from template_guid_cursor into @template_guid, @no_auto_view
 	
 	while @@FETCH_STATUS = 0
 	begin
-		exec [orm_meta].[generate_template_view_wide] @template_guid
+		if coalesce(@no_auto_view,0) <> 1
+		begin
+			print convert(nvarchar(250), @template_guid) + ' ' + convert(nvarchar(10), @no_auto_view)
+			exec [orm_meta].[generate_template_view_wide] @template_guid
+		end
 
-		fetch next from template_guid_cursor into @template_guid
+		fetch next from template_guid_cursor into @template_guid, @no_auto_view
 	end
 	close template_guid_cursor 
 	deallocate template_guid_cursor
 
 	-- Log the changes to history
 	insert into [orm_hist].[properties] 
-		  (property_id, property_guid, template_guid, name, datatype_guid, is_extended, signature, transaction_id)
-	select property_id, property_guid, template_guid, name, datatype_guid, is_extended, signature, CURRENT_TRANSACTION_ID()
+		  (property_id, property_guid, template_guid, name, datatype_guid, is_extended, no_history, signature, transaction_id)
+	select property_id, property_guid, template_guid, name, datatype_guid, is_extended, no_history, signature, CURRENT_TRANSACTION_ID()
 	from deleted
 
 end
