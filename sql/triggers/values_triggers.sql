@@ -14,11 +14,18 @@ as
 begin
 	set nocount on;
 
-	-- Log the end of missing entry to history
-	insert into [orm_hist].[values_string] 
-		  (instance_guid, property_guid, value, transaction_id)
-	select instance_guid, property_guid,  null, CURRENT_TRANSACTION_ID()
-	from inserted
+	if orm_meta.check_context('bypass values string history') = 0
+	  begin
+
+		-- Log the end of missing entry to history
+		insert into [orm_hist].[values_string] 
+			  (  instance_guid,   property_guid, value, transaction_id)
+		select i.instance_guid, i.property_guid,  null, CURRENT_TRANSACTION_ID()
+		from inserted as i
+			inner join [orm_meta].[properties] as p 
+				on i.property_guid = p.property_guid
+		where p.no_history = 0
+	  end
 end
 go
 
@@ -35,18 +42,23 @@ as
 begin
 	set nocount on;
 
-	-- Log the changes to history
-	insert into [orm_hist].[values_string] 
-		  (  instance_guid,   property_guid,   value, transaction_id)
-	select d.instance_guid, d.property_guid, d.value, CURRENT_TRANSACTION_ID()
-	from deleted as d
-		inner join inserted as i 
-			on d.instance_guid = i.instance_guid
-			and d.property_guid = i.property_guid
-	where  (d.value <> i.value) -- only log changes
-		or (d.value is null and i.value is not null)
-		or (d.value is not null and i.value is null)
-
+	if orm_meta.check_context('bypass values string history') = 0
+	  begin
+		-- Log the changes to history
+		insert into [orm_hist].[values_string] 
+			  (  instance_guid,   property_guid,   value, transaction_id)
+		select d.instance_guid, d.property_guid, d.value, CURRENT_TRANSACTION_ID()
+		from deleted as d
+			inner join inserted as i 
+				on d.instance_guid = i.instance_guid
+				and d.property_guid = i.property_guid
+			inner join [orm_meta].[properties] as p 
+				on i.property_guid = p.property_guid
+		where  ((d.value <> i.value) -- only log changes
+			 or (d.value is null and i.value is not null)
+			 or (d.value is not null and i.value is null)
+			 ) and p.no_history = 0
+	  end
 end
 go
 
@@ -62,13 +74,19 @@ create trigger [orm_meta].[values_integer_insert]
 as 
 begin
 	set nocount on;
+	print 'inserting to history'
 
-	-- Log the end of missing entry to history
-	insert into [orm_hist].[values_integer] 
-		  (instance_guid, property_guid, value, transaction_id)
-	select instance_guid, property_guid,  null, CURRENT_TRANSACTION_ID()
-	from inserted
-
+	if orm_meta.check_context('bypass values integer history') = 0
+	  begin
+		-- Log the end of missing entry to history
+		insert into [orm_hist].[values_integer] 
+			  (  instance_guid,   property_guid, value, transaction_id)
+		select i.instance_guid, i.property_guid,  null, CURRENT_TRANSACTION_ID()
+		from inserted as i
+			inner join [orm_meta].[properties] as p 
+				on i.property_guid = p.property_guid
+		where p.no_history = 0
+	  end
 end
 go
 
@@ -85,18 +103,23 @@ as
 begin
 	set nocount on;
 
-	-- Log the changes to history
-	insert into [orm_hist].[values_integer] 
-		  (  instance_guid,   property_guid,   value, transaction_id)
-	select d.instance_guid, d.property_guid, d.value, CURRENT_TRANSACTION_ID()
-	from deleted as d
-		inner join inserted as i 
-			on d.instance_guid = i.instance_guid
-			and d.property_guid = i.property_guid
-	where  (d.value <> i.value) -- only log changes
-		or (d.value is null and i.value is not null)
-		or (d.value is not null and i.value is null)
-
+	if orm_meta.check_context('bypass values integer history') = 0
+	  begin
+		-- Log the changes to history
+		insert into [orm_hist].[values_integer] 
+			  (  instance_guid,   property_guid,   value, transaction_id)
+		select d.instance_guid, d.property_guid, d.value, CURRENT_TRANSACTION_ID()
+		from deleted as d
+			inner join inserted as i 
+				on d.instance_guid = i.instance_guid
+				and d.property_guid = i.property_guid
+			inner join [orm_meta].[properties] as p 
+				on i.property_guid = p.property_guid
+		where  ((d.value <> i.value) -- only log changes
+			 or (d.value is null and i.value is not null)
+			 or (d.value is not null and i.value is null)
+			 ) and p.no_history = 0
+	  end
 end
 go
 
@@ -113,12 +136,17 @@ as
 begin
 	set nocount on;
 
-	-- Log the end of missing entry to history
-	insert into [orm_hist].[values_decimal] 
-		  (instance_guid, property_guid, value, transaction_id)
-	select instance_guid, property_guid,  null, CURRENT_TRANSACTION_ID()
-	from inserted
-
+	if orm_meta.check_context('bypass values decimal history') = 0
+	  begin
+		-- Log the end of missing entry to history
+		insert into [orm_hist].[values_decimal] 
+			  (  instance_guid,   property_guid, value, transaction_id)
+		select i.instance_guid, i.property_guid,  null, CURRENT_TRANSACTION_ID()
+		from inserted as i
+			inner join [orm_meta].[properties] as p 
+				on i.property_guid = p.property_guid
+		where p.no_history = 0
+	  end
 end
 go
 
@@ -135,18 +163,23 @@ as
 begin
 	set nocount on;
 
-	-- Log the changes to history
-	insert into [orm_hist].[values_decimal] 
-		  (  instance_guid,   property_guid,   value, transaction_id)
-	select d.instance_guid, d.property_guid, d.value, CURRENT_TRANSACTION_ID()
-	from deleted as d
-		inner join inserted as i 
-			on d.instance_guid = i.instance_guid
-			and d.property_guid = i.property_guid
-	where  (d.value <> i.value) -- only log changes
-		or (d.value is null and i.value is not null)
-		or (d.value is not null and i.value is null)
-
+	if orm_meta.check_context('bypass values decimal history') = 0
+	  begin
+		-- Log the changes to history
+		insert into [orm_hist].[values_decimal] 
+			  (  instance_guid,   property_guid,   value, transaction_id)
+		select d.instance_guid, d.property_guid, d.value, CURRENT_TRANSACTION_ID()
+		from deleted as d
+			inner join inserted as i 
+				on d.instance_guid = i.instance_guid
+				and d.property_guid = i.property_guid
+			inner join [orm_meta].[properties] as p 
+				on i.property_guid = p.property_guid
+		where  ((d.value <> i.value) -- only log changes
+			 or (d.value is null and i.value is not null)
+			 or (d.value is not null and i.value is null)
+			 ) and p.no_history = 0
+	  end
 end
 go
 
@@ -163,12 +196,17 @@ as
 begin
 	set nocount on;
 
-	-- Log the end of missing entry to history
-	insert into [orm_hist].[values_datetime] 
-		  (instance_guid, property_guid, value, transaction_id)
-	select instance_guid, property_guid,  null, CURRENT_TRANSACTION_ID()
-	from inserted
-
+	if orm_meta.check_context('bypass values datetime history') = 0
+	  begin
+		-- Log the end of missing entry to history
+		insert into [orm_hist].[values_datetime] 
+			  (  instance_guid,   property_guid, value, transaction_id)
+		select i.instance_guid, i.property_guid,  null, CURRENT_TRANSACTION_ID()
+		from inserted as i
+			inner join [orm_meta].[properties] as p 
+				on i.property_guid = p.property_guid
+		where p.no_history = 0
+	  end
 end
 go
 
@@ -185,18 +223,23 @@ as
 begin
 	set nocount on;
 
-	-- Log the changes to history
-	insert into [orm_hist].[values_datetime] 
-		  (  instance_guid,   property_guid,   value, transaction_id)
-	select d.instance_guid, d.property_guid, d.value, CURRENT_TRANSACTION_ID()
-	from deleted as d
-		inner join inserted as i 
-			on d.instance_guid = i.instance_guid
-			and d.property_guid = i.property_guid
-	where  (d.value <> i.value) -- only log changes
-		or (d.value is null and i.value is not null)
-		or (d.value is not null and i.value is null)
-
+	if orm_meta.check_context('bypass values datetime history') = 0
+	  begin
+		-- Log the changes to history
+		insert into [orm_hist].[values_datetime] 
+			  (  instance_guid,   property_guid,   value, transaction_id)
+		select d.instance_guid, d.property_guid, d.value, CURRENT_TRANSACTION_ID()
+		from deleted as d
+			inner join inserted as i 
+				on d.instance_guid = i.instance_guid
+				and d.property_guid = i.property_guid
+			inner join [orm_meta].[properties] as p 
+				on i.property_guid = p.property_guid
+		where  ((d.value <> i.value) -- only log changes
+			 or (d.value is null and i.value is not null)
+			 or (d.value is not null and i.value is null)
+			 ) and p.no_history = 0
+	  end
 end
 go
 
@@ -213,12 +256,17 @@ as
 begin
 	set nocount on;
 
-	-- Log the end of missing entry to history
-	insert into [orm_hist].[values_instance] 
-		  (instance_guid, property_guid, value, transaction_id)
-	select instance_guid, property_guid,  null, CURRENT_TRANSACTION_ID()
-	from inserted
-
+	if orm_meta.check_context('bypass values instance history') = 0
+	  begin
+		-- Log the end of missing entry to history
+		insert into [orm_hist].[values_instance] 
+			  (  instance_guid,   property_guid, value, transaction_id)
+		select i.instance_guid, i.property_guid,  null, CURRENT_TRANSACTION_ID()
+		from inserted as i
+			inner join [orm_meta].[properties] as p 
+				on i.property_guid = p.property_guid
+		where p.no_history = 0
+	  end
 end
 go
 
@@ -235,18 +283,23 @@ as
 begin
 	set nocount on;
 
-	-- Log the changes to history
-	insert into [orm_hist].[values_instance] 
-		  (  instance_guid,   property_guid,   value, transaction_id)
-	select d.instance_guid, d.property_guid, d.value, CURRENT_TRANSACTION_ID()
-	from deleted as d
-		inner join inserted as i 
-			on d.instance_guid = i.instance_guid
-			and d.property_guid = i.property_guid
-	where  (d.value <> i.value) -- only log changes
-		or (d.value is null and i.value is not null)
-		or (d.value is not null and i.value is null)
-
+	if orm_meta.check_context('bypass values instance history') = 0
+	  begin
+		-- Log the changes to history
+		insert into [orm_hist].[values_instance] 
+			  (  instance_guid,   property_guid,   value, transaction_id)
+		select d.instance_guid, d.property_guid, d.value, CURRENT_TRANSACTION_ID()
+		from deleted as d
+			inner join inserted as i 
+				on d.instance_guid = i.instance_guid
+				and d.property_guid = i.property_guid
+			inner join [orm_meta].[properties] as p 
+				on i.property_guid = p.property_guid
+		where  ((d.value <> i.value) -- only log changes
+			 or (d.value is null and i.value is not null)
+			 or (d.value is not null and i.value is null)
+			 ) and p.no_history = 0
+	  end
 end
 go
 
