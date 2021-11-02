@@ -29,7 +29,7 @@ begin
 				where t.template_guid is null)) 
 		begin
 			rollback transaction
-			raiserror('Can not insert property due to invalid template_guid.', 16, 5)
+			raiserror('Can not insert property due to invalid template_guid. (in properties_insert trigger)', 16, 5)
 			return
 		end
 
@@ -40,7 +40,7 @@ begin
 				where t.template_guid is null)) 
 		begin
 			rollback transaction
-			raiserror('Can not insert property due to invalid datatype template_guid.', 16, 6)
+			raiserror('Can not insert property due to invalid datatype template_guid. (in properties_insert trigger)', 16, 6)
 			return
 		end
 
@@ -52,7 +52,7 @@ begin
 						and i.name = p.name))
 		begin
 			rollback transaction	
-			raiserror('Can not insert duplicate property.', 16, 1)
+			raiserror('Can not insert duplicate property. (in properties_insert trigger)', 16, 1)
 			return
 		end
 
@@ -261,10 +261,10 @@ begin
 				where t.template_guid is null)) 
 		begin
 			rollback transaction	
-			raiserror('Can not insert property due to invalid template_guid.', 16, 5)
+			raiserror('Can not insert property due to invalid template_guid. (in properties_update trigger)', 16, 5)
 			return
 		end	
-		
+	
 	if (exists(	select i.datatype_guid
 				from [orm_meta].[templates] as t
 					right join inserted as i
@@ -272,12 +272,14 @@ begin
 				where t.template_guid is null)) 
 		begin
 			rollback transaction	
-			raiserror('Can not insert property due to invalid data template_guid.', 16, 6)	
+			raiserror('Can not insert property due to invalid data template_guid. (in properties_update trigger)', 16, 6)	
 			return
 		end	
 		
 	-- Check that no property inserted already exists.
 	-- (and make sure we're not merely double counting one that is merely changing )
+	-- TODO:
+	-- Allow the property_guid to be updatable
 	if (exists(	select i.property_guid
 				from inserted as i
 					inner join [orm_meta].[properties] as p
@@ -289,7 +291,7 @@ begin
 												and d.name = i.name )	))
 		begin
 			rollback transaction		
-			raiserror('Can not insert duplicate property.', 16, 1)
+			raiserror('Can not insert duplicate property. (in properties_update trigger)', 16, 1)
 			return
 		end	
 

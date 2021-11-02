@@ -74,3 +74,34 @@ begin
 end
 go
 
+
+
+if object_id('[orm_meta].[find_instance_guid]', 'FN') is not null
+	drop function [orm_meta].[find_instance_guid]
+go
+
+
+create function [orm_meta].[find_instance_guid]
+(	
+	@template_name varchar(250)
+, 	@instance_name varchar(250)
+,	@direction int = 0
+)
+returns uniqueidentifier 
+AS
+begin
+	return (
+		select top 1 
+			i.instance_guid --, st.echelon
+		from [orm_meta].[templates] as t
+			cross apply orm_meta.template_tree(t.template_guid) as st
+			inner join orm_meta.instances as i
+				on st.template_guid = i.template_guid
+		where i.name = @instance_name
+			and t.name = @template_name
+			and (  (@direction = 0 and st.echelon = 0)
+				or (@direction <> 0 and st.echelon * @direction >= 0))
+		order by st.echelon * @direction desc
+	)
+end
+go

@@ -58,7 +58,11 @@ commit transaction cascaded_property_delete
 end try
 begin catch
     declare @error_message nvarchar(max), @error_severity int, @error_state int
-    select @error_message = ERROR_MESSAGE() + ' Line ' + cast(ERROR_LINE() as nvarchar(5)), @error_severity = ERROR_SEVERITY(), @error_state = ERROR_STATE()
+    select  @error_message = ERROR_MESSAGE() 
+			+ ' Found in ' + ERROR_PROCEDURE() 
+			+ ' at Line ' + cast(ERROR_LINE() as nvarchar(5))
+		,	@error_severity = ERROR_SEVERITY()
+		,	@error_state = ERROR_STATE()
     rollback transaction
     raiserror (@error_message, @error_severity, @error_state)
 end catch

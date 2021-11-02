@@ -17,7 +17,9 @@ RETURN
 (
 	with included_templates as
 	(
-		select @template_guid as template_guid, 0 as echelon
+		select t.template_guid, 0 as echelon
+		from orm_meta.templates as t
+		where t.template_guid = @template_guid
 
 		union all
 
@@ -26,7 +28,7 @@ RETURN
 			inner join [orm_meta].[inheritance] as i
 				on it.template_guid = i.parent_template_guid
 	)
-	select template_guid, echelon
+	select distinct template_guid, echelon
 	from included_templates
 )
 GO
@@ -46,7 +48,9 @@ RETURN
 (
 	with included_templates as
 	(
-		select @template_guid as template_guid, 0 as echelon
+		select t.template_guid, 0 as echelon
+		from orm_meta.templates as t
+		where t.template_guid = @template_guid
 
 		union all
 
@@ -55,7 +59,7 @@ RETURN
 			inner join [orm_meta].[inheritance] as i
 				on it.template_guid = i.child_template_guid
 	)
-	select template_guid, echelon
+	select distinct template_guid, echelon
 	from included_templates
 )
 GO

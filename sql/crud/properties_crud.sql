@@ -83,3 +83,33 @@ begin
 
 end 
 go
+
+
+
+IF OBJECT_ID('[orm].[property_info]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].[property_info]
+go
+
+create procedure [orm].[property_info]
+	@template_name varchar(250)
+,	@property_name varchar(250)
+as
+begin
+	set nocount on;
+	
+    select t.name as template
+        ,  p.name as property
+        ,  d.name as datatype
+        ,  t.template_guid
+        ,  p.property_guid
+        ,  p.datatype_guid
+    from orm_meta.templates as t
+        inner join orm_meta.properties as p
+            on t.template_guid = p.template_guid
+        inner join orm_meta.templates as d
+            on d.template_guid = p.datatype_guid
+	where t.name = @template_name
+	  and p.name = @property_name
+	  
+end
+go

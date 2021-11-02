@@ -337,29 +337,29 @@ begin transaction -- We'll want to make this a transaction to prevent errors fro
 	begin
 		exec [orm_meta].[value_change_string]	@instance_guid, @property_guid, @value
 	end
-
+	else
 	if	@datatype_guid = 0x00000000000000000000000000000002 -- bigint
 	begin
 		declare @bigint_value bigint
 			if not @value is null set @bigint_value = convert(bigint, @value)
 		exec [orm_meta].[value_change_integer]	@instance_guid, @property_guid, @bigint_value
 	end
-	
+	else
 	if	@datatype_guid = 0x00000000000000000000000000000003 -- decimal(19,8)
 	begin
 		declare @decimal_value decimal(19,8)
 			if not @value is null set @decimal_value = convert(decimal(19,8), @value)
 		exec [orm_meta].[value_change_decimal] @instance_guid, @property_guid, @decimal_value
 	end
-
+	else
 	if	@datatype_guid = 0x00000000000000000000000000000004 -- datetime
 	begin
 		declare @datetime_value datetimeoffset(7)
 			if not @value is null set @datetime_value = convert(datetimeoffset(7), @value, 121) -- ODBC canonical
 		exec [orm_meta].[value_change_datetime] @instance_guid, @property_guid, @datetime_value
 	end
-
-	if @datatype_guid > 0x00000000000000000000000000000004	-- instance
+	else
+--	if @datatype_guid > 0x00000000000000000000000000000004	-- instance
 	begin
 		-- Instances are a bit special, and while they're a string like @value, we want to cast it first.
 		-- That way, if the cast truncates, we can raise an error instead of blindly contaminating
@@ -398,7 +398,11 @@ begin transaction -- We'll want to make this a transaction to prevent errors fro
 end try
 begin catch
     declare @error_message nvarchar(max), @error_severity int, @error_state int
-    select @error_message = ERROR_MESSAGE() + ' Line ' + cast(ERROR_LINE() as nvarchar(5)), @error_severity = ERROR_SEVERITY(), @error_state = ERROR_STATE()
+    select  @error_message = ERROR_MESSAGE() 
+			+ ' Found in ' + ERROR_PROCEDURE() 
+			+ ' at Line ' + cast(ERROR_LINE() as nvarchar(5))
+		,	@error_severity = ERROR_SEVERITY()
+		,	@error_state = ERROR_STATE()
     rollback transaction
     raiserror (@error_message, @error_severity, @error_state)
 end catch
@@ -509,4 +513,202 @@ begin
 	order by o.name, p.name, v.value
 
 end
+go
+
+
+
+
+IF OBJECT_ID('[orm].[value]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm].[value]
+go
+
+create procedure [orm].[value]
+	@template_name varchar(250)
+,	@instance_name varchar(250)
+,	@property_name varchar(250)
+as
+begin
+	set nocount on;
+
+	declare @template_guid uniqueidentifier
+		,	@instance_guid uniqueidentifier
+		,	@property_guid uniqueidentifier
+		,	@datatype_guid uniqueidentifier
+
+	set @template_guid = (select template_guid from orm_meta.templates where name = @template_name)
+	if @template_guid is null
+		begin
+			raiserror('Template by that name does not exist', 16 ,1)
+			return
+		end
+
+	set @instance_guid = (select top 1 instance_guid 
+						  from orm_meta.instances as i
+							inner join orm_meta.sub_templates(@template_guid) as st
+								on i.template_guid = st.template_guid
+						  where name = @instance_name
+						  order by echelon desc)
+	if @instance_guid is null
+		begin
+			raiserror('Instance by that name does not exist', 16 ,1)
+			return
+		end
+
+	set @template_guid = (select template_guid from orm_meta.instances where instance_guid = @instance_guid)
+
+	set @property_guid = (select property_guid 
+						  from orm_meta.properties 
+						  where template_guid = @template_guid
+						    and name = @property_name)
+	if @property_guid is null
+		begin
+			raiserror('Property by that name does not exist', 16 ,1)
+			return
+		end
+	
+    set @datatype_guid = (select  p.datatype_guid from orm_meta.properties as p where p.property_guid = @property_guid)
+
+	if	@datatype_guid = 0x00000000000000000000000000000001 -- nvarchar(max)
+	begin
+		select v.value
+			,  t.name as template
+			,  i.name as instance
+			,  p.name as property
+			,  d.name as datatype
+			,  t.template_guid
+			,  i.instance_guid
+			,  p.property_guid
+			,  p.datatype_guid
+		from orm_meta.templates as t
+			inner join orm_meta.properties as p
+				on t.template_guid = p.template_guid
+			inner join orm_meta.templates as d
+				on d.template_guid = p.datatype_guid
+			inner join orm_meta.instances as i
+				on t.template_guid = i.template_guid
+			inner join orm_meta.values_string as v
+				on  v.instance_guid = i.instance_guid
+				and v.property_guid = p.property_guid
+		where t.template_guid = @template_guid
+		  and p.property_guid = @property_guid
+		  and i.instance_guid = @instance_guid
+		 
+		return
+	end
+	else
+	if	@datatype_guid = 0x00000000000000000000000000000002 -- bigint
+	begin
+		select v.value
+			,  t.name as template
+			,  i.name as instance
+			,  p.name as property
+			,  d.name as datatype
+			,  t.template_guid
+			,  i.instance_guid
+			,  p.property_guid
+			,  p.datatype_guid
+		from orm_meta.templates as t
+			inner join orm_meta.properties as p
+				on t.template_guid = p.template_guid
+			inner join orm_meta.templates as d
+				on d.template_guid = p.datatype_guid
+			inner join orm_meta.instances as i
+				on t.template_guid = i.template_guid
+			inner join orm_meta.values_integer as v
+				on  v.instance_guid = i.instance_guid
+				and v.property_guid = p.property_guid
+		where t.template_guid = @template_guid
+		  and p.property_guid = @property_guid
+		  and i.instance_guid = @instance_guid
+		 
+		return
+	end
+	else
+	if	@datatype_guid = 0x00000000000000000000000000000003 -- decimal(19,8)
+	begin
+		select v.value
+			,  t.name as template
+			,  i.name as instance
+			,  p.name as property
+			,  d.name as datatype
+			,  t.template_guid
+			,  i.instance_guid
+			,  p.property_guid
+			,  p.datatype_guid
+		from orm_meta.templates as t
+			inner join orm_meta.properties as p
+				on t.template_guid = p.template_guid
+			inner join orm_meta.templates as d
+				on d.template_guid = p.datatype_guid
+			inner join orm_meta.instances as i
+				on t.template_guid = i.template_guid
+			inner join orm_meta.values_decimal as v
+				on  v.instance_guid = i.instance_guid
+				and v.property_guid = p.property_guid
+		where t.template_guid = @template_guid
+		  and p.property_guid = @property_guid
+		  and i.instance_guid = @instance_guid
+		 
+		return
+	end
+	else
+	if	@datatype_guid = 0x00000000000000000000000000000004 -- datetime
+	begin
+		select v.value
+			,  t.name as template
+			,  i.name as instance
+			,  p.name as property
+			,  d.name as datatype
+			,  t.template_guid
+			,  i.instance_guid
+			,  p.property_guid
+			,  p.datatype_guid
+		from orm_meta.templates as t
+			inner join orm_meta.properties as p
+				on t.template_guid = p.template_guid
+			inner join orm_meta.templates as d
+				on d.template_guid = p.datatype_guid
+			inner join orm_meta.instances as i
+				on t.template_guid = i.template_guid
+			inner join orm_meta.values_datetime as v
+				on  v.instance_guid = i.instance_guid
+				and v.property_guid = p.property_guid
+		where t.template_guid = @template_guid
+		  and p.property_guid = @property_guid
+		  and i.instance_guid = @instance_guid
+		 
+		return
+	end
+	else
+--	if @datatype_guid > 0x00000000000000000000000000000004	-- instance
+	begin
+		select vi.name as value
+			,  t.name as template
+			,  i.name as instance
+			,  p.name as property
+			,  d.name as datatype
+			,  t.template_guid
+			,  i.instance_guid
+			,  p.property_guid
+			,  p.datatype_guid
+		from orm_meta.templates as t
+			inner join orm_meta.properties as p
+				on t.template_guid = p.template_guid
+			inner join orm_meta.templates as d
+				on d.template_guid = p.datatype_guid
+			inner join orm_meta.instances as i
+				on t.template_guid = i.template_guid
+			inner join orm_meta.values_instance as v
+				on  v.instance_guid = i.instance_guid
+				and v.property_guid = p.property_guid
+			inner join orm_meta.instances as vi
+				on v.value = vi.instance_guid
+		where t.template_guid = @template_guid
+		  and p.property_guid = @property_guid
+		  and i.instance_guid = @instance_guid
+		 
+		return
+	end
+end
+
 go

@@ -50,7 +50,7 @@ return
 	)
 	select	rh.value 
 		,	rh.beginning
-		,	dateadd(ns, -100, rh.ending) as ending
+		,	dateadd(mcs, -1, rh.ending) as ending
 	from raw_history as rh
 	where	rh.ending > @beginning
 		and rh.beginning < @ending
@@ -116,7 +116,7 @@ return
 	)
 	select	rh.value 
 		,	rh.beginning
-		,	dateadd(ns, -100, rh.ending) as ending
+		,	dateadd(mcs, -1, rh.ending) as ending
 	from raw_history as rh
 	where	rh.ending > @beginning
 		and rh.beginning < @ending
@@ -182,7 +182,7 @@ return
 	)
 	select	rh.value 
 		,	rh.beginning
-		,	dateadd(ns, -100, rh.ending) as ending
+		,	dateadd(mcs, -1, rh.ending) as ending
 	from raw_history as rh
 	where	rh.ending > @beginning
 		and rh.beginning < @ending
@@ -248,7 +248,7 @@ return
 	)
 	select	rh.value 
 		,	rh.beginning
-		,	dateadd(ns, -100, rh.ending) as ending
+		,	dateadd(mcs, -1, rh.ending) as ending
 	from raw_history as rh
 	where	rh.ending > @beginning
 		and rh.beginning < @ending
@@ -314,7 +314,7 @@ return
 	)
 	select	rh.value 
 		,	rh.beginning
-		,	dateadd(ns, -100, rh.ending) as ending
+		,	dateadd(mcs, -1, rh.ending) as ending
 	from raw_history as rh
 	where	rh.ending > @beginning
 		and rh.beginning < @ending
