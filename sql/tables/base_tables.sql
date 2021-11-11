@@ -86,7 +86,6 @@ create table [orm_meta].[instances]
 ,	constraint fk__orm_meta_instances__template 
 		  foreign key (template_guid) 
 		  references [orm_meta].[templates] (template_guid) 
-		  on delete cascade
 ,	constraint uq__orm_meta_instances__template_guid_name 
 		  unique nonclustered (template_guid, name)
 )

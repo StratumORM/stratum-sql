@@ -253,17 +253,17 @@ begin
 			on m.masked_template_guid = d.template_guid 
 	where isnull(m.masked_is_extended,0) = 0
 
-	-- first delete the properties ... (which will cascade deletes to the values)
-	delete p
-	from [orm_meta].[properties] as p 
-		inner join @deleted as d 
-			on p.template_guid = d.template_guid 
-
-	-- then delete the instances ...
+	-- first delete the instances ...(which manually cascade deletes to the values)
 	delete o
 	from [orm_meta].[instances] as o 
 		inner join @deleted as d 
 			on o.template_guid = d.template_guid
+
+	-- then delete the properties ... 
+	delete p
+	from [orm_meta].[properties] as p 
+		inner join @deleted as d 
+			on p.template_guid = d.template_guid 
 
 	-- and update the children to inherit from the template's parents, if any
 	declare @my_ordinal_insert table (my_guid uniqueidentifier, my_offset int)

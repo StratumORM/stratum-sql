@@ -97,21 +97,28 @@ go
 
 create trigger [orm_meta].[instances_delete]
 	on [orm_meta].[instances]
-	after delete
+	instead of delete
 as 
 begin
 	set nocount on;
 
+	declare @deleted_instances identities
 
+	insert into @deleted_instances (guid)
+	select instance_guid
+	from deleted as d
+		
+	-- First, to maintain FKs,
+	--   cascade delete values for the removed instances
+	exec [orm_meta].[cascade_delete_instance] @deleted_instances
 
-
-/*
-	-- Perform the delete
+	-- _then_ delete the instance (pillage first, then burn)
 	delete o 
 	from [orm_meta].[instances] as o
 		inner join deleted as d
 			on o.instance_guid = d.instance_guid
-*/
+
+
 	-- Log the changes to history
 	insert into [orm_hist].[instances] 
 		  (instance_id, instance_guid, template_guid, name, signature, transaction_id)

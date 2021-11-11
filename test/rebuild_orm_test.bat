@@ -96,8 +96,8 @@ ECHO --- gen template view tall
 ECHO --- gen template view listing
 %SQL_COMMAND%\meta_sprocs\generate_view_listing.sql >> %LOGFILE%
 
-ECHO --- cascade delete for properties
-%SQL_COMMAND%\meta_sprocs\cascade_delete_properties.sql >> %LOGFILE%
+ECHO --- cascade deletes for values
+%SQL_COMMAND%\meta_sprocs\value_cascade_delete.sql >> %LOGFILE%
 
 ECHO --- column bitmask decoding
 %SQL_COMMAND%\functions\decode_updated_columns_bitmask.sql >> %LOGFILE%

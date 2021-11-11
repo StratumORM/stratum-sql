@@ -694,8 +694,8 @@ begin
 
 	declare @template_guids identities
 		,	@deleted_properties identities
+	
 	insert into @template_guids
-
 	select distinct
 		tree.template_guid
 	from deleted as d
@@ -715,15 +715,22 @@ begin
 			inner join involved_properties as p
 				on d.property_guid = p.masked_property_guid	-- Delete the rows and anything they mask.
 				or d.property_guid = p.current_property_guid	-- If it's behaving like a mask, the masked property ID is already
-	)													-- the top-most one.
-	delete p
-	output deleted.property_guid into @deleted_properties -- deleted is scoped to THIS statement!		
+	)
+	insert into @deleted_properties (guid)
+	select u.property_guid
 	from [orm_meta].[properties] as p 
 		inner join uncovered as u
 			on p.property_guid = u.property_guid
 
-	-- Cascade delete the removed properties
+	-- First, to maintain FKs,
+	--   cascade delete values for the removed instances
 	exec [orm_meta].[cascade_delete_property] @deleted_properties
+
+	-- _then_ delete the properties										-- the top-most one.
+	delete p
+	from [orm_meta].[properties] as p
+		inner join @deleted_properties as dp
+			on p.property_guid = dp.guid
 
 	-- Finally, loop over all the template_guids that were affected by the insert/delete
 	declare @template_guid uniqueidentifier

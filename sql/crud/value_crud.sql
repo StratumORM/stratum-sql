@@ -321,6 +321,7 @@ begin try
 begin transaction -- We'll want to make this a transaction to prevent errors from breaking the update
 	set nocount on;
 
+	declare @message nvarchar(1000)
 	declare @template_guid uniqueidentifier
 		, 	@instance_guid uniqueidentifier
 		, 	@property_guid uniqueidentifier
@@ -329,6 +330,30 @@ begin transaction -- We'll want to make this a transaction to prevent errors fro
 		set @instance_guid = (select instance_guid from [orm_meta].[instances]  where name = @instance_name and template_guid = @template_guid )
 		set @property_guid = (select property_guid from [orm_meta].[properties] where name = @property_name and template_guid = @template_guid )
 		set @datatype_guid = (select datatype_guid from [orm_meta].[properties] where property_guid = @property_guid)
+
+	if @template_guid is null
+		begin
+			set @message = concat('Template does not exist: ', @template_name)
+			rollback transaction		
+			raiserror(@message, 16, 1)
+			return
+		end
+
+	if @instance_guid is null
+		begin
+			set @message = concat('Instance does not exist: ', @instance_name)
+			rollback transaction		
+			raiserror(@message, 16, 1)
+			return
+		end
+
+	if @property_guid is null
+		begin
+			set @message = concat('Property ', @property_name, ' does not exist on the template ', @template_name)
+			rollback transaction		
+			raiserror(@message, 16, 1)
+			return
+		end
 
 	-- As this switch structure is traversed, we'll only want to cast the value if it's NOT null
 	-- If it is NULL, that can count as the hint to delete that value.
@@ -385,8 +410,9 @@ begin transaction -- We'll want to make this a transaction to prevent errors fro
 
 		if @value_guid is null
 			begin
+				set @message = concat('The instance value "', @value, '" is neither a UUID nor resolvable given the template property type of "', @template_name, '.', @property_name, '".')
 				rollback transaction
-				raiserror('Given instance value is neither a uniqueidentifier nor locally resolvable from the given template type of the property', 16, 1)
+				raiserror(@message, 16, 1)
 				return
 			end
 

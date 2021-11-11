@@ -30,11 +30,9 @@ create table [orm_meta].[values_string]
 ,	constraint fk__orm_meta_values_string__instance 
 		  foreign key (instance_guid) 
 		  references [orm_meta].[instances] (instance_guid) 
-		  on delete cascade
 ,	constraint fk__orm_meta_values_string__property 
 		  foreign key (property_guid) 
 		  references [orm_meta].[properties] (property_guid) 
-		  on delete cascade
 )
 go
 
@@ -55,11 +53,9 @@ create table [orm_meta].[values_integer]
 ,	constraint fk__orm_meta_values_integer__instance 
 		  foreign key (instance_guid) 
 		  references [orm_meta].[instances] (instance_guid) 
-		  on delete cascade
 ,	constraint fk__orm_meta_values_integer__property 
 		  foreign key (property_guid) 
 		  references [orm_meta].[properties] (property_guid) 
-		  on delete cascade
 )
 go
 
@@ -80,11 +76,9 @@ create table [orm_meta].[values_decimal]
 ,	constraint fk__orm_meta_values_decimal__instance 
 		  foreign key (instance_guid) 
 		  references [orm_meta].[instances] (instance_guid) 
-		  on delete cascade
 ,	constraint fk__orm_meta_values_decimal__property 
 		  foreign key (property_guid) 
 		  references [orm_meta].[properties] (property_guid) 
-		  on delete cascade
 )
 go
 
@@ -105,11 +99,9 @@ create table [orm_meta].[values_datetime]
 ,	constraint fk__orm_meta_values_datetime__instance 
 		  foreign key (instance_guid) 
 		  references [orm_meta].[instances] (instance_guid) 
-		  on delete cascade
 ,	constraint fk__orm_meta_values_datetime__property 
 		  foreign key (property_guid) 
 		  references [orm_meta].[properties] (property_guid) 
-		  on delete cascade
 )
 go
 
@@ -130,10 +122,16 @@ create table [orm_meta].[values_instance]
 ,	constraint fk__orm_meta_values_instances__instance 
 		  foreign key (instance_guid) 
 		  references [orm_meta].[instances] (instance_guid) 
-		  on delete cascade
 ,	constraint fk__orm_meta_values_instances__property 
 		  foreign key (property_guid) 
 		  references [orm_meta].[properties] (property_guid) 
-		  on delete cascade
 )
+
+-- -- Instances may be a bit exceptional, breaking the rule
+-- --   that values are not indexed. For referential
+-- --   integrity reasons we may want to make sure values
+-- --   can be found (say, for instance deletes)
+-- create index ix__orm_meta_values_instance__value_guids
+--           on [orm_meta].[values_instance] (value)
+
 go
