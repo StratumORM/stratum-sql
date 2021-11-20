@@ -16,7 +16,10 @@ create procedure [orm_meta].[value_change_string]
 ,	@value nvarchar(max) = null
 as
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	merge into [orm_meta].[values_string] as d
 	using ( select	@instance_guid as instance_guid
@@ -34,8 +37,16 @@ begin
 	when matched and @value is not null then
 		update set d.value = @value
 	;
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
+
 
 create procedure [orm].[value_change_string]
 	@template_name varchar(250)
@@ -44,7 +55,10 @@ create procedure [orm].[value_change_string]
 ,	@value nvarchar(max) = null
 as
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 	
 	declare @template_guid uniqueidentifier
 		, 	@instance_guid uniqueidentifier
@@ -54,8 +68,16 @@ begin
 		set @property_guid = (select property_guid from [orm_meta].[properties] where name = @property_name and template_guid = @template_guid )
 
 	exec [orm_meta].[value_change_string] @instance_guid, @property_guid, @value
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
+
 
 
 IF OBJECT_ID('[orm].[value_change_integer]', 'P') IS NOT NULL
@@ -72,7 +94,10 @@ create procedure [orm_meta].[value_change_integer]
 ,	@value bigint = null
 as
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	merge into [orm_meta].[values_integer] as d
 	using ( select	@instance_guid as instance_guid
@@ -90,8 +115,16 @@ begin
 	when matched and not @value is null then
 		update set d.value = @value
 	;
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
+
 
 create procedure [orm].[value_change_integer]
 	@template_name varchar(250)
@@ -100,7 +133,10 @@ create procedure [orm].[value_change_integer]
 ,	@value bigint = null
 as
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 	
 	declare @template_guid uniqueidentifier
 		, 	@instance_guid uniqueidentifier
@@ -110,6 +146,13 @@ begin
 		set @property_guid = (select property_guid from [orm_meta].[properties] where name = @property_name and template_guid = @template_guid )
 
 	exec [orm_meta].[value_change_integer] @instance_guid, @property_guid, @value
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
 
@@ -122,13 +165,17 @@ IF OBJECT_ID('[orm_meta].[value_change_decimal]', 'P') IS NOT NULL
 	DROP PROCEDURE [orm_meta].[value_change_decimal]
 go
 
+
 create procedure [orm_meta].[value_change_decimal]
 	@instance_guid uniqueidentifier
 ,	@property_guid uniqueidentifier
 ,	@value decimal(19,8) = null
 as
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	merge into [orm_meta].[values_decimal] as d
 	using ( select	@instance_guid as instance_guid
@@ -146,8 +193,16 @@ begin
 	when matched and not @value is null then
 		update set d.value = @value
 	;
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
+
 
 create procedure [orm].[value_change_decimal]
 	@template_name varchar(250)
@@ -156,7 +211,10 @@ create procedure [orm].[value_change_decimal]
 ,	@value decimal(19,8) = null
 as
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 	
 	declare @template_guid uniqueidentifier
 		, 	@instance_guid uniqueidentifier
@@ -166,8 +224,16 @@ begin
 		set @property_guid = (select property_guid from [orm_meta].[properties] where name = @property_name and template_guid = @template_guid )
 
 	exec [orm_meta].[value_change_decimal] @instance_guid, @property_guid, @value
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
+
 
 
 IF OBJECT_ID('[orm].[value_change_datetime]', 'P') IS NOT NULL
@@ -178,13 +244,17 @@ IF OBJECT_ID('[orm_meta].[value_change_datetime]', 'P') IS NOT NULL
 	DROP PROCEDURE [orm_meta].[value_change_datetime]
 go
 
+
 create procedure [orm_meta].[value_change_datetime]
 	@instance_guid uniqueidentifier
 ,	@property_guid uniqueidentifier
 ,	@value datetimeoffset(7) = null
 as
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	merge into [orm_meta].[values_datetime] as d
 	using ( select	@instance_guid as instance_guid
@@ -202,8 +272,16 @@ begin
 	when matched and not @value is null then
 		update set d.value = @value
 	;
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
+
 
 create procedure [orm].[value_change_datetime]
 	@template_name varchar(250)
@@ -212,7 +290,10 @@ create procedure [orm].[value_change_datetime]
 ,	@value datetimeoffset(7) = null
 as
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 	
 	declare @template_guid uniqueidentifier
 		, 	@instance_guid uniqueidentifier
@@ -222,8 +303,16 @@ begin
 		set @property_guid = (select property_guid from [orm_meta].[properties] where name = @property_name and template_guid = @template_guid )
 
 	exec [orm_meta].[value_change_datetime] @instance_guid, @property_guid, @value
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
+
 
 
 IF OBJECT_ID('[orm].[value_change_instance]', 'P') IS NOT NULL
@@ -240,7 +329,10 @@ create procedure [orm_meta].[value_change_instance]
 ,	@value uniqueidentifier = null
 as
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	merge into [orm_meta].[values_instance] as d
 	using ( select	@instance_guid as instance_guid
@@ -259,8 +351,15 @@ begin
 		update set d.value = @value
 	;
 
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
+
 
 create procedure [orm].[value_change_instance]
 	@template_name varchar(250)
@@ -269,7 +368,10 @@ create procedure [orm].[value_change_instance]
 ,	@value varchar(250) = null
 as
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 	
 	declare @template_guid uniqueidentifier
 		, 	@instance_guid uniqueidentifier
@@ -296,13 +398,19 @@ begin
 
 	if @value_guid is null
 		begin
-			rollback transaction
-			raiserror('Given instance value is neither a uniqueidentifier nor locally resolvable from the given template type of the property', 16, 1)
-			return
+			;throw 51000, 'Given instance value is neither a uniqueidentifier nor locally resolvable from the given template type of the property', 1;
 		end
 
 	exec [orm_meta].[value_change_instance] @instance_guid, @property_guid, @value_guid
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
+
 go
 
 
@@ -319,7 +427,8 @@ as
 begin
 begin try
 begin transaction -- We'll want to make this a transaction to prevent errors from breaking the update
-	set nocount on;
+
+  set nocount on; set xact_abort on;
 
 	declare @message nvarchar(1000)
 	declare @template_guid uniqueidentifier
@@ -334,25 +443,19 @@ begin transaction -- We'll want to make this a transaction to prevent errors fro
 	if @template_guid is null
 		begin
 			set @message = concat('Template does not exist: ', @template_name)
-			rollback transaction		
-			raiserror(@message, 16, 1)
-			return
+			;throw 51000, @message, 1;
 		end
 
 	if @instance_guid is null
 		begin
 			set @message = concat('Instance does not exist: ', @instance_name)
-			rollback transaction		
-			raiserror(@message, 16, 1)
-			return
+			;throw 51000, @message, 1;
 		end
 
 	if @property_guid is null
 		begin
 			set @message = concat('Property ', @property_name, ' does not exist on the template ', @template_name)
-			rollback transaction		
-			raiserror(@message, 16, 1)
-			return
+			;throw 51000, @message, 1;
 		end
 
 	-- As this switch structure is traversed, we'll only want to cast the value if it's NOT null
@@ -389,8 +492,13 @@ begin transaction -- We'll want to make this a transaction to prevent errors fro
 		-- Instances are a bit special, and while they're a string like @value, we want to cast it first.
 		-- That way, if the cast truncates, we can raise an error instead of blindly contaminating
 		declare @instance_value varchar(250)
-			if not @value is null set @instance_value = convert(varchar(250), @value)
-		if @instance_value <> @value raiserror('Instance name truncated. Aborting setting value. Be sure to keep names under 250 characters.', 16,1)
+			if not @value is null 
+				set @instance_value = convert(varchar(250), @value)
+				
+		if @instance_value <> @value 
+			begin
+				;throw 51000, 'Instance name truncated. Aborting setting value. Be sure to keep names under 250 characters.', 1;
+			end
 
 		declare @value_guid uniqueidentifier
 		set @value_guid = TRY_CAST(@instance_value as uniqueidentifier)
@@ -411,26 +519,17 @@ begin transaction -- We'll want to make this a transaction to prevent errors fro
 		if @value_guid is null
 			begin
 				set @message = concat('The instance value "', @value, '" is neither a UUID nor resolvable given the template property type of "', @template_name, '.', @property_name, '".')
-				rollback transaction
-				raiserror(@message, 16, 1)
-				return
+				;throw 51000, @message, 1;
 			end
 
 		exec [orm_meta].[value_change_instance] @instance_guid, @property_guid, @value_guid
 	end
 
-	commit transaction
-	
+  commit transaction
+
 end try
 begin catch
-    declare @error_message nvarchar(max), @error_severity int, @error_state int
-    select  @error_message = ERROR_MESSAGE() 
-			+ ' Found in ' + ERROR_PROCEDURE() 
-			+ ' at Line ' + cast(ERROR_LINE() as nvarchar(5))
-		,	@error_severity = ERROR_SEVERITY()
-		,	@error_state = ERROR_STATE()
-    rollback transaction
-    raiserror (@error_message, @error_severity, @error_state)
+	exec [orm_meta].[handle_error] @@PROCID
 end catch
 end
 go
@@ -554,18 +653,23 @@ create procedure [orm].[value]
 ,	@property_name varchar(250)
 as
 begin
-	set nocount on;
+begin try
+begin transaction
 
+  set nocount on; set xact_abort on;
+
+	declare @message nvarchar(1000)
 	declare @template_guid uniqueidentifier
 		,	@instance_guid uniqueidentifier
 		,	@property_guid uniqueidentifier
 		,	@datatype_guid uniqueidentifier
 
 	set @template_guid = (select template_guid from orm_meta.templates where name = @template_name)
+	
 	if @template_guid is null
 		begin
-			raiserror('Template by that name does not exist', 16 ,1)
-			return
+			set @message = concat('Template does not exist: ', @template_guid)
+			;throw 51000, @message, 1;
 		end
 
 	set @instance_guid = (select top 1 instance_guid 
@@ -574,10 +678,11 @@ begin
 								on i.template_guid = st.template_guid
 						  where name = @instance_name
 						  order by echelon desc)
+
 	if @instance_guid is null
 		begin
-			raiserror('Instance by that name does not exist', 16 ,1)
-			return
+			set @message = concat('Instance does not exist: ', @instance_guid)
+			;throw 51000, @message, 1;
 		end
 
 	set @template_guid = (select template_guid from orm_meta.instances where instance_guid = @instance_guid)
@@ -586,13 +691,21 @@ begin
 						  from orm_meta.properties 
 						  where template_guid = @template_guid
 						    and name = @property_name)
+
 	if @property_guid is null
 		begin
-			raiserror('Property by that name does not exist', 16 ,1)
-			return
+			set @message = concat('Property does not exist: ', @property_guid)
+			;throw 51000, @message, 1;
 		end
-	
+
     set @datatype_guid = (select  p.datatype_guid from orm_meta.properties as p where p.property_guid = @property_guid)
+
+	if @datatype_guid is null
+		begin
+			set @message = concat('Datatype does not exist: ', @datatype_guid)
+			;throw 51000, @message, 1;
+		end
+
 
 	if	@datatype_guid = 0x00000000000000000000000000000001 -- nvarchar(max)
 	begin
@@ -735,6 +848,13 @@ begin
 		 
 		return
 	end
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 
 go

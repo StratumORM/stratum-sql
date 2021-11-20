@@ -6,12 +6,16 @@ if object_id('[orm_meta].[inheritance_insert]', 'TR')  is not null
 	drop trigger [orm_meta].[inheritance_insert]
 go
 
+
 create trigger [orm_meta].[inheritance_insert]
 	on [orm_meta].[inheritance]
 	instead of insert
 as 
 begin
-	set nocount on;
+begin try
+begin transaction
+
+	set nocount on; set xact_abort on;
 
 	-- First, bail on any grandfather paradoxes.
 	-- Make sure not to exclude mere ordinal changes
@@ -27,9 +31,7 @@ begin
 											on d.parent_template_guid = i.parent_template_guid
 											and d.child_template_guid = i.child_template_guid)))
 		begin
-			rollback transaction	
-			raiserror('Insert will cause a recursive loop in inheritance (no grandfather paradoxes, please).', 16, 1)
-			return
+			;throw 51000, 'Insert will cause a recursive loop in inheritance (no grandfather paradoxes, please).', 1;
 		end
 
 	-- Ordinals are not allowed to get to 32000, since that's where self-reference goes
@@ -37,9 +39,7 @@ begin
 				from inserted as i
 				where i.ordinal >= 32000	))
 		begin
-			rollback transaction
-			raiserror('Ordinal can not be greater than 32000 (internally the template represents itself as that for masking purposes).', 16, 1)
-			return
+			;throw 51000, 'Ordinal can not be greater than 32000 (internally the template represents itself as that for masking purposes)', 1;
 		end
 
 	-- If that passes, perform the insert...
@@ -55,27 +55,38 @@ begin
 			on p.template_guid = i.child_template_guid
 			or p.template_guid = i.parent_template_guid
 
-
 	-- Log the end of missing entry to history
 	insert into [orm_hist].[inheritance] 
 		  (parent_template_guid, child_template_guid, ordinal, transaction_id)
 	select parent_template_guid, child_template_guid,    null, CURRENT_TRANSACTION_ID()
 	from inserted
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
+
 
 
 if object_id('[orm_meta].[inheritance_update]', 'TR')  is not null
 	drop trigger [orm_meta].[inheritance_update]
 go
 
+
 create trigger [orm_meta].[inheritance_update]
 	on [orm_meta].[inheritance]
 	instead of update
 as 
 begin
-	set nocount on;
-	
+begin try
+begin transaction
+
+	set nocount on; set xact_abort on;
+		
 	-- The update problem is (naturally) a composite of the insert and delete problems.
 	-- For inheritance, we need to perform the same validity checks as the insert,
 	--	as well as the uncovering check as the delete.
@@ -96,9 +107,7 @@ begin
 											on d.parent_template_guid = i.parent_template_guid
 											and d.child_template_guid = i.child_template_guid)))
 		begin
-			rollback transaction	
-			raiserror('Insert will cause a recursive loop in inheritance (no grandfather paradoxes, please).', 16, 1)
-			return
+			;throw 51000, 'Insert will cause a recursive loop in inheritance (no grandfather paradoxes, please).', 1;
 		end
 
 	-- Ordinals are not allowed to get to 32000, since that's where self-reference goes
@@ -106,9 +115,7 @@ begin
 				from inserted as i
 				where i.ordinal >= 32000	))
 		begin
-			rollback transaction
-			raiserror('Ordinal can not be greater than 32000 (internally the template represents itself as that for masking purposes).', 16, 1)
-			return
+			;throw 51000, 'Ordinal can not be greater than 32000 (internally the template represents itself as that for masking purposes).', 1;
 		end
 
 	-- Next, check if we've uncovered any properties.
@@ -194,20 +201,31 @@ begin
 	select parent_template_guid, child_template_guid, ordinal, CURRENT_TRANSACTION_ID()
 	from deleted
 
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
+
 
 
 if object_id('[orm_meta].[inheritance_delete]', 'TR')  is not null
 	drop trigger [orm_meta].[inheritance_delete]
 go
 
+
 create trigger [orm_meta].[inheritance_delete]
 	on [orm_meta].[inheritance]
 	instead of delete
 as 
 begin
-	set nocount on;
+begin try
+begin transaction
+
+	set nocount on; set xact_abort on;
 
 	-- In the case of a deletion, we need to determine what properties are not going to be covered. 
 	-- We can detect any relevant covered property as one who has a mask that isn't their own
@@ -268,5 +286,12 @@ begin
 		  (parent_template_guid, child_template_guid, ordinal, transaction_id)
 	select parent_template_guid, child_template_guid, ordinal, CURRENT_TRANSACTION_ID()
 	from deleted
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go

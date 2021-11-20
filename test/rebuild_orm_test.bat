@@ -31,6 +31,10 @@ ECHO Dropping and creating orm_test
 REM Note that this command doesn't connect to the database: that's so we can drop it!
 sqlcmd -S %INSTANCENAME% -r -i ..\sql\create_database_orm_test.sql >> %LOGFILE%
 
+ECHO --- --- --- --- --- ---
+ECHO Error handler sproc...
+%SQL_COMMAND%\meta_sprocs\error_handling.sql >> %LOGFILE%
+
 
 ECHO Building base tables and views...
 ECHO --- base tables

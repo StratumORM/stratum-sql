@@ -7,12 +7,16 @@ if object_id('[orm_meta].[properties_insert]', 'TR')  is not null
 	drop trigger [orm_meta].[properties_insert]
 go
 
+
 create trigger [orm_meta].[properties_insert]
 	on [orm_meta].[properties]
 	instead of insert
 as 
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	declare @template_guids identities
 		insert into @template_guids
@@ -26,22 +30,18 @@ begin
 				from [orm_meta].[templates] as t
 					right join inserted as i
 						on t.template_guid = i.template_guid
-				where t.template_guid is null)) 
+				where t.template_guid is null))
 		begin
-			rollback transaction
-			raiserror('Can not insert property due to invalid template_guid. (in properties_insert trigger)', 16, 5)
-			return
+			;throw 51000, 'Can not insert property due to invalid template_guid. (in properties_insert trigger)', 1;
 		end
 
 	if (exists(	select i.datatype_guid
 				from [orm_meta].[templates] as t
 					right join inserted as i
 						on t.template_guid = i.datatype_guid
-				where t.template_guid is null)) 
+				where t.template_guid is null))
 		begin
-			rollback transaction
-			raiserror('Can not insert property due to invalid datatype template_guid. (in properties_insert trigger)', 16, 6)
-			return
+			;throw 51000, 'Can not insert property due to invalid datatype template_guid. (in properties_insert trigger)', 1;
 		end
 
 	-- Check that no property inserted already exists.
@@ -51,9 +51,7 @@ begin
 						on	i.template_guid = p.template_guid
 						and i.name = p.name))
 		begin
-			rollback transaction	
-			raiserror('Can not insert duplicate property. (in properties_insert trigger)', 16, 1)
-			return
+			;throw 51000, 'Can not insert duplicate property. (in properties_insert trigger)', 1;
 		end
 
 	-- Verify the names are safe
@@ -153,7 +151,9 @@ begin
 				from @masking as m
 				where m.current_datatype_guid <> m.masking_datatype_guid 
 					and m.current_datatype_guid is not null ))
-		raiserror('Adding a new property that conflicts with the datatype of an existing subtemplate''s property is not allowed. Sorry.', 16, 1)
+		begin
+			;throw 51000, 'Adding a new property that conflicts with the datatype of an existing subtemplate''s property is not allowed. Sorry.', 1;
+		end
 
 	-- Merge in the missing properties, inserting any properties that don't already exist
 	--	... but only the ones that *need* to
@@ -203,13 +203,18 @@ begin
 	close template_guid_cursor 
 	deallocate template_guid_cursor
 
-
 	-- Log the end of missing entry to history
 	insert into [orm_hist].[properties] 
 		  (property_id, property_guid, template_guid, name, datatype_guid, is_extended, no_history, signature, transaction_id)
 	select property_id, property_guid,          null, null,          null,        null,       null,      null, CURRENT_TRANSACTION_ID()
 	from inserted
 	
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
 
@@ -219,12 +224,16 @@ if object_id('[orm_meta].[properties_update]', 'TR')  is not null
 	drop trigger [orm_meta].[properties_update]
 go
 
+
 create trigger [orm_meta].[properties_update]
 	on [orm_meta].[properties]
 	instead of update
 as 
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 	
 	declare @inserted table ( property_guid uniqueidentifier
 							, template_guid uniqueidentifier
@@ -260,10 +269,8 @@ begin
 						on t.template_guid = i.template_guid
 				where t.template_guid is null)) 
 		begin
-			rollback transaction	
-			raiserror('Can not insert property due to invalid template_guid. (in properties_update trigger)', 16, 5)
-			return
-		end	
+			;throw 51000, 'Can not insert property due to invalid template_guid. (in properties_update trigger)', 1;
+		end
 	
 	if (exists(	select i.datatype_guid
 				from [orm_meta].[templates] as t
@@ -271,10 +278,8 @@ begin
 						on t.template_guid = i.datatype_guid
 				where t.template_guid is null)) 
 		begin
-			rollback transaction	
-			raiserror('Can not insert property due to invalid data template_guid. (in properties_update trigger)', 16, 6)	
-			return
-		end	
+			;throw 51000, 'Can not insert property due to invalid data template_guid. (in properties_update trigger)', 1;
+		end
 		
 	-- Check that no property inserted already exists.
 	-- (and make sure we're not merely double counting one that is merely changing )
@@ -290,10 +295,8 @@ begin
 											where d.template_guid = i.template_guid
 												and d.name = i.name )	))
 		begin
-			rollback transaction		
-			raiserror('Can not insert duplicate property. (in properties_update trigger)', 16, 1)
-			return
-		end	
+			;throw 51000, 'Can not insert duplicate property. (in properties_update trigger)', 1;
+		end
 
 	-- Verify the names are safe
 	-- if (exists(	select i.property_guid
@@ -677,20 +680,31 @@ begin
 		 or (d.signature is null and i.signature is not null)
 		 or (d.signature is not null and i.signature is null) )
 
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
+
 
 
 if object_id('[orm_meta].[properties_delete]', 'TR')  is not null
 	drop trigger [orm_meta].[properties_delete]
 go
 
+
 create trigger [orm_meta].[properties_delete]
 	on [orm_meta].[properties]
 	instead of delete
 as 
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	declare @template_guids identities
 		,	@deleted_properties identities
@@ -768,5 +782,11 @@ begin
 	select property_id, property_guid, template_guid, name, datatype_guid, is_extended, no_history, signature, CURRENT_TRANSACTION_ID()
 	from deleted
 
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go

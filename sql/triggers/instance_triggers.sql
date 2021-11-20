@@ -7,13 +7,17 @@ if object_id('[orm_meta].[instances_insert]', 'TR')  is not null
 	drop trigger [orm_meta].[instances_insert]
 go
 
+
 create trigger [orm_meta].[instances_insert]
 	on [orm_meta].[instances]
 	instead of insert
 as 
 begin
-	set nocount on;
+begin try
+begin transaction orm_meta_instances_insert
 
+  set nocount on; set xact_abort on;
+	
 	-- Merge it into the instances table
 	set identity_insert [orm_meta].[instances] on; -- merge statement manages id
 
@@ -41,13 +45,18 @@ begin
 
 	set identity_insert [orm_meta].[instances] off;
 
-
 	-- Log the end of missing entry to history
 	insert into [orm_hist].[instances] 
 		  (instance_id, instance_guid, template_guid, name, signature, transaction_id)
 	select instance_id, instance_guid,          null, null,      null, CURRENT_TRANSACTION_ID()
 	from inserted
 
+  commit transaction orm_meta_instances_insert
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID, @tx = 'orm_meta_instances_insert'
+end catch
 end
 go
 
@@ -57,12 +66,16 @@ if object_id('[orm_meta].[instances_update]', 'TR')  is not null
 	drop trigger [orm_meta].[instances_update]
 go
 
+
 create trigger [orm_meta].[instances_update]
 	on [orm_meta].[instances]
 	instead of update
 as 
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	-- Perform the update
 	update o 
@@ -85,6 +98,13 @@ begin
 	   or ( (d.signature <> i.signature) 
 		 or (d.signature is null and i.signature is not null)
 		 or (d.signature is not null and i.signature is null) )
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
 
@@ -95,12 +115,15 @@ if object_id('[orm_meta].[instances_update_delete]', 'TR')  is not null
 	drop trigger [orm_meta].[instances_delete]
 go
 
+
 create trigger [orm_meta].[instances_delete]
 	on [orm_meta].[instances]
 	instead of delete
 as 
 begin
-	set nocount on;
+  set nocount on; set xact_abort on;
+begin try
+begin transaction
 
 	declare @deleted_instances identities
 
@@ -125,5 +148,12 @@ begin
 	select instance_id, instance_guid, template_guid, name, signature, CURRENT_TRANSACTION_ID()
 	from deleted
 
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go

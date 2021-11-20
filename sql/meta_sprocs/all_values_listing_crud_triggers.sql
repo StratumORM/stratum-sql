@@ -11,7 +11,10 @@ create trigger [orm_meta].[view_all_values_listing_delete]
 	instead of delete
 as 
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 	
 	declare @resolved_deleted table 
 	(	template_guid uniqueidentifier not null
@@ -77,6 +80,12 @@ begin
 			and rd.property_guid = omv.property_guid
 	where rd.datatype_guid > 0x00000000000000000000000000000004
 	
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 
 
@@ -91,7 +100,10 @@ create trigger [orm_meta].[view_all_values_listing_update]
 	instead of update
 as 
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	declare @resolved_updated table 
 	(	template_guid uniqueidentifier not null
@@ -179,8 +191,14 @@ begin
 		delete
 	;
 	
+  commit transaction
 
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
+
 
 
 IF OBJECT_ID('[orm_meta].[view_all_values_listing_insert]', 'TR') IS NOT NULL
@@ -193,7 +211,10 @@ create trigger [orm_meta].[view_all_values_listing_insert]
 	instead of insert
 as 
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	declare @resolved_inserted table 
 	(	template_guid uniqueidentifier not null
@@ -315,5 +336,10 @@ begin
 		delete
 	;
 
+  commit transaction
 
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end

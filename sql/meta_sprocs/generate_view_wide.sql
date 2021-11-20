@@ -11,7 +11,10 @@ create procedure [orm_meta].[generate_template_view_wide]
 	@template_guid uniqueidentifier
 as
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	declare @string_columns nvarchar(max)
 		,	@integer_columns nvarchar(max)
@@ -188,5 +191,11 @@ begin
 
 	exec [orm_meta].[generate_template_view_triggers] @template_guid
 
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go

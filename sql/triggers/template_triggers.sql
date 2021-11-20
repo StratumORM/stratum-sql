@@ -12,7 +12,10 @@ create trigger [orm_meta].[templates_insert]
 	instead of insert
 as 
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	-- Make sure the template_name is legal (since this will go into dynamic sql)
 	-- select i.name
@@ -33,10 +36,8 @@ begin
 				on t.name = i.name
 		) is not null
 		begin
-			rollback transaction		
-			raiserror('Template already exists.', 16, 1)
-			return
-		end	
+			;throw 51000, 'Template already exists.', 1;
+		end
 
 	-- Now insert it into the templates table
 	set identity_insert [orm_meta].[templates] on -- merge statement manages id
@@ -101,20 +102,31 @@ begin
 	select template_id, template_guid, null,         null,      null, CURRENT_TRANSACTION_ID()
 	from inserted
 
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
+
 
 
 if object_id('[orm_meta].[templates_update]', 'TR')  is not null
 	drop trigger [orm_meta].[templates_update]
 go
 
+
 create trigger [orm_meta].[templates_update]
 	on [orm_meta].[templates]
 	instead of update
 as 
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	-- Make sure the template_name is legal (since this will go into dynamic sql)
 	-- select i.name
@@ -190,20 +202,32 @@ begin
 	   or ( (d.signature <> i.signature) 
 		 or (d.signature is null and i.signature is not null)
 		 or (d.signature is not null and i.signature is null) )
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
+
 
 
 if object_id('[orm_meta].[templates_delete]', 'TR')  is not null
 	drop trigger [orm_meta].[templates_delete]
 go
 
+
 create trigger [orm_meta].[templates_delete]
 	on [orm_meta].[templates]
 	instead of delete
 as 
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	-- We need to make sure that the base templates are never deleted. So we'll mask the special
 	--	deleted table like the properties trigger manipulates them
@@ -216,7 +240,10 @@ begin
 		select template_guid, name, signature
 		from deleted
 
-		if (select min(template_guid) from deleted) <= 0x00000000000000000000000000000004 raiserror('Can not delete base templates. Other templates will be deleted, if any (otherwise error escalates rollback).',5,20)
+		if (select min(template_guid) from deleted) <= 0x00000000000000000000000000000004 
+			begin
+				;throw 51000, 'Can not delete base templates. Other templates will be deleted, if any (otherwise error escalates rollback).', 3;
+			end
 
 		delete d
 		from @deleted as d
@@ -224,11 +251,10 @@ begin
 
 		-- Sound a warning if this is the only data that was deleted
 		-- But we'll silently ignore these templates otherwise.
-		if (not exists(	select * from @deleted as d)) 
+		if (not exists(	select * from @deleted as d ))
 			begin
-				rollback transaction
-				return
-			end			
+				;throw 51000, 'Attempt to purge base types from [orm_meta].[templates]. Aborted.', 4;
+			end
 
 	-- Get the list of the affected templates
 	declare @affected_template_guids identities, @property_guids identities, @child_templates identities
@@ -413,5 +439,11 @@ begin
 	select template_id, template_guid, name, no_auto_view, signature, CURRENT_TRANSACTION_ID()
 	from deleted
 
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go

@@ -12,7 +12,10 @@ create trigger [orm_meta].[values_string_insert]
 	after insert
 as 
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	if orm_meta.check_context('bypass values string history') = 0
 	  begin
@@ -25,6 +28,13 @@ begin
 				on i.property_guid = p.property_guid
 		where p.no_history = 0
 	  end
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
 
@@ -39,7 +49,10 @@ create trigger [orm_meta].[values_string_update]
 	after update
 as 
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	if orm_meta.check_context('bypass values string history') = 0
 	  begin
@@ -58,6 +71,13 @@ begin
 			 or (d.value is not null and i.value is null)
 			 ) and p.no_history = 0
 	  end
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
 
@@ -72,7 +92,10 @@ create trigger [orm_meta].[values_string_delete]
 	after delete
 as 
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	if orm_meta.check_context('bypass values string history') = 0
 	  begin
@@ -82,6 +105,13 @@ begin
 		select d.instance_guid, d.property_guid, d.value, CURRENT_TRANSACTION_ID()
 		from deleted as d
 	  end
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
 
@@ -97,7 +127,10 @@ create trigger [orm_meta].[values_integer_insert]
 	after insert
 as 
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	if orm_meta.check_context('bypass values integer history') = 0
 	  begin
@@ -110,6 +143,13 @@ begin
 				on i.property_guid = p.property_guid
 		where p.no_history = 0
 	  end
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
 
@@ -124,7 +164,10 @@ create trigger [orm_meta].[values_integer_update]
 	after update
 as 
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	if orm_meta.check_context('bypass values integer history') = 0
 	  begin
@@ -143,6 +186,13 @@ begin
 			 or (d.value is not null and i.value is null)
 			 ) and p.no_history = 0
 	  end
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
 
@@ -157,7 +207,10 @@ create trigger [orm_meta].[values_integer_delete]
 	after delete
 as 
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	if orm_meta.check_context('bypass values integer history') = 0
 	  begin
@@ -167,6 +220,13 @@ begin
 		select d.instance_guid, d.property_guid, d.value, CURRENT_TRANSACTION_ID()
 		from deleted as d
 	  end
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
 
@@ -182,7 +242,10 @@ create trigger [orm_meta].[values_decimal_insert]
 	after insert
 as 
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	if orm_meta.check_context('bypass values decimal history') = 0
 	  begin
@@ -195,6 +258,13 @@ begin
 				on i.property_guid = p.property_guid
 		where p.no_history = 0
 	  end
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
 
@@ -209,7 +279,10 @@ create trigger [orm_meta].[values_decimal_update]
 	after update
 as 
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	if orm_meta.check_context('bypass values decimal history') = 0
 	  begin
@@ -228,6 +301,13 @@ begin
 			 or (d.value is not null and i.value is null)
 			 ) and p.no_history = 0
 	  end
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
 
@@ -242,7 +322,10 @@ create trigger [orm_meta].[values_decimal_delete]
 	after delete
 as 
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	if orm_meta.check_context('bypass values decimal history') = 0
 	  begin
@@ -252,6 +335,13 @@ begin
 		select d.instance_guid, d.property_guid, d.value, CURRENT_TRANSACTION_ID()
 		from deleted as d
 	  end
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
 
@@ -267,7 +357,10 @@ create trigger [orm_meta].[values_datetime_insert]
 	after insert
 as 
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	if orm_meta.check_context('bypass values datetime history') = 0
 	  begin
@@ -280,6 +373,13 @@ begin
 				on i.property_guid = p.property_guid
 		where p.no_history = 0
 	  end
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
 
@@ -294,7 +394,10 @@ create trigger [orm_meta].[values_datetime_update]
 	after update
 as 
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	if orm_meta.check_context('bypass values datetime history') = 0
 	  begin
@@ -313,6 +416,13 @@ begin
 			 or (d.value is not null and i.value is null)
 			 ) and p.no_history = 0
 	  end
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
 
@@ -327,7 +437,10 @@ create trigger [orm_meta].[values_datetime_delete]
 	after delete
 as 
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	if orm_meta.check_context('bypass values datetime history') = 0
 	  begin
@@ -337,6 +450,13 @@ begin
 		select d.instance_guid, d.property_guid, d.value, CURRENT_TRANSACTION_ID()
 		from deleted as d
 	  end
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
 
@@ -352,7 +472,10 @@ create trigger [orm_meta].[values_instance_insert]
 	after insert
 as 
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	if orm_meta.check_context('bypass values instance history') = 0
 	  begin
@@ -365,6 +488,13 @@ begin
 				on i.property_guid = p.property_guid
 		where p.no_history = 0
 	  end
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
 
@@ -379,7 +509,10 @@ create trigger [orm_meta].[values_instance_update]
 	after update
 as 
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	if orm_meta.check_context('bypass values instance history') = 0
 	  begin
@@ -398,6 +531,13 @@ begin
 			 or (d.value is not null and i.value is null)
 			 ) and p.no_history = 0
 	  end
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
 
@@ -412,7 +552,10 @@ create trigger [orm_meta].[values_instance_delete]
 	after delete
 as 
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	if orm_meta.check_context('bypass values instance history') = 0
 	  begin
@@ -422,6 +565,13 @@ begin
 		select d.instance_guid, d.property_guid, d.value, CURRENT_TRANSACTION_ID()
 		from deleted as d
 	  end
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
 

@@ -10,7 +10,10 @@ create procedure [orm_meta].[generate_template_view_tall]
 	@template_guid uniqueidentifier
 as
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	-- Generate the tall view that looks like the Ignition historian data view.
 	-- (This is simply a filtered version of the all-values view.)
@@ -43,6 +46,12 @@ begin
 
 	exec sp_executesql @view_query
 
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
 

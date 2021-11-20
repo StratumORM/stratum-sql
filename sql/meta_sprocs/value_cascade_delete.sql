@@ -28,7 +28,7 @@ begin
 begin try
 begin transaction cascaded_property_delete
 
-	set nocount on;
+  set nocount on; set xact_abort on;
 
 	-- Perform the cascading delete on the values tables 
 	delete v
@@ -56,18 +56,11 @@ begin transaction cascaded_property_delete
 		inner join @property_guids as d 
 			on v.property_guid = d.guid
 
-commit transaction cascaded_property_delete
+  commit transaction cascaded_property_delete
 
 end try
 begin catch
-    declare @error_message nvarchar(max), @error_severity int, @error_state int
-    select  @error_message = ERROR_MESSAGE() 
-			+ ' Found in ' + ERROR_PROCEDURE() 
-			+ ' at Line ' + cast(ERROR_LINE() as nvarchar(5))
-		,	@error_severity = ERROR_SEVERITY()
-		,	@error_state = ERROR_STATE()
-    rollback transaction
-    raiserror (@error_message, @error_severity, @error_state)
+	exec [orm_meta].[handle_error] '[orm_meta].[cascade_delete_property]'
 end catch
 end
 go
@@ -87,7 +80,7 @@ begin
 begin try
 begin transaction cascaded_instance_delete
 
-	set nocount on;
+  set nocount on; set xact_abort on;
 
 	-- Perform the cascading delete on the values tables 
 	delete v
@@ -124,18 +117,11 @@ begin transaction cascaded_instance_delete
 	-- 	inner join @instance_guids as d
 	-- 		on v.value = d.guid
 
-commit transaction cascaded_instance_delete
+  commit transaction cascaded_instance_delete
 
 end try
 begin catch
-    declare @error_message nvarchar(max), @error_severity int, @error_state int
-    select  @error_message = ERROR_MESSAGE() 
-			+ ' Found in ' + ERROR_PROCEDURE() 
-			+ ' at Line ' + cast(ERROR_LINE() as nvarchar(5))
-		,	@error_severity = ERROR_SEVERITY()
-		,	@error_state = ERROR_STATE()
-    rollback transaction
-    raiserror (@error_message, @error_severity, @error_state)
+	exec [orm_meta].[handle_error] @@PROCID
 end catch
 end
 go

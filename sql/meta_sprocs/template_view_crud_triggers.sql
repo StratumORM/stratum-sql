@@ -11,9 +11,13 @@ create procedure [orm_meta].[generate_template_view_triggers]
 	@template_guid uniqueidentifier
 as
 begin
-	set nocount on;
+begin try
+begin transaction
 
-	declare @string_columns           nvarchar(max)
+  set nocount on; set xact_abort on;
+
+	declare @message                  nvarchar(255)
+		,	@string_columns           nvarchar(max)
 		,	@integer_columns          nvarchar(max)
 		,	@decimal_columns          nvarchar(max)
 		,	@datetime_columns         nvarchar(max)
@@ -117,6 +121,11 @@ begin
 			instead of delete
 		as 
 		begin
+		begin try
+		begin transaction
+
+		  set nocount on; set xact_abort on;
+
 			declare @template_guid uniqueidentifier
 				set @template_guid = ''@@@_META_TEMPLATE_GUID_@@@''
 
@@ -124,6 +133,13 @@ begin
 			from [orm_meta].[instances] as omi
 				inner join deleted as d
 					on d.Instance_guid = omi.instance_guid
+		
+		  commit transaction
+		
+		end try
+		begin catch
+			exec [orm_meta].[handle_error] @@PROCID
+		end catch
 		end
 	'
 	set @delete_trigger_sql = replace(@delete_trigger_sql, '@@@_ACTION_CHECK_@@@', @action_check)
@@ -148,7 +164,11 @@ begin
 			instead of update
 		as 
 		begin
-			
+		begin try
+		begin transaction
+
+		  set nocount on; set xact_abort on;
+
 			declare @template_guid uniqueidentifier
 				set @template_guid = ''@@@_META_TEMPLATE_GUID_@@@''
 
@@ -162,11 +182,9 @@ begin
 				where p.template_guid = @template_guid
 
 			if (update(instance_guid))
-				begin	
-					rollback transaction	
-					raiserror(''The instance id and guid can not be written (for internal use only). Simply remove it from the update statement.'', 16, 5)
-					return
-				end	
+				begin
+					;throw 51000, ''The instance id and guid can not be written (for internal use only). Simply remove it from the update statement.'', 5;
+				end
 
 			-- fix the instance names before doing anything else
 			if (columns_updated() & 1) = 1
@@ -192,6 +210,8 @@ begin
 		------------------------------------
 		--	@@@_BASE_TYPE_@@@
 		------------------------------------
+		begin try
+
 		;with updated_values as
 		(
 			select	instance_name
@@ -244,7 +264,14 @@ begin
 			update
 			set d.value = s.value
 		;
+
+		end try
+		begin catch
+			exec [orm_meta].[handle_error] ''trigger_orm_meta_view_@@@_META_TEMPLATE_NAME_SANITIZED_@@@_update: @@@_BASE_TYPE_@@@'', null
+		end catch
 	'
+
+	set @update_merge_template = replace(@update_merge_template, '@@@_META_TEMPLATE_NAME_SANITIZED_@@@', @template_name_sanitized)
 
 	-- string
 	if @string_columns <> ''
@@ -298,6 +325,13 @@ begin
 	end
 
 	set @update_trigger_sql = @update_trigger_sql + '
+	
+	  commit transaction
+
+	end try
+	begin catch
+		exec [orm_meta].[handle_error] @@PROCID
+	end catch
 	end
 	'
 
@@ -317,17 +351,19 @@ begin
 		instead of insert
 	as 
 	begin
+	begin try
+	begin transaction
 
+	  set nocount on; set xact_abort on;
+	
 		declare @template_guid uniqueidentifier
 			set @template_guid = ''@@@_META_TEMPLATE_GUID_@@@''
 
 		-- if there is no specific instances being inserted, raise an error (there is nothing to attach values to!)
 		if (columns_updated() & 1) = 0
-			begin	
-				rollback transaction	
-				raiserror(''Can not insert without an instance to attach values to.'', 16, 5)
-				return
-			end	
+			begin
+				;throw 51000, ''Can not insert without an instance to attach values to.'', 5;
+			end
 
 		-- verify that all the instances does not already exist (this aint an update statement!)
 		if (exists(	select ins.instance_name
@@ -335,11 +371,9 @@ begin
 						inner join [orm_meta].[instances] as omi
 							on ins.instance_name = omi.name
 					where omi.template_guid = @template_guid))
-			begin	
-				rollback transaction	
-				raiserror(''Can not insert duplicate Instance_name (new instances should be added via an insert).'', 16, 5)
-				return
-			end	
+			begin
+				;throw 51000, ''Can not insert duplicate Instance_name (new instances should be added via an insert).'', 5;
+			end
 
 		-- Add any instances not yet tracked in the instance table
 		merge into [orm_meta].[instances] as d
@@ -408,11 +442,11 @@ begin
 
 		end try
 		begin catch
-			rollback transaction	
-			raiserror(''Can not insert over an existing value. Use update instead.'', 16, 5)
-			return
+			exec [orm_meta].[handle_error] ''trigger_orm_meta_view_@@@_META_TEMPLATE_NAME_SANITIZED_@@@_insert: @@@_BASE_TYPE_@@@'', null
 		end catch
 	'
+
+		set @insert_merge_template = replace(@insert_merge_template, '@@@_META_TEMPLATE_NAME_SANITIZED_@@@', @template_name_sanitized)
 
 	-- string
 	if @string_columns <> ''
@@ -466,24 +500,37 @@ begin
 	end
 
 	set @insert_trigger_sql = @insert_trigger_sql + '
+	
+	  commit transaction
+
+	end try
+	begin catch
+		exec [orm_meta].[handle_error] @@PROCID
+	end catch
 	end
 	'
 	
-	--begin transaction generate_triggers
-	--begin try
+	begin try
+	begin transaction generate_triggers
 
 		-- Apply the templates
 		exec sp_executesql @delete_trigger_sql
 		exec sp_executesql @update_trigger_sql
 		exec sp_executesql @insert_trigger_sql
 
-	--	commit transaction generate_triggers
+		commit transaction generate_triggers
 
-	--end try
-	--begin catch
-	--	rollback transaction generate_triggers
-	--	raiserror('Generating the template triggers failed.', 16, 5)
-	--	return
-	--end catch
+	end try
+	begin catch
+		set @message = 'Generating (' + @action_check + ') the template triggers failed for ' + @template_name_quoted
+		exec [orm_meta].[handle_error] @message
+	end catch
+	
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go

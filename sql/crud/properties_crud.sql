@@ -14,7 +14,10 @@ create procedure [orm].[property_add]
 ,	@no_history int = 0
 as
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 	
 	declare @template_guid uniqueidentifier
 		, 	@datatype_guid uniqueidentifier
@@ -31,7 +34,14 @@ begin
 		   ( template_guid,               name,  datatype_guid,  is_extended,  no_history)
 	values (@template_guid, @new_property_name, @datatype_guid, @is_extended, @no_history)
 
-	return @@identity
+  commit transaction
+
+  return @@identity
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
 
@@ -44,7 +54,10 @@ create procedure [orm].[property_remove]
 ,	@property_name varchar(250)
 as
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 	
 	declare @template_guid uniqueidentifier
 
@@ -57,6 +70,12 @@ begin
 	where	template_guid = @template_guid
 		and name = @property_name
 		
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end
 go
 
@@ -71,7 +90,10 @@ create procedure [orm].[property_rename]
 ,	@new_property_name varchar(250)
 as
 begin
-	set nocount on;
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
 
 	update p
 	set name = @new_property_name
@@ -81,6 +103,12 @@ begin
 	where	t.name = @template_name
 		and p.name = @old_property_name
 
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
 end 
 go
 
@@ -95,6 +123,7 @@ create procedure [orm].[property_info]
 ,	@property_name varchar(250)
 as
 begin
+
 	set nocount on;
 	
     select t.name as template
