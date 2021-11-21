@@ -13,7 +13,7 @@ as
 begin
   set nocount on; set xact_abort on;
 begin try
-begin transaction
+begin transaction -- orm_instance_add
 
 	declare @template_guid uniqueidentifier
 		,	@message nvarchar(1000)
@@ -37,13 +37,13 @@ begin transaction
 	insert [orm_meta].[instances] (template_guid, name)
 	values (@template_guid, @instance_name)	
 
-  commit transaction
+  commit transaction -- orm_instance_add
 
   return @@identity
 
 end try
 begin catch
-	exec [orm_meta].[handle_error] @@PROCID
+	exec [orm_meta].[handle_error] @@PROCID --, @tx = 'orm_instance_add'
 end catch
 end
 go
