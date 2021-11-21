@@ -64,33 +64,18 @@ begin
 			rollback transaction
 		else
 			rollback transaction @tx
-		-- if xact_state() = -1
-		-- 	begin
-		-- 		print 'ALERT: transaction failed - rolling back all transactions'
-		-- 		rollback
-		-- 	end
-		-- else
-		-- begin 
-		-- 	if xact_state() = 1 and @@trancount = 0
-		-- 		begin
-		-- 			print 'Warning: error - rolling outer back'
-		-- 			rollback
-		-- 		end
-		-- 	else 
-		-- 	begin
-		-- 		if xact_state() = 1 and @@trancount > 0
-		-- 			begin
-		-- 				print 'Warning: transactions failed - multiple rolling back'
-		-- 				rollback
-		-- 			end
-		-- 	end
-		-- end
 	end
-	--print 'after (XACT: ' + cast(@@trancount as nvarchar(2)) + ': ' + cast(xact_state() as nvarchar(2)) + ')'
 
-	--commit -- reduce the transaction count by 1
+    if @error_number < 50000
+    begin
+    	/* -- already in the message
+    	set @error_message = @error_message + '
+    			(sys error ' + convert(varchar(10), @error_number) + ')'
+		*/
+    	set @error_number = 51000
+    end
 
-    --raiserror (@error_message, @error_severity, @error_state)
+
     ;throw @error_number, @error_message, @error_state;
 end
 go

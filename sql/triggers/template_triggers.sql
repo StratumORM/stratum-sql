@@ -232,26 +232,30 @@ begin transaction
 	-- We need to make sure that the base templates are never deleted. So we'll mask the special
 	--	deleted table like the properties trigger manipulates them
 	declare @deleted table (
-				template_guid uniqueidentifier
+				template_id int
+			,	template_guid uniqueidentifier
 			, 	name nvarchar(250)
 			,	signature nvarchar(max)
 			,	primary key (template_guid) )
-		insert @deleted (template_guid, name, signature)
-		select template_guid, name, signature
+		insert @deleted (template_id, template_guid, name, signature)
+		select template_id, template_guid, name, signature
 		from deleted
 
-		if (select min(template_guid) from deleted) <= 0x00000000000000000000000000000004 
+		--if (select min(template_guid) from deleted) <= 0x00000000000000000000000000000004 
+		if (select min(template_id) from deleted) <= 4 
 			begin
 				;throw 51000, 'Can not delete base templates. Other templates will be deleted, if any (otherwise error escalates rollback).', 3;
 			end
 
 		delete d
 		from @deleted as d
-		where template_guid <= 0x00000000000000000000000000000004
+		where template_id <= 4
+		--where template_guid <= 0x00000000000000000000000000000004
 
 		-- Sound a warning if this is the only data that was deleted
 		-- But we'll silently ignore these templates otherwise.
-		if (not exists(	select * from @deleted as d ))
+		if (    (not exists(	select * from @deleted as d )) 
+			and (    exists(	select * from deleted)))
 			begin
 				;throw 51000, 'Attempt to purge base types from [orm_meta].[templates]. Aborted.', 4;
 			end
@@ -404,9 +408,6 @@ begin transaction
 
 	-- Finally, loop over all the template names that were affected by the delete
 	declare @template_name varchar(250), @drop_query nvarchar(max)
-
-		select distinct d.name
-		from @deleted as d
 
 	-- from http://stackoverflow.com/a/18514133
 	declare template_name_cursor cursor

@@ -96,11 +96,27 @@ go
 alter role db_owner add member orm_test_maintainer
 go
 
-create schema orm 
+-- User friendly access to stored procedures (Name based)
+if not exists (select * from orm_test.sys.schemas where name = 'orm')
+    exec('create schema orm')
 go
-create schema orm_meta
+
+-- Inner system sprocs and functions (GUID based)
+if not exists (select * from orm_test.sys.schemas where name = 'orm_meta')
+    exec('create schema orm_meta')
 go
-create schema orm_hist
+
+-- History tables to track changes to the system
+if not exists (select * from orm_test.sys.schemas where name = 'orm_hist')
+    exec('create schema orm_hist')
 go
-create schema orm_temp
+
+-- Staging tables for easier migration/merging/chunked inserts
+if not exists (select * from orm_test.sys.schemas where name = 'orm_temp')
+    exec('create schema orm_temp')
+go
+
+-- Executive control tables for high level init/purge/restart
+if not exists (select * from orm_test.sys.schemas where name = 'orm_xo')
+    exec('create schema orm_xo')
 go
