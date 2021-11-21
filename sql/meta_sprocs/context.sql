@@ -93,9 +93,19 @@ values	('bypass values string history'   , 2, 0x01)
 
 
 -- Molly Guards: prevent dangerous things by default
+-- 
+-- The scheme here is that you turn on master,
+--   turn off interlock, and then always check
+--   that it's armed but the interlock is off.
+-- Roundabout? Yeah. It's meant to block wildly
+--   destructive things.
 insert into [orm_meta].[context] (flag, chunk, bits)
-values	('purge master'       , 4, 0x03)
-	,	('purge interlock '   , 4, 0x02)
+values	('purge master'          , 4, 0x07)  -- 111
+	,	('purge armed'           , 4, 0x05)  -- 101
+	,	('purge interlock'       , 4, 0x02)  -- 010
+
+	,	('overwrite init backups', 4, 0x10)
+	,	('restore init backups', 4, 0x20)
 
 
 go

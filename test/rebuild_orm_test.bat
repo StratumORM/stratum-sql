@@ -115,6 +115,12 @@ ECHO --- dynamic template view crud trigger
 ECHO --- all values listing crud trigger
 %SQL_COMMAND%\meta_sprocs\all_values_listing_crud_triggers.sql >> %LOGFILE%
 
+ECHO --- purge routines....
+%SQL_COMMAND%\meta_sprocs\purge.sql >> %LOGFILE%
+
+ECHO --- backup routines....
+%SQL_COMMAND%\meta_sprocs\save_setup.sql >> %LOGFILE%
+
 
 ECHO Define CRUD sprocs...
 ECHO --- template
@@ -152,6 +158,10 @@ ECHO --- inheritance
 
 ECHO Configuring extension support...
 %SQL_COMMAND%\tables\extensions.sql >> %LOGFILE%
+
+
+ECHO Snapshotting state after setup...
+%SQL_COMMAND%\snapshot_initial_table_setup.sql >> %LOGFILE%
 
 
 ECHO ------------------------

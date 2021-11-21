@@ -1,9 +1,12 @@
 print '
 Generating base tables...'
 
+
+
 IF OBJECT_ID('[orm_meta].[templates]', 'U') IS NOT NULL
 	drop table [orm_meta].[templates]
 go
+
 
 create table [orm_meta].[templates]
 (
@@ -36,9 +39,11 @@ values
 set identity_insert [orm_meta].[templates] off
 
 
+
 IF OBJECT_ID('[orm_meta].[properties]', 'U') IS NOT NULL
 	drop table [orm_meta].[properties]
 go
+
 
 create table [orm_meta].[properties]
 (
@@ -68,9 +73,11 @@ create index ix__orm_meta_properties__property_template_datatype_name
 go
 
 
+
 IF OBJECT_ID('[orm_meta].[instances]', 'U') IS NOT NULL
 	drop table [orm_meta].[instances]
 go
+
 
 create table [orm_meta].[instances]
 (
