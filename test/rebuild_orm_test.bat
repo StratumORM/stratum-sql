@@ -49,6 +49,9 @@ ECHO --- inheritance tables
 ECHO --- hist tables
 %SQL_COMMAND%\tables\hist_tables.sql >> %LOGFILE%
 
+ECHO --- temp staging tables
+%SQL_COMMAND%\tables\temp_tables.sql >> %LOGFILE%
+
 ECHO --- meta context
 %SQL_COMMAND%\meta_sprocs\context.sql >> %LOGFILE%
 
