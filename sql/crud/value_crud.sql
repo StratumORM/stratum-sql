@@ -731,8 +731,6 @@ begin transaction
 		where t.template_guid = @template_guid
 		  and p.property_guid = @property_guid
 		  and i.instance_guid = @instance_guid
-		 
-		return
 	end
 	else
 	if	@datatype_guid = 0x00000000000000000000000000000002 -- bigint
@@ -759,8 +757,6 @@ begin transaction
 		where t.template_guid = @template_guid
 		  and p.property_guid = @property_guid
 		  and i.instance_guid = @instance_guid
-		 
-		return
 	end
 	else
 	if	@datatype_guid = 0x00000000000000000000000000000003 -- decimal(19,8)
@@ -787,8 +783,6 @@ begin transaction
 		where t.template_guid = @template_guid
 		  and p.property_guid = @property_guid
 		  and i.instance_guid = @instance_guid
-		 
-		return
 	end
 	else
 	if	@datatype_guid = 0x00000000000000000000000000000004 -- datetime
@@ -815,8 +809,6 @@ begin transaction
 		where t.template_guid = @template_guid
 		  and p.property_guid = @property_guid
 		  and i.instance_guid = @instance_guid
-		 
-		return
 	end
 	else
 --	if @datatype_guid > 0x00000000000000000000000000000004	-- instance
@@ -845,11 +837,11 @@ begin transaction
 		where t.template_guid = @template_guid
 		  and p.property_guid = @property_guid
 		  and i.instance_guid = @instance_guid
-		 
-		return
 	end
 
   commit transaction
+
+  return
 
 end try
 begin catch
