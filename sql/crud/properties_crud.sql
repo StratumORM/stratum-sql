@@ -6,12 +6,18 @@ IF OBJECT_ID('[orm].[property_add]', 'P') IS NOT NULL
 	DROP PROCEDURE [orm].[property_add]
 go
 
+IF OBJECT_ID('[orm_meta].[property_add]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm_meta].[property_add]
+go
+
+
 create procedure [orm].[property_add]
 	@template_name varchar(250)
 ,	@new_property_name varchar(250)
 ,	@data_type varchar(250)
 ,	@is_extended int = 0
 ,	@no_history int = 0
+,	@signature nvarchar(max) = NULL
 as
 begin
 begin try
@@ -31,8 +37,8 @@ begin transaction
 		where name = @data_type
 	
 	insert [orm_meta].[properties] 
-		   ( template_guid,               name,  datatype_guid,  is_extended,  no_history)
-	values (@template_guid, @new_property_name, @datatype_guid, @is_extended, @no_history)
+		   ( template_guid,               name,  datatype_guid,  is_extended,  no_history,  signature)
+	values (@template_guid, @new_property_name, @datatype_guid, @is_extended, @no_history, @signature)
 
   commit transaction
 
@@ -45,9 +51,56 @@ end catch
 end
 go
 
+
+create procedure [orm_meta].[property_add]
+	@template_guid uniqueidentifier
+,	@new_property_name varchar(250)
+,	@datatype_guid uniqueidentifier
+,	@new_property_guid uniqueidentifier = NULL
+,	@is_extended int = 0
+,	@no_history int = 0
+,	@signature nvarchar(max) = NULL
+as
+begin
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
+	
+  if @new_property_guid is NULL
+	  begin
+			insert [orm_meta].[properties] 
+				   ( template_guid,               name,  datatype_guid,  is_extended,  no_history,  signature)
+			values (@template_guid, @new_property_name, @datatype_guid, @is_extended, @no_history, @signature)
+		end 
+	else 
+		begin
+			insert [orm_meta].[properties] 
+				   ( template_guid,               name,      property_guid,  datatype_guid,  is_extended,  no_history,  signature)
+			values (@template_guid, @new_property_name, @new_property_guid, @datatype_guid, @is_extended, @no_history, @signature)
+		end
+
+  commit transaction
+
+  return @@identity
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
+end
+go
+
+
+
 IF OBJECT_ID('[orm].[property_remove]', 'P') IS NOT NULL
 	DROP PROCEDURE [orm].[property_remove]
 go
+
+IF OBJECT_ID('[orm_meta].[property_remove]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm_meta].[property_remove]
+go
+
 
 create procedure [orm].[property_remove]
 	@template_name varchar(250)
@@ -80,9 +133,38 @@ end
 go
 
 
+create procedure [orm_meta].[property_remove]
+	@property_guid uniqueidentifier
+as
+begin
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
+
+	-- remove the property
+	delete [orm_meta].[properties]
+	where	property_guid = @property_guid
+		
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
+end
+go
+
+
+
 IF OBJECT_ID('[orm].[property_rename]', 'P') IS NOT NULL
 	DROP PROCEDURE [orm].[property_rename]
 go
+
+IF OBJECT_ID('[orm_meta].[property_rename]', 'P') IS NOT NULL
+	DROP PROCEDURE [orm_meta].[property_rename]
+go
+
 
 create procedure [orm].[property_rename]
 	@template_name varchar(250)
@@ -113,6 +195,31 @@ end
 go
 
 
+create procedure [orm_meta].[property_rename]
+	@property_guid uniqueidentifier
+,	@new_property_name varchar(250)
+as
+begin
+begin try
+begin transaction
+
+  set nocount on; set xact_abort on;
+
+	update p
+	set name = @new_property_name
+	from [orm_meta].[properties] as p
+	where	p.property_guid = @property_guid
+
+  commit transaction
+
+end try
+begin catch
+	exec [orm_meta].[handle_error] @@PROCID
+end catch
+end 
+go
+
+
 
 IF OBJECT_ID('[orm].[property_info]', 'P') IS NOT NULL
 	DROP PROCEDURE [orm].[property_info]
@@ -129,6 +236,9 @@ begin
     select t.name as template
         ,  p.name as property
         ,  d.name as datatype
+        ,  p.is_extended
+        ,  p.no_history
+        ,  p.signature
         ,  t.template_guid
         ,  p.property_guid
         ,  p.datatype_guid
