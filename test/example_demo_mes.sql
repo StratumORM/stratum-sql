@@ -1,4 +1,4 @@
-use yamesdb
+use orm_test
 go
 
 exec orm.template_add 'MES Equipment'
