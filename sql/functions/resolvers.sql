@@ -3,11 +3,11 @@ Generating guid resolving functions...'
 
 
 
-if object_id('[orm_meta].[resolve_template_guid]', 'FN') is not null
-	drop function [orm_meta].[resolve_template_guid]
+if object_id('[orm].[resolve_template_guid]', 'FN') is not null
+	drop function [orm].[resolve_template_guid]
 go
 
-create function [orm_meta].[resolve_template_guid]
+create function [orm].[resolve_template_guid]
 (
 	@template_name varchar(250)
 )
@@ -24,12 +24,12 @@ go
 
 
 
-if object_id('[orm_meta].[resolve_property_guid]', 'FN') is not null
-	drop function [orm_meta].[resolve_property_guid]
+if object_id('[orm].[resolve_property_guid]', 'FN') is not null
+	drop function [orm].[resolve_property_guid]
 go
 
 
-create function [orm_meta].[resolve_property_guid]
+create function [orm].[resolve_property_guid]
 (
 	@template_name varchar(250)
 ,	@property_name varchar(250)
@@ -50,12 +50,12 @@ go
 
 
 
-if object_id('[orm_meta].[resolve_instance_guid]', 'FN') is not null
-	drop function [orm_meta].[resolve_instance_guid]
+if object_id('[orm].[resolve_instance_guid]', 'FN') is not null
+	drop function [orm].[resolve_instance_guid]
 go
 
 
-create function [orm_meta].[resolve_instance_guid]
+create function [orm].[resolve_instance_guid]
 (
 	@template_name varchar(250)
 ,	@instance_name varchar(250)
@@ -76,12 +76,12 @@ go
 
 
 
-if object_id('[orm_meta].[find_instance_guid]', 'FN') is not null
-	drop function [orm_meta].[find_instance_guid]
+if object_id('[orm].[find_instance_guid]', 'FN') is not null
+	drop function [orm].[find_instance_guid]
 go
 
 
-create function [orm_meta].[find_instance_guid]
+create function [orm].[find_instance_guid]
 (	
 	@template_name varchar(250)
 , 	@instance_name varchar(250)

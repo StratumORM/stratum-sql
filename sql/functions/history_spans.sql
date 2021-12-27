@@ -80,8 +80,8 @@ return
 		,	hs.beginning
 		,	hs.ending
 	from [orm_meta].[history_spans_string](
-			orm_meta.resolve_instance_guid(@template_name, @instance_name)
-		,	orm_meta.resolve_property_guid(@template_name, @property_name)
+			[orm].[resolve_instance_guid](@template_name, @instance_name)
+		,	[orm].[resolve_property_guid](@template_name, @property_name)
 		,	@beginning
 		,	@ending
 		) as hs
@@ -146,8 +146,8 @@ return
 		,	hs.beginning
 		,	hs.ending
 	from [orm_meta].[history_spans_integer](
-			orm_meta.resolve_instance_guid(@template_name, @instance_name)
-		,	orm_meta.resolve_property_guid(@template_name, @property_name)
+			[orm].[resolve_instance_guid](@template_name, @instance_name)
+		,	[orm].[resolve_property_guid](@template_name, @property_name)
 		,	@beginning
 		,	@ending
 		) as hs
@@ -212,8 +212,8 @@ return
 		,	hs.beginning
 		,	hs.ending
 	from [orm_meta].[history_spans_decimal](
-			orm_meta.resolve_instance_guid(@template_name, @instance_name)
-		,	orm_meta.resolve_property_guid(@template_name, @property_name)
+			[orm].[resolve_instance_guid](@template_name, @instance_name)
+		,	[orm].[resolve_property_guid](@template_name, @property_name)
 		,	@beginning
 		,	@ending
 		) as hs
@@ -278,8 +278,8 @@ return
 		,	hs.beginning
 		,	hs.ending
 	from [orm_meta].[history_spans_datetime](
-			orm_meta.resolve_instance_guid(@template_name, @instance_name)
-		,	orm_meta.resolve_property_guid(@template_name, @property_name)
+			[orm].[resolve_instance_guid](@template_name, @instance_name)
+		,	[orm].[resolve_property_guid](@template_name, @property_name)
 		,	@beginning
 		,	@ending
 		) as hs
@@ -344,8 +344,8 @@ return
 		,	hs.beginning
 		,	hs.ending
 	from [orm_meta].[history_spans_instance](
-			orm_meta.resolve_instance_guid(@template_name, @instance_name)
-		,	orm_meta.resolve_property_guid(@template_name, @property_name)
+			[orm].[resolve_instance_guid](@template_name, @instance_name)
+		,	[orm].[resolve_property_guid](@template_name, @property_name)
 		,	@beginning
 		,	@ending
 		) as hs
